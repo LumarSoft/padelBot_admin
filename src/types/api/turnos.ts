@@ -1,9 +1,14 @@
 export type SlotStatus = "AVAILABLE" | "BOOKED" | "BLOCKED";
 
+export type CourtType = "INDOOR" | "OUTDOOR";
+
 export interface Court {
   id: string;
   name: string;
   priceCents: number;
+  openTime: string;
+  closeTime: string;
+  courtType: CourtType;
   createdAt: string;
   updatedAt: string;
 }
@@ -23,11 +28,17 @@ export interface Slot {
 export interface CreateCourtRequest {
   name: string;
   priceCents: number;
+  openTime?: string;
+  closeTime?: string;
+  courtType?: CourtType;
 }
 
 export interface UpdateCourtRequest {
   name?: string;
   priceCents?: number;
+  openTime?: string;
+  closeTime?: string;
+  courtType?: CourtType;
 }
 
 export interface CreateSlotRequest {

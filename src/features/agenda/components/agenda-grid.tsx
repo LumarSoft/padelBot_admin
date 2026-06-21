@@ -1,21 +1,40 @@
 "use client";
 
+import { useMemo } from "react";
 import { LayoutGrid, Loader2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useCourts } from "@/features/turnos/hooks/use-courts";
 import { useAgendaDay } from "@/features/agenda/hooks/use-agenda-day";
 import { AgendaCell } from "@/features/agenda/components/agenda-cell";
-import { SCHEDULE } from "@/features/agenda/lib/schedule";
+import { generateSchedule, type ScheduleBand } from "@/features/agenda/lib/schedule";
+import type { Court } from "@/types/api/turnos";
 
 interface AgendaGridProps {
   dayKey: string;
   courtId: string;
 }
 
+/** Union of all courts' schedule bands, sorted by start time. */
+function buildUnionSchedule(courts: Court[]): ScheduleBand[] {
+  const seen = new Set<string>();
+  const all: ScheduleBand[] = [];
+  for (const court of courts) {
+    for (const band of generateSchedule(court.openTime, court.closeTime)) {
+      if (!seen.has(band.start)) {
+        seen.add(band.start);
+        all.push(band);
+      }
+    }
+  }
+  return all.sort((a, b) => a.start.localeCompare(b.start));
+}
+
 export function AgendaGrid({ dayKey, courtId }: AgendaGridProps) {
   const courtsQuery = useCourts();
   const allCourts = courtsQuery.data ?? [];
   const courts = courtId ? allCourts.filter((c) => c.id === courtId) : allCourts;
+
+  const schedule = useMemo(() => buildUnionSchedule(courts), [courts]);
 
   const { cellFor, isLoading } = useAgendaDay(dayKey, courtId);
 
@@ -63,7 +82,7 @@ export function AgendaGrid({ dayKey, courtId }: AgendaGridProps) {
         ))}
 
         {/* Time rows */}
-        {SCHEDULE.map((band) => (
+        {schedule.map((band) => (
           <div key={band.start} className="contents">
             <div className="bg-muted/30 text-muted-foreground sticky left-0 z-[1] flex items-center justify-end border-r px-2 py-1.5 text-xs tabular-nums">
               {band.start}

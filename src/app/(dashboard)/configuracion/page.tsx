@@ -3,7 +3,6 @@ import { requireSession } from "@/lib/session";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CourtsManager } from "@/features/configuracion/components/courts-manager";
-import { SlotsManager } from "@/features/configuracion/components/slots-manager";
 import { RecurringBookingsManager } from "@/features/configuracion/components/recurring-bookings-manager";
 
 export default async function ConfiguracionPage() {
@@ -25,7 +24,6 @@ export default async function ConfiguracionPage() {
       ) : (
         <>
           <CourtsManager />
-          <SlotsManager />
           <RecurringBookingsManager />
         </>
       )}

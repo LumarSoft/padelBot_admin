@@ -33,7 +33,7 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatPrice } from "@/lib/format";
 import { useCourts } from "@/features/turnos/hooks/use-courts";
-import { SCHEDULE } from "@/features/agenda/lib/schedule";
+import { generateSchedule } from "@/features/agenda/lib/schedule";
 import {
   useRecurringBookings,
   useCreateRecurringBooking,
@@ -62,11 +62,17 @@ function CreateRecurringDialog({ courts }: { courts: Court[] }) {
   const [open, setOpen] = useState(false);
   const [courtId, setCourtId] = useState(courts[0]?.id ?? "");
   const [dayOfWeek, setDayOfWeek] = useState("1");
-  const [bandStart, setBandStart] = useState(SCHEDULE[0].start);
+  const [bandStart, setBandStart] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [playerPhone, setPlayerPhone] = useState("");
   const [price, setPrice] = useState(() => String((courts[0]?.priceCents ?? 0) / 100));
   const createRecurring = useCreateRecurringBooking();
+
+  const selectedCourt = courts.find((c) => c.id === courtId);
+  const schedule = selectedCourt
+    ? generateSchedule(selectedCourt.openTime, selectedCourt.closeTime)
+    : [];
+  const effectiveBandStart = bandStart || schedule[0]?.start || "";
 
   const priceNumber = Number(price);
   const priceValid = Number.isFinite(priceNumber) && priceNumber >= 0;
@@ -75,12 +81,13 @@ function CreateRecurringDialog({ courts }: { courts: Court[] }) {
     !!playerName.trim() &&
     playerPhone.trim().length >= 6 &&
     priceValid &&
+    !!effectiveBandStart &&
     !createRecurring.isPending;
 
   function reset() {
     setCourtId(courts[0]?.id ?? "");
     setDayOfWeek("1");
-    setBandStart(SCHEDULE[0].start);
+    setBandStart("");
     setPlayerName("");
     setPlayerPhone("");
     setPrice(String((courts[0]?.priceCents ?? 0) / 100));
@@ -89,13 +96,14 @@ function CreateRecurringDialog({ courts }: { courts: Court[] }) {
   function handleCourtChange(value: string | null) {
     const next = value ?? "";
     setCourtId(next);
+    setBandStart("");
     const court = courts.find((c) => c.id === next);
     if (court) setPrice(String(court.priceCents / 100));
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const band = SCHEDULE.find((b) => b.start === bandStart);
+    const band = schedule.find((b) => b.start === effectiveBandStart);
     if (!band || !canSubmit) return;
     createRecurring.mutate(
       {
@@ -174,17 +182,20 @@ function CreateRecurringDialog({ courts }: { courts: Court[] }) {
 
           <div className="flex flex-col gap-2">
             <Label>Horario</Label>
-            <Select value={bandStart} onValueChange={(v) => setBandStart(v ?? SCHEDULE[0].start)}>
+            <Select
+              value={effectiveBandStart}
+              onValueChange={(v) => setBandStart(v ?? schedule[0]?.start ?? "")}
+            >
               <SelectTrigger>
                 <SelectValue>
                   {(v) => {
-                    const band = SCHEDULE.find((b) => b.start === v);
+                    const band = schedule.find((b) => b.start === v);
                     return band ? `${band.start} – ${band.end}` : "";
                   }}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {SCHEDULE.map((b) => (
+                {schedule.map((b) => (
                   <SelectItem key={b.start} value={b.start}>
                     {b.start} – {b.end}
                   </SelectItem>

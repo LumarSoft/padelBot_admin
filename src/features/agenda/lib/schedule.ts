@@ -1,24 +1,39 @@
-/**
- * Fixed slot schedule for every club (see project domain).
- * Each entry is a bookable time band; "22:30" closes at midnight (next day 00:00).
- */
 export interface ScheduleBand {
   start: string; // "HH:MM"
   end: string; // "HH:MM"
 }
 
-export const SCHEDULE: ScheduleBand[] = [
-  { start: "09:00", end: "10:30" },
-  { start: "10:30", end: "12:00" },
-  { start: "12:00", end: "13:30" },
-  { start: "13:30", end: "15:00" },
-  { start: "15:00", end: "16:30" },
-  { start: "16:30", end: "18:00" },
-  { start: "18:00", end: "19:30" },
-  { start: "19:30", end: "21:00" },
-  { start: "21:00", end: "22:30" },
-  { start: "22:30", end: "00:00" },
-];
+const SLOT_DURATION_MINUTES = 90;
+
+/**
+ * Generates the daily schedule bands for a court from its openTime/closeTime.
+ * closeTime "00:00" means midnight (end of the calendar day).
+ */
+export function generateSchedule(openTime: string, closeTime: string): ScheduleBand[] {
+  const [oh, om] = openTime.split(":").map(Number);
+  const [ch, cm] = closeTime.split(":").map(Number);
+
+  let cursor = oh * 60 + om;
+  const endOfDay = ch === 0 && cm === 0 ? 24 * 60 : ch * 60 + cm;
+
+  const bands: ScheduleBand[] = [];
+  while (cursor + SLOT_DURATION_MINUTES <= endOfDay) {
+    const next = cursor + SLOT_DURATION_MINUTES;
+    const sh = Math.floor(cursor / 60);
+    const sm = cursor % 60;
+    const eh = Math.floor(next / 60) % 24;
+    const em = next % 60;
+    bands.push({
+      start: `${String(sh).padStart(2, "0")}:${String(sm).padStart(2, "0")}`,
+      end:
+        next >= 24 * 60
+          ? "00:00"
+          : `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`,
+    });
+    cursor = next;
+  }
+  return bands;
+}
 
 /** Today as a local "YYYY-MM-DD" string. */
 export function todayKey(): string {

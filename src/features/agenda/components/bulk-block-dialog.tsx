@@ -24,7 +24,23 @@ import {
 } from "@/components/ui/select";
 import { useCourts } from "@/features/turnos/hooks/use-courts";
 import { useBulkBlockSlots } from "@/features/turnos/hooks/use-slots";
-import { SCHEDULE, todayKey } from "@/features/agenda/lib/schedule";
+import { generateSchedule, todayKey, type ScheduleBand } from "@/features/agenda/lib/schedule";
+import type { Court } from "@/types/api/turnos";
+
+/** Union of all courts' schedule bands, sorted by start time. */
+function buildUnionSchedule(courts: Court[]): ScheduleBand[] {
+  const seen = new Set<string>();
+  const all: ScheduleBand[] = [];
+  for (const court of courts) {
+    for (const band of generateSchedule(court.openTime, court.closeTime)) {
+      if (!seen.has(band.start)) {
+        seen.add(band.start);
+        all.push(band);
+      }
+    }
+  }
+  return all.sort((a, b) => a.start.localeCompare(b.start));
+}
 
 export function BulkBlockDialog() {
   const [open, setOpen] = useState(false);
@@ -32,28 +48,31 @@ export function BulkBlockDialog() {
   const [fromDate, setFromDate] = useState(todayKey);
   const [toDate, setToDate] = useState(todayKey);
   const [allDay, setAllDay] = useState(true);
-  const [fromBand, setFromBand] = useState(SCHEDULE[0].start);
-  const [toBand, setToBand] = useState(SCHEDULE[SCHEDULE.length - 1].start);
+  const [fromBand, setFromBand] = useState("09:00");
+  const [toBand, setToBand] = useState("22:30");
 
   const courtsQuery = useCourts();
   const courts = courtsQuery.data ?? [];
   const bulkBlock = useBulkBlockSlots();
 
+  const schedule = useMemo(() => buildUnionSchedule(courts), [courts]);
+
   const slotStarts = useMemo(() => {
     if (allDay) return undefined;
-    const a = SCHEDULE.findIndex((b) => b.start === fromBand);
-    const b = SCHEDULE.findIndex((b) => b.start === toBand);
+    const a = schedule.findIndex((b) => b.start === fromBand);
+    const b = schedule.findIndex((b) => b.start === toBand);
+    if (a === -1 || b === -1) return undefined;
     const [lo, hi] = a <= b ? [a, b] : [b, a];
-    return SCHEDULE.slice(lo, hi + 1).map((band) => band.start);
-  }, [allDay, fromBand, toBand]);
+    return schedule.slice(lo, hi + 1).map((band) => band.start);
+  }, [allDay, fromBand, toBand, schedule]);
 
   function reset() {
     setSelected(new Set());
     setFromDate(todayKey());
     setToDate(todayKey());
     setAllDay(true);
-    setFromBand(SCHEDULE[0].start);
-    setToBand(SCHEDULE[SCHEDULE.length - 1].start);
+    setFromBand(schedule[0]?.start ?? "09:00");
+    setToBand(schedule[schedule.length - 1]?.start ?? "22:30");
   }
 
   function toggleCourt(id: string) {
@@ -174,16 +193,19 @@ export function BulkBlockDialog() {
             Bloquear todo el día
           </label>
 
-          {!allDay && (
+          {!allDay && schedule.length > 0 && (
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-2">
                 <Label>Desde las</Label>
-                <Select value={fromBand} onValueChange={(v) => setFromBand(v ?? SCHEDULE[0].start)}>
+                <Select
+                  value={fromBand}
+                  onValueChange={(v) => setFromBand(v ?? schedule[0].start)}
+                >
                   <SelectTrigger>
                     <SelectValue>{(v) => String(v)}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {SCHEDULE.map((b) => (
+                    {schedule.map((b) => (
                       <SelectItem key={b.start} value={b.start}>
                         {b.start}
                       </SelectItem>
@@ -193,12 +215,15 @@ export function BulkBlockDialog() {
               </div>
               <div className="flex flex-col gap-2">
                 <Label>Hasta las</Label>
-                <Select value={toBand} onValueChange={(v) => setToBand(v ?? SCHEDULE[0].start)}>
+                <Select
+                  value={toBand}
+                  onValueChange={(v) => setToBand(v ?? schedule[0].start)}
+                >
                   <SelectTrigger>
                     <SelectValue>{(v) => String(v)}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {SCHEDULE.map((b) => (
+                    {schedule.map((b) => (
                       <SelectItem key={b.start} value={b.start}>
                         {b.start}
                       </SelectItem>
