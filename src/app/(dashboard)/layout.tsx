@@ -3,6 +3,7 @@ import { requireSession } from "@/lib/session";
 import { Logo } from "@/components/ui/logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SessionSync } from "@/features/auth/components/session-sync";
+import { RealtimeSync } from "@/features/realtime/components/realtime-sync";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { DashboardNav } from "@/features/dashboard/components/dashboard-nav";
 
@@ -27,6 +28,7 @@ export default async function DashboardLayout({
   return (
     <div className="grid min-h-svh grid-cols-1 md:grid-cols-[16rem_1fr]">
       <SessionSync user={user} />
+      <RealtimeSync />
 
       <aside className="bg-sidebar text-sidebar-foreground sticky top-0 hidden h-svh flex-col border-r md:flex">
         <div className="flex h-14 items-center border-b px-5">
