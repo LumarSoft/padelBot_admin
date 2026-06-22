@@ -3,6 +3,10 @@ import { cn } from "@/lib/utils";
 import type { BookingStatus } from "@/types/api/bookings";
 
 const CONFIG: Record<BookingStatus, { label: string; className: string }> = {
+  PENDING_PAYMENT: {
+    label: "Pago pendiente",
+    className: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  },
   CONFIRMED: {
     label: "Confirmada",
     className: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",

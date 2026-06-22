@@ -15,9 +15,21 @@ const timeFormat = new Intl.DateTimeFormat("es-AR", {
   minute: "2-digit",
 });
 
+const currencyExact = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 /** Cents → localized currency string (e.g. 1200000 → "$12.000"). */
 export function formatPrice(cents: number): string {
   return currency.format(cents / 100);
+}
+
+/** Cents → currency string keeping the two centavos digits (e.g. 250047 → "$2.500,47"). */
+export function formatPriceExact(cents: number): string {
+  return currencyExact.format(cents / 100);
 }
 
 /** ISO date → "mié 25 jun". */

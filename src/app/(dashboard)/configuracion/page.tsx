@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CourtsManager } from "@/features/configuracion/components/courts-manager";
 import { RecurringBookingsManager } from "@/features/configuracion/components/recurring-bookings-manager";
+import { TransferConfigManager } from "@/features/configuracion/components/transfer-config-manager";
 
 export default async function ConfiguracionPage() {
   const user = await requireSession();
@@ -24,6 +25,7 @@ export default async function ConfiguracionPage() {
       ) : (
         <>
           <CourtsManager />
+          <TransferConfigManager />
           <RecurringBookingsManager />
         </>
       )}

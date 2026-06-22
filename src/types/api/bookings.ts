@@ -1,6 +1,6 @@
 import type { SlotStatus } from "@/types/api/turnos";
 
-export type BookingStatus = "CONFIRMED" | "CANCELLED";
+export type BookingStatus = "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED";
 
 export interface BookingSlot {
   id: string;
@@ -21,6 +21,12 @@ export interface Booking {
   notes: string | null;
   recurringBookingId: string | null;
   bookedByUserId: number | null;
+  /** Deposit owed (cents) — court price split across the 4 players. */
+  depositCents: number;
+  /** Exact amount (cents, with centavos) the player must transfer to confirm. Null for admin-created bookings. */
+  transferAmountCents: number | null;
+  /** When the pending transfer window expires (ISO). Null for admin-created bookings. */
+  paymentExpiresAt: string | null;
   createdAt: string;
   updatedAt: string;
   slot: BookingSlot;

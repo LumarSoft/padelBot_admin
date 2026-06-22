@@ -23,4 +23,7 @@ export const queryKeys = {
   recurringBookings: {
     all: ["recurring-bookings"] as const,
   },
+  clubs: {
+    transferConfig: ["clubs", "transfer-config"] as const,
+  },
 } as const;

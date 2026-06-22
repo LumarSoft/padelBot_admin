@@ -73,7 +73,7 @@ function EditCourtDialog({
         <DialogHeader>
           <DialogTitle>Editar cancha</DialogTitle>
           <DialogDescription>
-            Modificá los datos de "{court.name}".
+            Modificá los datos de “{court.name}”.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

@@ -47,7 +47,30 @@ export async function GET(request: NextRequest): Promise<Response> {
     });
   }
 
-  return new Response(upstream.body, {
+  // Pipe the upstream SSE through manually: when the API restarts or the client
+  // disconnects, close the stream cleanly instead of letting the socket error
+  // bubble up as a noisy "failed to pipe response". The browser's EventSource
+  // then simply reconnects.
+  const reader = upstream.body.getReader();
+  const stream = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        const { done, value } = await reader.read();
+        if (done) {
+          controller.close();
+          return;
+        }
+        controller.enqueue(value);
+      } catch {
+        controller.close();
+      }
+    },
+    cancel() {
+      void reader.cancel().catch(() => {});
+    },
+  });
+
+  return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-cache, no-transform",

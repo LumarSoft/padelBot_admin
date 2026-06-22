@@ -30,4 +30,10 @@ export const bookingsService = {
   reschedule(id: string, body: RescheduleBookingRequest): Promise<Booking> {
     return apiClient.patch<Booking>(`/api/bookings/${id}/reschedule`, body);
   },
+  confirmPayment(id: string): Promise<{ confirmed: boolean }> {
+    return apiClient.patch<{ confirmed: boolean }>(`/api/bookings/${id}/confirm-payment`);
+  },
+  rejectPayment(id: string): Promise<{ cancelled: boolean }> {
+    return apiClient.patch<{ cancelled: boolean }>(`/api/bookings/${id}/reject-payment`);
+  },
 };

@@ -60,3 +60,35 @@ export function useRescheduleBooking() {
     onError: (error) => toast.error(error.message),
   });
 }
+
+export function useConfirmPayment() {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ confirmed: boolean }, ApiError, string>({
+    mutationFn: (id) => bookingsService.confirmPayment(id),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.slots.all });
+      toast.success(
+        result.confirmed ? "Pago confirmado y reserva asegurada" : "La reserva ya no estaba pendiente",
+      );
+    },
+    onError: (error) => toast.error(error.message),
+  });
+}
+
+export function useRejectPayment() {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ cancelled: boolean }, ApiError, string>({
+    mutationFn: (id) => bookingsService.rejectPayment(id),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.slots.all });
+      toast.success(
+        result.cancelled ? "Pago rechazado y turno liberado" : "La reserva ya no estaba pendiente",
+      );
+    },
+    onError: (error) => toast.error(error.message),
+  });
+}

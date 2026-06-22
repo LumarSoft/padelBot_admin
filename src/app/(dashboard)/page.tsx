@@ -9,6 +9,7 @@ import {
 import { getSession } from "@/lib/session";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
+import { PendingPayments } from "@/features/pagos/components/pending-payments";
 
 const STATS = [
   { label: "Turnos hoy", value: "—" },
@@ -53,6 +54,8 @@ export default async function OverviewPage() {
         title={`Hola, ${session?.name?.split(" ")[0] ?? ""}`}
         description={`Esto es lo que pasa hoy en ${session?.clubName}.`}
       />
+
+      <PendingPayments />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {STATS.map((stat) => (
