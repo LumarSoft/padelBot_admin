@@ -26,4 +26,9 @@ export const queryKeys = {
   clubs: {
     transferConfig: ["clubs", "transfer-config"] as const,
   },
+  conversations: {
+    all: ["conversations"] as const,
+    list: ["conversations", "list"] as const,
+    messages: (id: string) => ["conversations", "messages", id] as const,
+  },
 } as const;

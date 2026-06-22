@@ -1,19 +1,14 @@
-import { MessagesSquare } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { EmptyState } from "@/components/ui/empty-state";
+import { ConversationsScreen } from "@/features/conversations/components/conversations-screen";
 
 export default function ConversacionesPage() {
   return (
-    <div className="animate-in fade-in-50 flex flex-col gap-8 duration-500">
+    <div className="animate-in fade-in-50 flex flex-col gap-6 duration-500">
       <PageHeader
         title="Conversaciones"
-        description="Los chats entre los jugadores y el bot. Interrumpí y tomá el control cuando haga falta."
+        description="Los chats entre los jugadores y el bot. Tomá el control cuando haga falta."
       />
-      <EmptyState
-        icon={MessagesSquare}
-        title="Sin conversaciones activas"
-        description="Acá vas a ver los hilos del bot en vivo y vas a poder hacer handoff a un humano."
-      />
+      <ConversationsScreen />
     </div>
   );
 }

@@ -13,6 +13,15 @@ interface BookingChangedEvent {
   summary: string;
 }
 
+interface ConversationMessageEvent {
+  type: "conversation.message";
+  sessionId: string;
+  waId: string;
+  playerName: string | null;
+}
+
+type AppEvent = BookingChangedEvent | ConversationMessageEvent;
+
 const TOAST_BY_ACTION: Record<BookingAction, (summary: string) => void> = {
   created: (s) => toast.success(`Nueva reserva: ${s}`),
   cancelled: (s) => toast.info(`Reserva cancelada: ${s}`),
@@ -33,23 +42,31 @@ export function useRealtimeSync(): void {
     const source = new EventSource("/api/events");
 
     source.onmessage = (message) => {
-      let event: BookingChangedEvent;
+      let event: AppEvent;
       try {
-        event = JSON.parse(message.data) as BookingChangedEvent;
+        event = JSON.parse(message.data) as AppEvent;
       } catch {
         return;
       }
-      if (event.type !== "booking.changed") return;
 
-      TOAST_BY_ACTION[event.action]?.(event.summary);
+      if (event.type === "booking.changed") {
+        TOAST_BY_ACTION[event.action]?.(event.summary);
+        // Coalesce bursts (e.g. a recurring booking applied to many days) into a
+        // single refetch.
+        clearTimeout(refetchTimer.current);
+        refetchTimer.current = setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.slots.all });
+        }, 300);
+        return;
+      }
 
-      // Coalesce bursts (e.g. a recurring booking applied to many days) into a
-      // single refetch.
-      clearTimeout(refetchTimer.current);
-      refetchTimer.current = setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
-        queryClient.invalidateQueries({ queryKey: queryKeys.slots.all });
-      }, 300);
+      if (event.type === "conversation.message") {
+        queryClient.invalidateQueries({ queryKey: queryKeys.conversations.list });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.conversations.messages(event.sessionId),
+        });
+      }
     };
 
     // EventSource reconnects automatically on transient drops; swallow the error
