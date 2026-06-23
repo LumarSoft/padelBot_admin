@@ -24,8 +24,12 @@ export const queryKeys = {
     all: ["recurring-bookings"] as const,
   },
   clubs: {
+    profile: ["clubs", "profile"] as const,
     transferConfig: ["clubs", "transfer-config"] as const,
     mercadopago: ["clubs", "mercadopago"] as const,
+  },
+  stats: {
+    overview: ["stats", "overview"] as const,
   },
   conversations: {
     all: ["conversations"] as const,

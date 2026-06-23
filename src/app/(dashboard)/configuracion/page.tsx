@@ -2,9 +2,7 @@ import { Lock } from "lucide-react";
 import { requireSession } from "@/lib/session";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
-import { CourtsManager } from "@/features/configuracion/components/courts-manager";
-import { RecurringBookingsManager } from "@/features/configuracion/components/recurring-bookings-manager";
-import { TransferConfigManager } from "@/features/configuracion/components/transfer-config-manager";
+import { ConfiguracionScreen } from "@/features/configuracion/components/configuracion-screen";
 
 export default async function ConfiguracionPage() {
   const user = await requireSession();
@@ -13,7 +11,7 @@ export default async function ConfiguracionPage() {
     <div className="animate-in fade-in-50 flex flex-col gap-8 duration-500">
       <PageHeader
         title="Configuración"
-        description="Administrá las canchas y ajustes del club."
+        description="Dejá tu complejo listo: cobros, canchas y turnos fijos."
       />
 
       {user.role !== "owner" ? (
@@ -23,11 +21,7 @@ export default async function ConfiguracionPage() {
           description="Solo el dueño del club puede acceder a la configuración."
         />
       ) : (
-        <>
-          <CourtsManager />
-          <TransferConfigManager />
-          <RecurringBookingsManager />
-        </>
+        <ConfiguracionScreen clubName={user.clubName} />
       )}
     </div>
   );

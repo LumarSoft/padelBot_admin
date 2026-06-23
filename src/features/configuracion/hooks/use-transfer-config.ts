@@ -6,10 +6,32 @@ import { clubsService } from "@/services/clubs.service";
 import { queryKeys } from "@/lib/query-keys";
 import { ApiError } from "@/lib/api/api-error";
 import type {
+  ClubProfile,
   MercadoPagoStatus,
   TransferConfig,
+  UpdateClubProfileRequest,
   UpdateTransferConfigRequest,
 } from "@/types/api/clubs";
+
+export function useClubProfile() {
+  return useQuery<ClubProfile>({
+    queryKey: queryKeys.clubs.profile,
+    queryFn: () => clubsService.getProfile(),
+  });
+}
+
+export function useUpdateClubProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation<ClubProfile, ApiError, UpdateClubProfileRequest>({
+    mutationFn: (body) => clubsService.updateProfile(body),
+    onSuccess: (profile) => {
+      queryClient.setQueryData(queryKeys.clubs.profile, profile);
+      toast.success("Datos del complejo actualizados");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+}
 
 export function useTransferConfig() {
   return useQuery<TransferConfig>({

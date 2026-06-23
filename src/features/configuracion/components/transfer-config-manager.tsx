@@ -14,26 +14,45 @@ import {
   useTransferConfig,
   useUpdateTransferConfig,
 } from "@/features/configuracion/hooks/use-transfer-config";
+import type { DepositMode } from "@/types/api/clubs";
 
 function TransferConfigForm({
   initialAlias,
   initialHolder,
+  initialMode,
+  initialPercent,
 }: {
   initialAlias: string;
   initialHolder: string;
+  initialMode: DepositMode;
+  initialPercent: number;
 }) {
   const updateConfig = useUpdateTransferConfig();
   const [alias, setAlias] = useState(initialAlias);
   const [holder, setHolder] = useState(initialHolder);
+  const [mode, setMode] = useState<DepositMode>(initialMode);
+  const [percent, setPercent] = useState(String(initialPercent));
 
   const trimmedAlias = alias.trim();
   const trimmedHolder = holder.trim();
-  const unchanged = trimmedAlias === initialAlias && trimmedHolder === initialHolder;
+  const percentNumber = Number(percent);
+  const percentValid =
+    Number.isInteger(percentNumber) && percentNumber >= 1 && percentNumber <= 100;
+  const unchanged =
+    trimmedAlias === initialAlias &&
+    trimmedHolder === initialHolder &&
+    mode === initialMode &&
+    percentNumber === initialPercent;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    if (unchanged) return;
-    updateConfig.mutate({ transferAlias: trimmedAlias, transferHolder: trimmedHolder });
+    if (unchanged || (mode === "DEPOSIT" && !percentValid)) return;
+    updateConfig.mutate({
+      transferAlias: trimmedAlias,
+      transferHolder: trimmedHolder,
+      depositMode: mode,
+      ...(mode === "DEPOSIT" ? { depositPercent: percentNumber } : {}),
+    });
   }
 
   return (
@@ -60,8 +79,64 @@ function TransferConfigForm({
           disabled={updateConfig.isPending}
         />
       </div>
+
+      <div className="flex flex-col gap-2">
+        <Label>¿Qué cobra el bot para confirmar?</Label>
+        <div className="flex flex-col gap-2">
+          {(
+            [
+              { value: "DEPOSIT", label: "Seña (una parte del precio)" },
+              { value: "FULL", label: "La cancha completa" },
+            ] as const
+          ).map((option) => (
+            <label
+              key={option.value}
+              className="flex cursor-pointer items-center gap-2 text-sm"
+            >
+              <input
+                type="radio"
+                name="deposit-mode"
+                value={option.value}
+                checked={mode === option.value}
+                onChange={() => setMode(option.value)}
+                disabled={updateConfig.isPending}
+                className="accent-[var(--brand)]"
+              />
+              {option.label}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {mode === "DEPOSIT" && (
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="deposit-percent">Seña (% del precio del turno)</Label>
+          <Input
+            id="deposit-percent"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={100}
+            step={5}
+            value={percent}
+            onChange={(e) => setPercent(e.target.value)}
+            disabled={updateConfig.isPending}
+          />
+          <p className="text-muted-foreground text-xs">
+            Por defecto 25% (la parte de 1 de 4 jugadores).
+          </p>
+        </div>
+      )}
+
       <div>
-        <Button type="submit" disabled={updateConfig.isPending || unchanged}>
+        <Button
+          type="submit"
+          disabled={
+            updateConfig.isPending ||
+            unchanged ||
+            (mode === "DEPOSIT" && !percentValid)
+          }
+        >
           {updateConfig.isPending ? "Guardando…" : "Guardar"}
         </Button>
       </div>
@@ -139,6 +214,8 @@ export function TransferConfigManager() {
   const configQuery = useTransferConfig();
   const alias = configQuery.data?.transferAlias ?? "";
   const holder = configQuery.data?.transferHolder ?? "";
+  const mode = configQuery.data?.depositMode ?? "DEPOSIT";
+  const percent = configQuery.data?.depositPercent ?? 25;
 
   return (
     <section className="flex flex-col gap-4">
@@ -160,7 +237,13 @@ export function TransferConfigManager() {
       ) : (
         // Remount with fresh useState when the saved values change (e.g. after a
         // save), instead of syncing server data into state via an effect.
-        <TransferConfigForm key={`${alias}|${holder}`} initialAlias={alias} initialHolder={holder} />
+        <TransferConfigForm
+          key={`${alias}|${holder}|${mode}|${percent}`}
+          initialAlias={alias}
+          initialHolder={holder}
+          initialMode={mode}
+          initialPercent={percent}
+        />
       )}
     </section>
   );

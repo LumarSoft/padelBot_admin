@@ -1,12 +1,20 @@
 import { apiClient } from "@/lib/api/client";
 import type {
+  ClubProfile,
   ConnectMercadoPagoResponse,
   MercadoPagoStatus,
   TransferConfig,
+  UpdateClubProfileRequest,
   UpdateTransferConfigRequest,
 } from "@/types/api/clubs";
 
 export const clubsService = {
+  getProfile(): Promise<ClubProfile> {
+    return apiClient.get<ClubProfile>("/api/clubs/profile");
+  },
+  updateProfile(body: UpdateClubProfileRequest): Promise<ClubProfile> {
+    return apiClient.patch<ClubProfile>("/api/clubs/profile", body);
+  },
   getTransferConfig(): Promise<TransferConfig> {
     return apiClient.get<TransferConfig>("/api/clubs/transfer-config");
   },

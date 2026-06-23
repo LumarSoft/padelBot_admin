@@ -10,13 +10,8 @@ import { getSession } from "@/lib/session";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { PendingPayments } from "@/features/pagos/components/pending-payments";
-
-const STATS = [
-  { label: "Turnos hoy", value: "—" },
-  { label: "Reservas activas", value: "—" },
-  { label: "Chats abiertos", value: "—" },
-  { label: "Ocupación", value: "—" },
-];
+import { SetupChecklist } from "@/features/onboarding/components/setup-checklist";
+import { OverviewStats } from "@/features/dashboard/components/overview-stats";
 
 const SHORTCUTS = [
   {
@@ -55,20 +50,13 @@ export default async function OverviewPage() {
         description={`Esto es lo que pasa hoy en ${session?.clubName}.`}
       />
 
+      {session?.role === "owner" && (
+        <SetupChecklist clubName={session?.clubName} hideWhenComplete />
+      )}
+
       <PendingPayments />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {STATS.map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="p-5">
-              <p className="text-muted-foreground text-sm">{stat.label}</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight">
-                {stat.value}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <OverviewStats />
 
       <div className="flex flex-col gap-4">
         <h2 className="text-sm font-medium">Accesos rápidos</h2>
