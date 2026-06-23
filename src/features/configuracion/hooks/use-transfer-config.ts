@@ -5,7 +5,11 @@ import { toast } from "sonner";
 import { clubsService } from "@/services/clubs.service";
 import { queryKeys } from "@/lib/query-keys";
 import { ApiError } from "@/lib/api/api-error";
-import type { TransferConfig, UpdateTransferConfigRequest } from "@/types/api/clubs";
+import type {
+  MercadoPagoStatus,
+  TransferConfig,
+  UpdateTransferConfigRequest,
+} from "@/types/api/clubs";
 
 export function useTransferConfig() {
   return useQuery<TransferConfig>({
@@ -22,6 +26,37 @@ export function useUpdateTransferConfig() {
     onSuccess: (config) => {
       queryClient.setQueryData(queryKeys.clubs.transferConfig, config);
       toast.success("Datos de cobro actualizados");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+}
+
+export function useMercadoPagoStatus() {
+  return useQuery<MercadoPagoStatus>({
+    queryKey: queryKeys.clubs.mercadopago,
+    queryFn: () => clubsService.getMercadoPagoStatus(),
+  });
+}
+
+export function useConnectMercadoPago() {
+  return useMutation<{ url: string }, ApiError, void>({
+    mutationFn: () => clubsService.connectMercadoPago(),
+    // Redirect the owner's browser to MercadoPago to authorize.
+    onSuccess: ({ url }) => {
+      window.location.href = url;
+    },
+    onError: (error) => toast.error(error.message),
+  });
+}
+
+export function useDisconnectMercadoPago() {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ disconnected: true }, ApiError, void>({
+    mutationFn: () => clubsService.disconnectMercadoPago(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clubs.mercadopago });
+      toast.success("MercadoPago desconectado");
     },
     onError: (error) => toast.error(error.message),
   });

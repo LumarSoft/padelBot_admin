@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { Loader2 } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { CheckCircle2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  useConnectMercadoPago,
+  useDisconnectMercadoPago,
+  useMercadoPagoStatus,
   useTransferConfig,
   useUpdateTransferConfig,
 } from "@/features/configuracion/hooks/use-transfer-config";
@@ -64,6 +69,72 @@ function TransferConfigForm({
   );
 }
 
+function MercadoPagoConnect() {
+  const statusQuery = useMercadoPagoStatus();
+  const connect = useConnectMercadoPago();
+  const disconnect = useDisconnectMercadoPago();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Show a toast when MercadoPago redirects back after the OAuth flow, then clean the URL.
+  useEffect(() => {
+    const result = searchParams.get("mp");
+    if (!result) return;
+    if (result === "connected") {
+      toast.success("MercadoPago conectado");
+      void statusQuery.refetch();
+    } else if (result === "error") {
+      toast.error("No se pudo conectar MercadoPago. Intentá de nuevo.");
+    }
+    router.replace("/configuracion");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const connected = statusQuery.data?.connected ?? false;
+
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border p-4 sm:max-w-md">
+      <div>
+        <h3 className="text-sm font-semibold">Cuenta de MercadoPago</h3>
+        <p className="text-muted-foreground text-sm">
+          Conectá la cuenta de MercadoPago del club para que la seña se acredite en tu cuenta y el
+          bot confirme las reservas automáticamente al recibir la transferencia.
+        </p>
+      </div>
+
+      {statusQuery.isLoading ? (
+        <div className="text-muted-foreground flex items-center gap-2 py-2 text-sm">
+          <Loader2 className="size-4 animate-spin" />
+          Verificando conexión…
+        </div>
+      ) : connected ? (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-emerald-600">
+            <CheckCircle2 className="size-4" />
+            MercadoPago conectado
+          </div>
+          <div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => disconnect.mutate()}
+              disabled={disconnect.isPending}
+            >
+              {disconnect.isPending ? "Desconectando…" : "Desconectar"}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <Button type="button" onClick={() => connect.mutate()} disabled={connect.isPending}>
+            {connect.isPending ? "Redirigiendo…" : "Conectar MercadoPago"}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function TransferConfigManager() {
   const configQuery = useTransferConfig();
   const alias = configQuery.data?.transferAlias ?? "";
@@ -78,6 +149,8 @@ export function TransferConfigManager() {
           el bot no puede tomar pagos y le pide al jugador que escriba al club.
         </p>
       </div>
+
+      <MercadoPagoConnect />
 
       {configQuery.isLoading ? (
         <div className="text-muted-foreground flex items-center gap-2 py-6 text-sm">

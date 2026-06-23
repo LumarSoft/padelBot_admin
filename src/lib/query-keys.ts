@@ -25,6 +25,7 @@ export const queryKeys = {
   },
   clubs: {
     transferConfig: ["clubs", "transfer-config"] as const,
+    mercadopago: ["clubs", "mercadopago"] as const,
   },
   conversations: {
     all: ["conversations"] as const,
