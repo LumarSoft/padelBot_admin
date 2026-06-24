@@ -14,7 +14,7 @@ export function LandingHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/70 backdrop-blur-md">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
-        <Link href="/" aria-label="Canchea — inicio">
+        <Link href="/" aria-label="PadelBot — inicio">
           <BrandWordmark />
         </Link>
 

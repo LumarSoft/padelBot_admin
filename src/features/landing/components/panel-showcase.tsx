@@ -39,7 +39,7 @@ function PanelMock() {
         <span className="size-2.5 rounded-full bg-amber-400/70" />
         <span className="size-2.5 rounded-full bg-emerald-500/70" />
         <span className="text-muted-foreground ml-3 text-xs font-medium">
-          panel.canchea.com.ar
+          panel.padelbot.com.ar
         </span>
       </div>
 

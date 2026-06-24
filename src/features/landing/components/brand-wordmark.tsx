@@ -1,9 +1,8 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Canchea brand mark for the public landing — a rounded brand tile with a
- * "ball" plus the product wordmark. Mirrors the in-app Logo visual language but
- * carries the product name (Canchea) rather than the internal "PadelBot".
+ * PadelBot brand mark for the public landing — a rounded brand tile with a
+ * "ball" plus the product wordmark. Mirrors the in-app Logo visual language.
  */
 export function BrandWordmark({
   className,
@@ -18,7 +17,7 @@ export function BrandWordmark({
         <span className="bg-brand-foreground size-3 rounded-full" />
       </span>
       {showWordmark && (
-        <span className="text-lg font-semibold tracking-tight">Canchea</span>
+        <span className="text-lg font-semibold tracking-tight">PadelBot</span>
       )}
     </span>
   );

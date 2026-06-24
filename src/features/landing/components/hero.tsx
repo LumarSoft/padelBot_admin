@@ -126,7 +126,7 @@ export function Hero() {
           </h1>
 
           <p className="hero-reveal text-muted-foreground max-w-xl text-lg text-pretty">
-            Canchea es el asistente que atiende a tus jugadores por WhatsApp:
+            PadelBot es el asistente que atiende a tus jugadores por WhatsApp:
             reserva el turno, pide la seña y concilia el pago de MercadoPago
             solo. Vos lo mirás todo desde un panel, en tiempo real.
           </p>

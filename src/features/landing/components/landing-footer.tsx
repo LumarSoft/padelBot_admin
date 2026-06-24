@@ -51,7 +51,7 @@ export function LandingFooter() {
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground text-sm transition-colors"
             >
-              Quiero Canchea
+              Quiero PadelBot
             </a>
           </div>
 
@@ -78,7 +78,7 @@ export function LandingFooter() {
 
         <div className="flex flex-col items-center justify-between gap-3 border-t border-border/60 pt-6 text-sm text-muted-foreground sm:flex-row">
           <p>
-            © {new Date().getFullYear()} Canchea · un producto de Lumarsoft
+            © {new Date().getFullYear()} PadelBot · un producto de Lumarsoft
           </p>
           <p>Hecho en Argentina 🧉</p>
         </div>

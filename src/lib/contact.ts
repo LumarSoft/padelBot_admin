@@ -19,12 +19,12 @@ export const LUMARSOFT = {
 export type ContactIntent = "help" | "demo" | "interested" | "hire" | "whatsapp-setup";
 
 const INTENT_MESSAGE: Record<ContactIntent, string> = {
-  help: "Hola Lumarsoft, necesito ayuda configurando mi complejo en Canchea.",
-  demo: "Hola Lumarsoft, quiero una demo de Canchea para mi complejo de pádel.",
-  interested: "Hola Lumarsoft, estoy interesado en Canchea para mi complejo de pádel.",
-  hire: "Hola Lumarsoft, quiero contratar Canchea para mi complejo.",
+  help: "Hola Lumarsoft, necesito ayuda configurando mi complejo en PadelBot.",
+  demo: "Hola Lumarsoft, quiero una demo de PadelBot para mi complejo de pádel.",
+  interested: "Hola Lumarsoft, estoy interesado en PadelBot para mi complejo de pádel.",
+  hire: "Hola Lumarsoft, quiero contratar PadelBot para mi complejo.",
   "whatsapp-setup":
-    "Hola Lumarsoft, quiero conectar mi línea de WhatsApp a Canchea.",
+    "Hola Lumarsoft, quiero conectar mi línea de WhatsApp a PadelBot.",
 };
 
 /** wa.me deep link to Lumarsoft with a message pre-filled for the given intent. */
@@ -34,7 +34,7 @@ export function lumarsoftWhatsApp(intent: ContactIntent = "help"): string {
 
 /** mailto link to Lumarsoft with a subject/body pre-filled for the given intent. */
 export function lumarsoftEmail(intent: ContactIntent = "help"): string {
-  const subject = "Canchea — consulta";
+  const subject = "PadelBot — consulta";
   const body = INTENT_MESSAGE[intent];
   return `mailto:${LUMARSOFT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }

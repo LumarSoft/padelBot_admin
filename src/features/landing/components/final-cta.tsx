@@ -16,7 +16,7 @@ export function FinalCta() {
               ¿Listo para que tu cancha se reserve sola?
             </h2>
             <p className="text-muted-foreground text-lg text-pretty">
-              Te mostramos Canchea funcionando con tu complejo en una demo de 15
+              Te mostramos PadelBot funcionando con tu complejo en una demo de 15
               minutos. Sin compromiso.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">

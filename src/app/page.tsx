@@ -13,7 +13,7 @@ import { FinalCta } from "@/features/landing/components/final-cta";
 import { LandingFooter } from "@/features/landing/components/landing-footer";
 
 export const metadata: Metadata = {
-  title: "Canchea — Reservá canchas de pádel por WhatsApp",
+  title: "PadelBot — Reservá canchas de pádel por WhatsApp",
   description:
     "El asistente con IA que atiende a tus jugadores por WhatsApp: reserva el turno, cobra la seña y concilia los pagos de MercadoPago solo. Vos lo controlás todo desde un panel en tiempo real.",
 };

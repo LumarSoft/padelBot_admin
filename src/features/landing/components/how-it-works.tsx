@@ -15,7 +15,7 @@ const STEPS = [
   {
     icon: BadgeCheck,
     title: "Llega el pago y se confirma solo",
-    text: "Canchea concilia la transferencia, confirma el turno y lo muestra en tu panel en tiempo real. Listo.",
+    text: "PadelBot concilia la transferencia, confirma el turno y lo muestra en tu panel en tiempo real. Listo.",
   },
 ];
 

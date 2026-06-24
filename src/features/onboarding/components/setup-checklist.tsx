@@ -75,8 +75,8 @@ export function SetupChecklist({
       icon: Building2,
       title: "Datos del complejo",
       description: clubName
-        ? `${clubName} ya está creado en Canchea.`
-        : "Tu complejo ya está creado en Canchea.",
+        ? `${clubName} ya está creado en PadelBot.`
+        : "Tu complejo ya está creado en PadelBot.",
       state: "done",
     },
     {
