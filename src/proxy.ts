@@ -8,21 +8,25 @@ import { SESSION_COOKIE_NAME } from "@/lib/env";
  * authorization happens in the API and in server components (see lib/session).
  */
 
-const PUBLIC_ROUTES = ["/login"];
+// Open to everyone, signed in or not (the public marketing landing).
+const PUBLIC_ROUTES = ["/"];
+// Only for logged-out users; a signed-in visitor is bounced to the panel.
+const AUTH_ROUTES = ["/login"];
 
 export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
   const hasSession = Boolean(request.cookies.get(SESSION_COOKIE_NAME)?.value);
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  const isAuthRoute = AUTH_ROUTES.includes(pathname);
 
-  // Not signed in and trying to reach a protected route → go to /login.
-  if (!hasSession && !isPublicRoute) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  // Signed in but on an auth route (login) → go to the panel.
+  if (hasSession && isAuthRoute) {
+    return NextResponse.redirect(new URL("/panel", request.url));
   }
 
-  // Signed in but on a public (auth) route → go to the dashboard.
-  if (hasSession && isPublicRoute) {
-    return NextResponse.redirect(new URL("/", request.url));
+  // Not signed in and trying to reach a protected route → go to /login.
+  if (!hasSession && !isPublicRoute && !isAuthRoute) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();

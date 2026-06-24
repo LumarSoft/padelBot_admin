@@ -186,7 +186,7 @@ function MercadoPagoConnect() {
     } else if (result === "error") {
       toast.error("No se pudo conectar MercadoPago. Intentá de nuevo.");
     }
-    router.replace("/configuracion");
+    router.replace("/panel/configuracion");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 

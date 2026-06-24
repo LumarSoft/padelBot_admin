@@ -14,25 +14,25 @@ import { OverviewStats } from "@/features/dashboard/components/overview-stats";
 
 const SHORTCUTS = [
   {
-    href: "/turnos",
+    href: "/panel/turnos",
     title: "Turnos",
     description: "Administrá canchas, horarios y precios.",
     icon: CalendarClock,
   },
   {
-    href: "/reservas",
+    href: "/panel/reservas",
     title: "Reservas",
     description: "Revisá estados, editá y cancelá reservas.",
     icon: CalendarCheck,
   },
   {
-    href: "/conversaciones",
+    href: "/panel/conversaciones",
     title: "Conversaciones",
     description: "Seguí el bot y tomá el control cuando haga falta.",
     icon: MessagesSquare,
   },
   {
-    href: "/configuracion",
+    href: "/panel/configuracion",
     title: "Configuración",
     description: "Datos del club y conexión de WhatsApp.",
     icon: Settings,

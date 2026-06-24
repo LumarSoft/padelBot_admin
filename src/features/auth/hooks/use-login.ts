@@ -18,7 +18,7 @@ export function useLogin() {
     onSuccess: (user) => {
       setUser(user);
       toast.success(`Bienvenido, ${user.name}`);
-      router.replace("/");
+      router.replace("/panel");
     },
     onError: (error) => {
       const message =

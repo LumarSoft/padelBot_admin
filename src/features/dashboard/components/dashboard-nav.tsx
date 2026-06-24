@@ -20,19 +20,23 @@ interface NavItem {
 }
 
 const MAIN_NAV: NavItem[] = [
-  { href: "/", label: "Resumen", icon: LayoutDashboard },
-  { href: "/agenda", label: "Agenda", icon: CalendarDays },
-  { href: "/pagos", label: "Pagos", icon: Wallet },
-  { href: "/conversaciones", label: "Conversaciones", icon: MessagesSquare },
+  { href: "/panel", label: "Resumen", icon: LayoutDashboard },
+  { href: "/panel/agenda", label: "Agenda", icon: CalendarDays },
+  { href: "/panel/pagos", label: "Pagos", icon: Wallet },
+  {
+    href: "/panel/conversaciones",
+    label: "Conversaciones",
+    icon: MessagesSquare,
+  },
 ];
 
 const ADMIN_NAV: NavItem[] = [
-  { href: "/configuracion", label: "Configuración", icon: Settings },
+  { href: "/panel/configuracion", label: "Configuración", icon: Settings },
 ];
 
 function isActive(pathname: string, href: string): boolean {
-  if (href === "/") {
-    return pathname === "/";
+  if (href === "/panel") {
+    return pathname === "/panel";
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -97,7 +101,7 @@ export function DashboardNav() {
           key={item.href}
           item={item}
           pathname={pathname}
-          badge={item.href === "/conversaciones" ? advisorCount : 0}
+          badge={item.href === "/panel/conversaciones" ? advisorCount : 0}
         />
       ))}
 

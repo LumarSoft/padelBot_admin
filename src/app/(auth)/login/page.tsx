@@ -11,7 +11,7 @@ export default async function LoginPage() {
   // Already signed in → straight to the dashboard.
   const session = await getSession();
   if (session) {
-    redirect("/");
+    redirect("/panel");
   }
 
   return <LoginForm />;

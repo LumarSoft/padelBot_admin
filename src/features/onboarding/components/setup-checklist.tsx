@@ -87,7 +87,7 @@ export function SetupChecklist({
         ? "Ya podés tomar señas por transferencia."
         : "Conectá MercadoPago o cargá tu alias para que el bot cobre la seña.",
       state: hasPayments ? "done" : "pending",
-      href: "/configuracion?tab=pagos",
+      href: "/panel/configuracion?tab=pagos",
       cta: "Configurar cobros",
     },
     {
@@ -98,7 +98,7 @@ export function SetupChecklist({
         ? "Tus canchas están cargadas y listas para recibir turnos."
         : "Creá tu primera cancha (preset pádel: 90 min, interior).",
       state: hasCourts ? "done" : "pending",
-      href: "/configuracion?tab=canchas",
+      href: "/panel/configuracion?tab=canchas",
       cta: "Cargar cancha",
     },
   ];
