@@ -41,6 +41,28 @@ export interface UpdateCourtRequest {
   courtType?: CourtType;
 }
 
+export interface PriceRule {
+  id: string;
+  courtId: string;
+  /** 0 = Sunday … 6 = Saturday, or null for every day. */
+  dayOfWeek: number | null;
+  /** "HH:MM" band start the price applies to. */
+  startTime: string;
+  priceCents: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePriceRuleRequest {
+  startTime: string;
+  priceCents: number;
+  dayOfWeek?: number | null;
+}
+
+export interface UpdatePriceRuleRequest {
+  priceCents: number;
+}
+
 export interface CreateSlotRequest {
   courtId: string;
   startsAt: string;

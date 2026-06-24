@@ -20,6 +20,8 @@ export interface ConversationSummary {
   playerName: string | null;
   mode: ConversationMode;
   state: string;
+  /** True when the player asked for a human advisor and no staff has replied yet. */
+  needsAdvisor: boolean;
   updatedAt: string;
   lastMessage: LastMessage | null;
 }

@@ -10,6 +10,8 @@ export interface RecurringBooking {
   playerPhone: string;
   priceCents: number;
   notes: string | null;
+  /** Block weekly occurrences only up to this day (ISO). Null = rolling window. */
+  untilDate: string | null;
   isActive: boolean;
   createdByUserId: number;
   createdAt: string;
@@ -26,6 +28,8 @@ export interface CreateRecurringBookingRequest {
   playerPhone: string;
   priceCents: number;
   notes?: string;
+  /** "YYYY-MM-DD" — block weekly occurrences only up to this day. Omit = rolling window. */
+  untilDate?: string;
 }
 
 export interface UpdateRecurringBookingRequest {

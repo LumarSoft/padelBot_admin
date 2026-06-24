@@ -17,6 +17,12 @@ export interface Booking {
   clubId: string;
   playerName: string;
   playerPhone: string | null;
+  /** DNI captured at booking for payer validation (digits), or null. */
+  playerDni: string | null;
+  /** CUIT/identification of who actually transferred (from MercadoPago), or null. */
+  payerCuit: string | null;
+  /** Email of who actually transferred, or null. */
+  payerEmail: string | null;
   status: BookingStatus;
   notes: string | null;
   recurringBookingId: string | null;

@@ -12,6 +12,9 @@ export const queryKeys = {
   courts: {
     all: ["courts"] as const,
   },
+  priceRules: {
+    byCourt: (courtId: string) => ["price-rules", courtId] as const,
+  },
   slots: {
     all: ["slots"] as const,
     list: (filters: SlotFilters) => ["slots", "list", filters] as const,

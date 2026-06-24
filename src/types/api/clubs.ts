@@ -10,6 +10,8 @@ export interface TransferConfig {
   depositMode: DepositMode;
   /** Seña as a percentage of the court price (1–100). Used when depositMode = DEPOSIT. */
   depositPercent: number;
+  /** When true, the bot asks the player's DNI and only auto-confirms if the payer's DNI matches. */
+  requireDniMatch: boolean;
 }
 
 export interface UpdateTransferConfigRequest {
@@ -17,6 +19,7 @@ export interface UpdateTransferConfigRequest {
   transferHolder?: string;
   depositMode?: DepositMode;
   depositPercent?: number;
+  requireDniMatch?: boolean;
 }
 
 export interface ClubProfile {

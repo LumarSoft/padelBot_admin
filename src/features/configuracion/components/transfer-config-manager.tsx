@@ -21,17 +21,20 @@ function TransferConfigForm({
   initialHolder,
   initialMode,
   initialPercent,
+  initialRequireDni,
 }: {
   initialAlias: string;
   initialHolder: string;
   initialMode: DepositMode;
   initialPercent: number;
+  initialRequireDni: boolean;
 }) {
   const updateConfig = useUpdateTransferConfig();
   const [alias, setAlias] = useState(initialAlias);
   const [holder, setHolder] = useState(initialHolder);
   const [mode, setMode] = useState<DepositMode>(initialMode);
   const [percent, setPercent] = useState(String(initialPercent));
+  const [requireDni, setRequireDni] = useState(initialRequireDni);
 
   const trimmedAlias = alias.trim();
   const trimmedHolder = holder.trim();
@@ -42,7 +45,8 @@ function TransferConfigForm({
     trimmedAlias === initialAlias &&
     trimmedHolder === initialHolder &&
     mode === initialMode &&
-    percentNumber === initialPercent;
+    percentNumber === initialPercent &&
+    requireDni === initialRequireDni;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -51,6 +55,7 @@ function TransferConfigForm({
       transferAlias: trimmedAlias,
       transferHolder: trimmedHolder,
       depositMode: mode,
+      requireDniMatch: requireDni,
       ...(mode === "DEPOSIT" ? { depositPercent: percentNumber } : {}),
     });
   }
@@ -117,7 +122,7 @@ function TransferConfigForm({
             inputMode="numeric"
             min={1}
             max={100}
-            step={5}
+            step={1}
             value={percent}
             onChange={(e) => setPercent(e.target.value)}
             disabled={updateConfig.isPending}
@@ -127,6 +132,26 @@ function TransferConfigForm({
           </p>
         </div>
       )}
+
+      <div className="flex flex-col gap-2 border-t pt-4">
+        <label className="flex cursor-pointer items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={requireDni}
+            onChange={(e) => setRequireDni(e.target.checked)}
+            disabled={updateConfig.isPending}
+            className="mt-0.5 accent-[var(--brand)]"
+          />
+          <span>
+            <span className="font-medium">Exigir DNI del titular</span>
+            <span className="text-muted-foreground block text-xs">
+              El bot pide el DNI al reservar y solo confirma solo si quien transfiere es el mismo
+              titular. El importe pasa a ser redondo (sin centavos). Si no coincide, queda para
+              revisión manual.
+            </span>
+          </span>
+        </label>
+      </div>
 
       <div>
         <Button
@@ -216,6 +241,7 @@ export function TransferConfigManager() {
   const holder = configQuery.data?.transferHolder ?? "";
   const mode = configQuery.data?.depositMode ?? "DEPOSIT";
   const percent = configQuery.data?.depositPercent ?? 25;
+  const requireDni = configQuery.data?.requireDniMatch ?? false;
 
   return (
     <section className="flex flex-col gap-4">
@@ -238,11 +264,12 @@ export function TransferConfigManager() {
         // Remount with fresh useState when the saved values change (e.g. after a
         // save), instead of syncing server data into state via an effect.
         <TransferConfigForm
-          key={`${alias}|${holder}|${mode}|${percent}`}
+          key={`${alias}|${holder}|${mode}|${percent}|${requireDni}`}
           initialAlias={alias}
           initialHolder={holder}
           initialMode={mode}
           initialPercent={percent}
+          initialRequireDni={requireDni}
         />
       )}
     </section>

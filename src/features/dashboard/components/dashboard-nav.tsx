@@ -7,9 +7,11 @@ import {
   MessagesSquare,
   Settings,
   LayoutDashboard,
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
+import { useConversations } from "@/features/conversations/hooks/use-conversations";
 
 interface NavItem {
   href: string;
@@ -20,6 +22,7 @@ interface NavItem {
 const MAIN_NAV: NavItem[] = [
   { href: "/", label: "Resumen", icon: LayoutDashboard },
   { href: "/agenda", label: "Agenda", icon: CalendarDays },
+  { href: "/pagos", label: "Pagos", icon: Wallet },
   { href: "/conversaciones", label: "Conversaciones", icon: MessagesSquare },
 ];
 
@@ -34,7 +37,15 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
+function NavLink({
+  item,
+  pathname,
+  badge = 0,
+}: {
+  item: NavItem;
+  pathname: string;
+  badge?: number;
+}) {
   const active = isActive(pathname, item.href);
   const Icon = item.icon;
 
@@ -60,7 +71,12 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
             : "text-muted-foreground group-hover:text-foreground",
         )}
       />
-      {item.label}
+      <span className="flex-1">{item.label}</span>
+      {badge > 0 && (
+        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[11px] font-semibold text-white tabular-nums">
+          {badge}
+        </span>
+      )}
     </Link>
   );
 }
@@ -68,6 +84,8 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
 export function DashboardNav() {
   const pathname = usePathname();
   const role = useAuthStore((state) => state.user?.role);
+  const { data: conversations } = useConversations();
+  const advisorCount = (conversations ?? []).filter((c) => c.needsAdvisor).length;
 
   return (
     <nav className="flex flex-col gap-0.5 p-3">
@@ -75,7 +93,12 @@ export function DashboardNav() {
         Gestión
       </p>
       {MAIN_NAV.map((item) => (
-        <NavLink key={item.href} item={item} pathname={pathname} />
+        <NavLink
+          key={item.href}
+          item={item}
+          pathname={pathname}
+          badge={item.href === "/conversaciones" ? advisorCount : 0}
+        />
       ))}
 
       {role === "owner" && (

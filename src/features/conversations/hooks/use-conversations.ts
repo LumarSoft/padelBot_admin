@@ -11,7 +11,9 @@ export function useConversations() {
   return useQuery({
     queryKey: queryKeys.conversations.list,
     queryFn: () => conversationsService.list(),
-    refetchInterval: 30_000,
+    // Poll the list so new conversations / last messages surface without a reload.
+    refetchInterval: 12_000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -21,6 +23,9 @@ export function useConversationMessages(sessionId: string | null) {
     queryFn: () => conversationsService.getMessages(sessionId!),
     enabled: Boolean(sessionId),
     staleTime: 0,
+    // Poll the open thread so incoming messages appear live while it's open.
+    refetchInterval: 6_000,
+    refetchOnWindowFocus: true,
   });
 }
 

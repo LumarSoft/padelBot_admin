@@ -62,6 +62,7 @@ function PendingRow({
               {booking.playerPhone}
             </a>
           )}
+          {booking.playerDni && <span>DNI {booking.playerDni}</span>}
         </div>
       </div>
 
@@ -95,15 +96,35 @@ function PendingRow({
   );
 }
 
-export function PendingPayments() {
+export function PendingPayments({ alwaysShow = false }: { alwaysShow?: boolean } = {}) {
   const { data, isLoading } = useBookings({ status: "PENDING_PAYMENT" });
   const confirmPayment = useConfirmPayment();
   const rejectPayment = useRejectPayment();
 
   const pending = (data ?? []).slice().sort(byExpiry);
 
-  // Inbox pattern: stay out of the way until there's something to act on.
-  if (isLoading || pending.length === 0) return null;
+  if (isLoading && !alwaysShow) return null;
+
+  // Inbox pattern: on the overview, stay out of the way until there's something to act on.
+  if (pending.length === 0 && !alwaysShow) return null;
+
+  if (pending.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Wallet className="text-brand size-5" />
+            Pagos por confirmar
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-sm">
+            {isLoading ? "Cargando…" : "No hay pagos pendientes. ¡Todo al día! 🎾"}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const busyId = confirmPayment.isPending
     ? confirmPayment.variables

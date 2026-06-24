@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, UserCog } from "lucide-react";
+import { Bot, Headset, UserCog } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { ConversationSummary } from "@/types/api/conversations";
@@ -54,12 +54,21 @@ export function ConversationList({ conversations, selectedId, onSelect }: Props)
               className={cn(
                 "hover:bg-accent w-full cursor-pointer px-4 py-3 text-left transition-colors",
                 isSelected && "bg-accent",
+                conv.needsAdvisor &&
+                  !isSelected &&
+                  "bg-amber-500/10 hover:bg-amber-500/15",
               )}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span className="truncate font-medium text-sm">{displayName}</span>
+                    {conv.needsAdvisor && (
+                      <Badge className="bg-amber-500 px-1.5 py-0 text-[10px] text-white">
+                        <Headset className="mr-0.5 size-2.5" />
+                        Pide asesor
+                      </Badge>
+                    )}
                     {conv.mode === "HUMAN" ? (
                       <Badge
                         variant="outline"

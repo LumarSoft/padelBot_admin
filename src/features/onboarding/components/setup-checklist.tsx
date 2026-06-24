@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   CircleDashed,
   Loader2,
-  MessageCircle,
   Wallet,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,7 +15,6 @@ import {
   useMercadoPagoStatus,
   useTransferConfig,
 } from "@/features/configuracion/hooks/use-transfer-config";
-import { lumarsoftWhatsApp } from "@/lib/contact";
 import { cn } from "@/lib/utils";
 
 type StepState = "done" | "pending" | "manual";
@@ -80,16 +78,6 @@ export function SetupChecklist({
         ? `${clubName} ya está creado en Canchea.`
         : "Tu complejo ya está creado en Canchea.",
       state: "done",
-    },
-    {
-      key: "whatsapp",
-      icon: MessageCircle,
-      title: "Conectar WhatsApp",
-      description:
-        "Conectamos la línea de WhatsApp de tu complejo para que el bot atienda. Lo hacemos con vos.",
-      state: "manual",
-      contactHref: lumarsoftWhatsApp("whatsapp-setup"),
-      cta: "Coordinar por WhatsApp",
     },
     {
       key: "payments",
@@ -170,17 +158,6 @@ export function SetupChecklist({
                 >
                   {step.cta}
                 </Link>
-              )}
-              {step.state === "manual" && step.contactHref && (
-                <a
-                  href={step.contactHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:bg-accent inline-flex shrink-0 items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors"
-                >
-                  <MessageCircle className="size-3.5" />
-                  {step.cta}
-                </a>
               )}
             </li>
           ))}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { CalendarClock, Loader2, Pencil, Trash2 } from "lucide-react";
+import { CalendarClock, DollarSign, Loader2, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,7 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatPrice } from "@/lib/format";
 import { CreateCourtDialog } from "@/features/turnos/components/create-court-dialog";
+import { PriceRulesDialog } from "@/features/configuracion/components/price-rules-dialog";
 import {
   useCourts,
   useUpdateCourt,
@@ -161,6 +162,7 @@ export function CourtsManager() {
   const courtsQuery = useCourts();
   const deleteCourt = useDeleteCourt();
   const [editingCourt, setEditingCourt] = useState<Court | null>(null);
+  const [pricingCourt, setPricingCourt] = useState<Court | null>(null);
 
   const courts = courtsQuery.data ?? [];
 
@@ -235,6 +237,15 @@ export function CourtsManager() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={`Precios por horario de ${court.name}`}
+                        onClick={() => setPricingCourt(court)}
+                        className="text-muted-foreground hover:text-foreground size-8"
+                      >
+                        <DollarSign className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         aria-label={`Editar ${court.name}`}
                         onClick={() => setEditingCourt(court)}
                         className="text-muted-foreground hover:text-foreground size-8"
@@ -266,6 +277,16 @@ export function CourtsManager() {
           open={!!editingCourt}
           onOpenChange={(open) => {
             if (!open) setEditingCourt(null);
+          }}
+        />
+      )}
+
+      {pricingCourt && (
+        <PriceRulesDialog
+          court={pricingCourt}
+          open={!!pricingCourt}
+          onOpenChange={(open) => {
+            if (!open) setPricingCourt(null);
           }}
         />
       )}

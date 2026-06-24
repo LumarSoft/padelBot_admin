@@ -9,10 +9,10 @@ import { waLink } from "@/lib/whatsapp";
  */
 export const LUMARSOFT = {
   /** WhatsApp number in international format (digits only; "+" is stripped by waLink). */
-  whatsapp: "5493410000000",
+  whatsapp: "5493416956364",
   email: "hola@lumarsoft.com.ar",
   /** Human-readable number for display. */
-  whatsappDisplay: "+54 9 341 000-0000",
+  whatsappDisplay: "+54 9 341 695-6364",
 } as const;
 
 /** Why an owner is reaching out — shapes the pre-filled WhatsApp message. */

@@ -33,7 +33,7 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatPrice } from "@/lib/format";
 import { useCourts } from "@/features/turnos/hooks/use-courts";
-import { generateSchedule } from "@/features/agenda/lib/schedule";
+import { generateSchedule, todayKey } from "@/features/agenda/lib/schedule";
 import {
   useRecurringBookings,
   useCreateRecurringBooking,
@@ -66,6 +66,7 @@ function CreateRecurringDialog({ courts }: { courts: Court[] }) {
   const [playerName, setPlayerName] = useState("");
   const [playerPhone, setPlayerPhone] = useState("");
   const [price, setPrice] = useState(() => String((courts[0]?.priceCents ?? 0) / 100));
+  const [untilDate, setUntilDate] = useState("");
   const createRecurring = useCreateRecurringBooking();
 
   const selectedCourt = courts.find((c) => c.id === courtId);
@@ -91,6 +92,7 @@ function CreateRecurringDialog({ courts }: { courts: Court[] }) {
     setPlayerName("");
     setPlayerPhone("");
     setPrice(String((courts[0]?.priceCents ?? 0) / 100));
+    setUntilDate("");
   }
 
   function handleCourtChange(value: string | null) {
@@ -114,6 +116,7 @@ function CreateRecurringDialog({ courts }: { courts: Court[] }) {
         playerName: playerName.trim(),
         playerPhone: playerPhone.trim(),
         priceCents: Math.round(priceNumber * 100),
+        ...(untilDate ? { untilDate } : {}),
       },
       {
         onSuccess: () => {
@@ -140,8 +143,8 @@ function CreateRecurringDialog({ courts }: { courts: Court[] }) {
         <DialogHeader>
           <DialogTitle>Nuevo turno fijo</DialogTitle>
           <DialogDescription>
-            Se repite todas las semanas y se aplica automáticamente a los turnos libres
-            que coincidan.
+            Se repite todas las semanas y bloquea esos horarios automáticamente (quedan
+            reservados, sin pedir seña). Solo se cargan desde el panel, nunca por el bot.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -229,18 +232,32 @@ function CreateRecurringDialog({ courts }: { courts: Court[] }) {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="rb-price">Precio (ARS)</Label>
-            <Input
-              id="rb-price"
-              type="number"
-              inputMode="numeric"
-              min={0}
-              step={500}
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              disabled={createRecurring.isPending}
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="rb-price">Precio (ARS)</Label>
+              <Input
+                id="rb-price"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={500}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                disabled={createRecurring.isPending}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="rb-until">Bloquear hasta</Label>
+              <Input
+                id="rb-until"
+                type="date"
+                min={todayKey()}
+                value={untilDate}
+                onChange={(e) => setUntilDate(e.target.value)}
+                disabled={createRecurring.isPending}
+              />
+              <p className="text-muted-foreground text-xs">Opcional. Vacío = sin fecha de fin.</p>
+            </div>
           </div>
 
           <DialogFooter>
@@ -323,6 +340,15 @@ export function RecurringBookingsManager() {
                       <span className="text-muted-foreground text-xs">
                         {rb.slotStart} – {rb.slotEnd}
                       </span>
+                      {rb.untilDate && (
+                        <span className="text-muted-foreground text-xs">
+                          hasta{" "}
+                          {new Date(rb.untilDate).toLocaleDateString("es-AR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                          })}
+                        </span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>{rb.court.name}</TableCell>

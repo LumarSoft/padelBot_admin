@@ -9,7 +9,6 @@ import {
 import { getSession } from "@/lib/session";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { PendingPayments } from "@/features/pagos/components/pending-payments";
 import { SetupChecklist } from "@/features/onboarding/components/setup-checklist";
 import { OverviewStats } from "@/features/dashboard/components/overview-stats";
 
@@ -53,8 +52,6 @@ export default async function OverviewPage() {
       {session?.role === "owner" && (
         <SetupChecklist clubName={session?.clubName} hideWhenComplete />
       )}
-
-      <PendingPayments />
 
       <OverviewStats />
 
