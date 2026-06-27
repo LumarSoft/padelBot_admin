@@ -1,16 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MessagesSquare, Loader2 } from "lucide-react";
 import { useConversations } from "../hooks/use-conversations";
 import { ConversationList } from "./conversation-list";
 import { ConversationThread } from "./conversation-thread";
 
+/** Digits-only form so a `549…` waId and a `+54 9 …` phone still match. */
+function digits(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
 export function ConversationsScreen() {
   const { data: conversations, isLoading } = useConversations();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const selected = conversations?.find((c) => c.id === selectedId) ?? null;
+  // The open chat is driven by the URL (?waId=<phone>), so other screens (e.g. Pagos) can
+  // deep-link straight to a player's chat, and the selection survives a refresh / share.
+  const waIdParam = searchParams.get("waId");
+  const target = waIdParam ? digits(waIdParam) : null;
+  const selected = target
+    ? (conversations?.find((c) => digits(c.waId) === target) ?? null)
+    : null;
+  const selectedId = selected?.id ?? null;
+
+  function handleSelect(id: string): void {
+    const conv = conversations?.find((c) => c.id === id);
+    if (conv) router.replace(`/panel/conversaciones?waId=${conv.waId}`, { scroll: false });
+  }
 
   return (
     <div className="border-border bg-background flex h-[calc(100vh-8rem)] overflow-hidden rounded-xl border">
@@ -31,7 +49,7 @@ export function ConversationsScreen() {
             <ConversationList
               conversations={conversations ?? []}
               selectedId={selectedId}
-              onSelect={setSelectedId}
+              onSelect={handleSelect}
             />
           )}
         </div>

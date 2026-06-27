@@ -33,6 +33,10 @@ export interface Booking {
   transferAmountCents: number | null;
   /** When the pending transfer window expires (ISO). Null for admin-created bookings. */
   paymentExpiresAt: string | null;
+  /** When the player sent a transfer receipt photo (RECEIPT mode). Null until one arrives. */
+  receiptUploadedAt: string | null;
+  /** True when at least one receipt image is attached (RECEIPT mode → review it). */
+  hasReceipt: boolean;
   createdAt: string;
   updatedAt: string;
   slot: BookingSlot;

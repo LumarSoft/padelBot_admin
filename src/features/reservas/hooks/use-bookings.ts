@@ -12,10 +12,14 @@ import type {
   RescheduleBookingRequest,
 } from "@/types/api/bookings";
 
-export function useBookings(filters: BookingFilters = {}) {
+export function useBookings(
+  filters: BookingFilters = {},
+  options: { refetchInterval?: number } = {},
+) {
   return useQuery<Booking[]>({
     queryKey: queryKeys.bookings.list(filters),
     queryFn: () => bookingsService.list(filters),
+    refetchInterval: options.refetchInterval,
   });
 }
 

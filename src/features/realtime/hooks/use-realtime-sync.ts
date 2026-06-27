@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { queryKeys } from "@/lib/query-keys";
+import { primeAudio } from "@/features/realtime/lib/play-cash-sound";
 
 type BookingAction = "created" | "cancelled" | "rescheduled";
 
@@ -20,7 +21,13 @@ interface ConversationMessageEvent {
   playerName: string | null;
 }
 
-type AppEvent = BookingChangedEvent | ConversationMessageEvent;
+interface PaymentReceiptEvent {
+  type: "payment.receipt";
+  bookingId: string;
+  summary: string;
+}
+
+type AppEvent = BookingChangedEvent | ConversationMessageEvent | PaymentReceiptEvent;
 
 const TOAST_BY_ACTION: Record<BookingAction, (summary: string) => void> = {
   created: (s) => toast.success(`Nueva reserva: ${s}`),
@@ -39,6 +46,10 @@ export function useRealtimeSync(): void {
   const refetchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
+    // Unlock audio on the first real interaction so the cash sound is allowed to play later.
+    const unlock = () => primeAudio();
+    window.addEventListener("pointerdown", unlock, { once: true });
+
     const source = new EventSource("/api/events");
 
     source.onmessage = (message) => {
@@ -46,6 +57,14 @@ export function useRealtimeSync(): void {
       try {
         event = JSON.parse(message.data) as AppEvent;
       } catch {
+        return;
+      }
+
+      if (event.type === "payment.receipt") {
+        // Just refresh the data — the sound + toast are owned by usePaymentReceiptAlerts,
+        // which fires off the refreshed bookings (instant here, polled as a fallback). This
+        // keeps a single, reliable alert path and avoids double-ringing.
+        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
         return;
       }
 
@@ -75,6 +94,7 @@ export function useRealtimeSync(): void {
 
     return () => {
       clearTimeout(refetchTimer.current);
+      window.removeEventListener("pointerdown", unlock);
       source.close();
     };
   }, [queryClient]);
