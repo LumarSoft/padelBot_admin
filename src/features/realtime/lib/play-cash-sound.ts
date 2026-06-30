@@ -35,9 +35,19 @@ export function primeAudio(): void {
 /** Plays the bright two-note bell, repeated 3 times so it's hard to miss. */
 export function playCashSound(): void {
   const c = getCtx();
-  if (!c || !master) return;
-  if (c.state === "suspended") void c.resume();
+  const dest = master;
+  if (!c || !dest) return;
+  // A suspended context drops anything scheduled against it (e.g. right after the first user
+  // gesture), so wait for the resume to land before scheduling — otherwise the chime is silent.
+  if (c.state === "suspended") {
+    void c.resume().then(() => ring(c, dest));
+    return;
+  }
+  ring(c, dest);
+}
 
+/** Schedules the three "cha-ching" rings starting from the context's current time. */
+function ring(c: AudioContext, dest: AudioNode): void {
   const now = c.currentTime;
   const REPEATS = 3;
   const GAP = 0.42; // seconds between each "cha-ching"
@@ -45,8 +55,8 @@ export function playCashSound(): void {
   for (let r = 0; r < REPEATS; r++) {
     const start = now + r * GAP;
     // Two ascending notes per ring (the classic register "cha-ching").
-    bell(c, master, start, 1175); // D6
-    bell(c, master, start + 0.1, 1568); // G6
+    bell(c, dest, start, 1175); // D6
+    bell(c, dest, start + 0.1, 1568); // G6
   }
 }
 

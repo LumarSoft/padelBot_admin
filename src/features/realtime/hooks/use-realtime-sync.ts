@@ -4,7 +4,8 @@ import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { queryKeys } from "@/lib/query-keys";
-import { primeAudio } from "@/features/realtime/lib/play-cash-sound";
+import { primeAudio, playCashSound } from "@/features/realtime/lib/play-cash-sound";
+import { useSoundStore } from "@/features/realtime/stores/sound-store";
 
 type BookingAction = "created" | "cancelled" | "rescheduled";
 
@@ -27,7 +28,17 @@ interface PaymentReceiptEvent {
   summary: string;
 }
 
-type AppEvent = BookingChangedEvent | ConversationMessageEvent | PaymentReceiptEvent;
+interface PaymentConfirmedEvent {
+  type: "payment.confirmed";
+  summary: string;
+  source: "AUTO" | "MANUAL";
+}
+
+type AppEvent =
+  | BookingChangedEvent
+  | ConversationMessageEvent
+  | PaymentReceiptEvent
+  | PaymentConfirmedEvent;
 
 const TOAST_BY_ACTION: Record<BookingAction, (summary: string) => void> = {
   created: (s) => toast.success(`Nueva reserva: ${s}`),
@@ -65,6 +76,22 @@ export function useRealtimeSync(): void {
         // which fires off the refreshed bookings (instant here, polled as a fallback). This
         // keeps a single, reliable alert path and avoids double-ringing.
         queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+        return;
+      }
+
+      if (event.type === "payment.confirmed") {
+        // A payment just landed (auto-reconciled or confirmed by hand) — always ring the cash
+        // alert so staff hear it on any screen, then refresh the bookings/slots views.
+        if (!useSoundStore.getState().muted) playCashSound();
+        toast.success(`💰 ¡Pago confirmado! ${event.summary}`, {
+          description:
+            event.source === "AUTO"
+              ? "Se acreditó la transferencia y la reserva quedó asegurada."
+              : "La reserva quedó asegurada.",
+          duration: 8_000,
+        });
+        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.slots.all });
         return;
       }
 

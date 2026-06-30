@@ -22,18 +22,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCreateSlot } from "@/features/turnos/hooks/use-slots";
+import { todayKey, wallTimeToUtc } from "@/features/agenda/lib/schedule";
 import type { Court } from "@/types/api/turnos";
-
-function todayInputValue(): string {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60 * 1000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
-}
 
 export function CreateSlotDialog({ courts }: { courts: Court[] }) {
   const [open, setOpen] = useState(false);
   const [courtId, setCourtId] = useState(courts[0]?.id ?? "");
-  const [date, setDate] = useState(todayInputValue);
+  const [date, setDate] = useState(todayKey);
   const [start, setStart] = useState("18:00");
   const [end, setEnd] = useState("19:30");
   const [price, setPrice] = useState(() =>
@@ -59,8 +54,10 @@ export function CreateSlotDialog({ courts }: { courts: Court[] }) {
       return;
     }
 
-    const startsAt = new Date(`${date}T${start}`);
-    const endsAt = new Date(`${date}T${end}`);
+    // Build the instants in the club timezone (not the browser's) so they line up
+    // with the bot's availability grid — otherwise the bot can't see the slot.
+    const startsAt = wallTimeToUtc(date, start);
+    const endsAt = end === "00:00" ? wallTimeToUtc(date, "24:00") : wallTimeToUtc(date, end);
     if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) {
       setError("Revisá la fecha y los horarios.");
       return;

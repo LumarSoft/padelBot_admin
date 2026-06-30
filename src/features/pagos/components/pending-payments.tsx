@@ -110,6 +110,9 @@ function PaymentCard({
   const busy = busyId === booking.id;
   const anyBusy = busyId !== undefined;
   const needsReview = booking.hasReceipt;
+  // In RECEIPT mode the admin must verify the player's receipt image — block confirmation
+  // until one arrives (the bot asks for it). AUTO mode can always be confirmed by hand.
+  const canConfirm = !receiptMode || booking.hasReceipt;
 
   return (
     <div
@@ -221,7 +224,12 @@ function PaymentCard({
               <Button
                 size="sm"
                 onClick={() => onConfirm(booking.id)}
-                disabled={anyBusy}
+                disabled={anyBusy || !canConfirm}
+                title={
+                  canConfirm
+                    ? undefined
+                    : "Esperando el comprobante del jugador para poder confirmar"
+                }
                 className="bg-emerald-600 text-white hover:bg-emerald-600/90"
               >
                 {busy ? <Loader2 className="animate-spin" /> : <Check />}
