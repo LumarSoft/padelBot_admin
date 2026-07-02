@@ -1,6 +1,9 @@
 /** DEPOSIT = charge a seña (a % of the price); FULL = charge the whole court. */
 export type DepositMode = "DEPOSIT" | "FULL";
 
+/** AUTO = reconcile via MercadoPago; RECEIPT = player sends a receipt photo verified by hand. */
+export type PaymentVerificationMode = "AUTO" | "RECEIPT";
+
 export interface TransferConfig {
   /** MercadoPago alias/CVU players transfer the deposit to. */
   transferAlias: string | null;
@@ -12,6 +15,8 @@ export interface TransferConfig {
   depositPercent: number;
   /** When true, the bot asks the player's DNI and only auto-confirms if the payer's DNI matches. */
   requireDniMatch: boolean;
+  /** How the club verifies deposits: automatically (MercadoPago) or by receipt photo (manual). */
+  paymentVerificationMode: PaymentVerificationMode;
 }
 
 export interface UpdateTransferConfigRequest {
@@ -20,6 +25,7 @@ export interface UpdateTransferConfigRequest {
   depositMode?: DepositMode;
   depositPercent?: number;
   requireDniMatch?: boolean;
+  paymentVerificationMode?: PaymentVerificationMode;
 }
 
 export interface ClubProfile {

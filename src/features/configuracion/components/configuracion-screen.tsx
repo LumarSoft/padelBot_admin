@@ -33,7 +33,7 @@ export function ConfiguracionScreen({ clubName }: { clubName?: string }) {
 
   function handleChange(value: unknown): void {
     if (typeof value === "string" && isTabValue(value)) {
-      router.replace(`/configuracion?tab=${value}`, { scroll: false });
+      router.replace(`/panel/configuracion?tab=${value}`, { scroll: false });
     }
   }
 

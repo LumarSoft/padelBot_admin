@@ -5,7 +5,7 @@ import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { formatPrice, formatPriceExact, formatTime } from "@/lib/format";
+import { formatHourRange, formatPrice, formatPriceExact } from "@/lib/format";
 import { formatDniFromCuit } from "@/lib/identity";
 import { dayRange, shiftDay, todayKey } from "@/features/agenda/lib/schedule";
 import { useBookings } from "@/features/reservas/hooks/use-bookings";
@@ -96,7 +96,8 @@ export function ConfirmedPayments() {
                   <div className="min-w-0">
                     <p className="truncate font-medium">{booking.playerName}</p>
                     <p className="text-muted-foreground text-sm">
-                      {booking.slot.court.name} · {formatTime(booking.slot.startsAt)}
+                      {booking.slot.court.name} ·{" "}
+                      {formatHourRange(booking.slot.startsAt, booking.slot.endsAt)} hs
                     </p>
                     {(booking.payerCuit || booking.payerEmail) && (
                       <p className="text-muted-foreground mt-0.5 truncate text-xs">

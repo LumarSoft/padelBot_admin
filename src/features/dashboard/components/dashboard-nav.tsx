@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 import { useConversations } from "@/features/conversations/hooks/use-conversations";
+import { useBookings } from "@/features/reservas/hooks/use-bookings";
 
 interface NavItem {
   href: string;
@@ -45,10 +46,13 @@ function NavLink({
   item,
   pathname,
   badge = 0,
+  pulse = false,
 }: {
   item: NavItem;
   pathname: string;
   badge?: number;
+  /** When true, the badge pulses and uses the emerald "money" color to grab attention. */
+  pulse?: boolean;
 }) {
   const active = isActive(pathname, item.href);
   const Icon = item.icon;
@@ -77,7 +81,12 @@ function NavLink({
       />
       <span className="flex-1">{item.label}</span>
       {badge > 0 && (
-        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[11px] font-semibold text-white tabular-nums">
+        <span
+          className={cn(
+            "flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white tabular-nums",
+            pulse ? "animate-pulse bg-emerald-600 ring-2 ring-emerald-500/40" : "bg-amber-500",
+          )}
+        >
           {badge}
         </span>
       )}
@@ -90,6 +99,9 @@ export function DashboardNav() {
   const role = useAuthStore((state) => state.user?.role);
   const { data: conversations } = useConversations();
   const advisorCount = (conversations ?? []).filter((c) => c.needsAdvisor).length;
+  // Receipts waiting for the admin to verify (RECEIPT mode) — drives the pulsing Pagos badge.
+  const { data: pendingPayments } = useBookings({ status: "PENDING_PAYMENT" });
+  const receiptsToReview = (pendingPayments ?? []).filter((b) => b.hasReceipt).length;
 
   return (
     <nav className="flex flex-col gap-0.5 p-3">
@@ -101,7 +113,14 @@ export function DashboardNav() {
           key={item.href}
           item={item}
           pathname={pathname}
-          badge={item.href === "/panel/conversaciones" ? advisorCount : 0}
+          badge={
+            item.href === "/panel/conversaciones"
+              ? advisorCount
+              : item.href === "/panel/pagos"
+                ? receiptsToReview
+                : 0
+          }
+          pulse={item.href === "/panel/pagos" && receiptsToReview > 0}
         />
       ))}
 

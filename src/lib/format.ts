@@ -46,3 +46,14 @@ export function formatTime(iso: string): string {
 export function formatTimeRange(startIso: string, endIso: string): string {
   return `${formatTime(startIso)} – ${formatTime(endIso)}`;
 }
+
+const time24 = new Intl.DateTimeFormat("es-AR", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+/** Start/end ISO → "22:30 – 00:00" (24h), the unambiguous from/to for a booking slot. */
+export function formatHourRange(startIso: string, endIso: string): string {
+  return `${time24.format(new Date(startIso))} – ${time24.format(new Date(endIso))}`;
+}

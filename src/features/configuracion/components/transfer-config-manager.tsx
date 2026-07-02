@@ -14,7 +14,7 @@ import {
   useTransferConfig,
   useUpdateTransferConfig,
 } from "@/features/configuracion/hooks/use-transfer-config";
-import type { DepositMode } from "@/types/api/clubs";
+import type { DepositMode, PaymentVerificationMode } from "@/types/api/clubs";
 
 function TransferConfigForm({
   initialAlias,
@@ -22,12 +22,14 @@ function TransferConfigForm({
   initialMode,
   initialPercent,
   initialRequireDni,
+  initialVerificationMode,
 }: {
   initialAlias: string;
   initialHolder: string;
   initialMode: DepositMode;
   initialPercent: number;
   initialRequireDni: boolean;
+  initialVerificationMode: PaymentVerificationMode;
 }) {
   const updateConfig = useUpdateTransferConfig();
   const [alias, setAlias] = useState(initialAlias);
@@ -35,6 +37,8 @@ function TransferConfigForm({
   const [mode, setMode] = useState<DepositMode>(initialMode);
   const [percent, setPercent] = useState(String(initialPercent));
   const [requireDni, setRequireDni] = useState(initialRequireDni);
+  const [verificationMode, setVerificationMode] =
+    useState<PaymentVerificationMode>(initialVerificationMode);
 
   const trimmedAlias = alias.trim();
   const trimmedHolder = holder.trim();
@@ -46,7 +50,8 @@ function TransferConfigForm({
     trimmedHolder === initialHolder &&
     mode === initialMode &&
     percentNumber === initialPercent &&
-    requireDni === initialRequireDni;
+    requireDni === initialRequireDni &&
+    verificationMode === initialVerificationMode;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -56,6 +61,7 @@ function TransferConfigForm({
       transferHolder: trimmedHolder,
       depositMode: mode,
       requireDniMatch: requireDni,
+      paymentVerificationMode: verificationMode,
       ...(mode === "DEPOSIT" ? { depositPercent: percentNumber } : {}),
     });
   }
@@ -134,24 +140,65 @@ function TransferConfigForm({
       )}
 
       <div className="flex flex-col gap-2 border-t pt-4">
-        <label className="flex cursor-pointer items-start gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={requireDni}
-            onChange={(e) => setRequireDni(e.target.checked)}
-            disabled={updateConfig.isPending}
-            className="mt-0.5 accent-[var(--brand)]"
-          />
-          <span>
-            <span className="font-medium">Exigir DNI del titular</span>
-            <span className="text-muted-foreground block text-xs">
-              El bot pide el DNI al reservar y solo confirma solo si quien transfiere es el mismo
-              titular. El importe pasa a ser redondo (sin centavos). Si no coincide, queda para
-              revisión manual.
-            </span>
-          </span>
-        </label>
+        <Label>¿Cómo se confirma el pago?</Label>
+        <div className="flex flex-col gap-2">
+          {(
+            [
+              {
+                value: "AUTO",
+                label: "Automático con MercadoPago",
+                hint: "El bot detecta la transferencia y confirma la reserva solo, sin que hagas nada.",
+              },
+              {
+                value: "RECEIPT",
+                label: "El cliente envía el comprobante y yo confirmo",
+                hint: "El bot le pide una foto del comprobante. Te llega al panel (con sonido) y vos confirmás o rechazás.",
+              },
+            ] as const
+          ).map((option) => (
+            <label
+              key={option.value}
+              className="flex cursor-pointer items-start gap-2 text-sm"
+            >
+              <input
+                type="radio"
+                name="verification-mode"
+                value={option.value}
+                checked={verificationMode === option.value}
+                onChange={() => setVerificationMode(option.value)}
+                disabled={updateConfig.isPending}
+                className="mt-0.5 accent-[var(--brand)]"
+              />
+              <span>
+                <span className="font-medium">{option.label}</span>
+                <span className="text-muted-foreground block text-xs">{option.hint}</span>
+              </span>
+            </label>
+          ))}
+        </div>
       </div>
+
+      {verificationMode === "AUTO" && (
+        <div className="flex flex-col gap-2 border-t pt-4">
+          <label className="flex cursor-pointer items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={requireDni}
+              onChange={(e) => setRequireDni(e.target.checked)}
+              disabled={updateConfig.isPending}
+              className="mt-0.5 accent-[var(--brand)]"
+            />
+            <span>
+              <span className="font-medium">Exigir DNI del titular</span>
+              <span className="text-muted-foreground block text-xs">
+                El bot pide el DNI al reservar y solo confirma solo si quien transfiere es el mismo
+                titular. El importe pasa a ser redondo (sin centavos). Si no coincide, queda para
+                revisión manual.
+              </span>
+            </span>
+          </label>
+        </div>
+      )}
 
       <div>
         <Button
@@ -186,7 +233,8 @@ function MercadoPagoConnect() {
     } else if (result === "error") {
       toast.error("No se pudo conectar MercadoPago. Intentá de nuevo.");
     }
-    router.replace("/panel/configuracion");
+    // Stay on the Pagos tab where the connect button lives.
+    router.replace("/panel/configuracion?tab=pagos");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
@@ -242,6 +290,7 @@ export function TransferConfigManager() {
   const mode = configQuery.data?.depositMode ?? "DEPOSIT";
   const percent = configQuery.data?.depositPercent ?? 25;
   const requireDni = configQuery.data?.requireDniMatch ?? false;
+  const verificationMode = configQuery.data?.paymentVerificationMode ?? "AUTO";
 
   return (
     <section className="flex flex-col gap-4">
@@ -264,12 +313,13 @@ export function TransferConfigManager() {
         // Remount with fresh useState when the saved values change (e.g. after a
         // save), instead of syncing server data into state via an effect.
         <TransferConfigForm
-          key={`${alias}|${holder}|${mode}|${percent}|${requireDni}`}
+          key={`${alias}|${holder}|${mode}|${percent}|${requireDni}|${verificationMode}`}
           initialAlias={alias}
           initialHolder={holder}
           initialMode={mode}
           initialPercent={percent}
           initialRequireDni={requireDni}
+          initialVerificationMode={verificationMode}
         />
       )}
     </section>
