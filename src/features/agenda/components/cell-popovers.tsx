@@ -11,10 +11,12 @@ import {
   IdCard,
   Lock,
   RotateCcw,
+  ShoppingBasket,
   Trash2,
   Wallet,
   X,
 } from "lucide-react";
+import { AddProductsDialog } from "@/features/productos/components/add-products-dialog";
 import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -337,6 +339,8 @@ export function BookingActions({
   onDone: () => void;
 }) {
   const cancelBooking = useCancelBooking();
+  const [accountOpen, setAccountOpen] = useState(false);
+  const totalItems = booking.bookingProducts.reduce((s, p) => s + p.quantity, 0);
 
   function handleCancel() {
     if (
@@ -353,65 +357,87 @@ export function BookingActions({
     : booking.playerName;
 
   return (
-    <div className="flex flex-col gap-3">
-      <CardHeader
-        tone="brand"
-        disc={initials(booking.playerName)}
-        title={booking.playerName}
-        subtitle={
-          <>
-            {booking.slot.court.name} · {formatTimeRange(booking.slot.startsAt, booking.slot.endsAt)}
-          </>
-        }
-        badge={<RoleBadge booking={booking} isBot={isBot} />}
-      />
+    <>
+      <div className="flex flex-col gap-3">
+        <CardHeader
+          tone="brand"
+          disc={initials(booking.playerName)}
+          title={booking.playerName}
+          subtitle={
+            <>
+              {booking.slot.court.name} · {formatTimeRange(booking.slot.startsAt, booking.slot.endsAt)}
+            </>
+          }
+          badge={<RoleBadge booking={booking} isBot={isBot} />}
+        />
 
-      <div className="bg-muted/40 flex flex-col gap-1 rounded-lg px-2.5 py-2 text-xs">
-        <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">Precio</span>
-          <span className="font-medium">{formatPrice(booking.slot.priceCents)}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">Teléfono</span>
-          <span className="font-medium">{booking.playerPhone || "—"}</span>
-        </div>
-        {booking.playerDni && (
+        <div className="bg-muted/40 flex flex-col gap-1 rounded-lg px-2.5 py-2 text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">DNI</span>
-            <span className="font-medium">{booking.playerDni}</span>
+            <span className="text-muted-foreground">Precio</span>
+            <span className="font-medium">{formatPrice(booking.slot.priceCents)}</span>
           </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Teléfono</span>
+            <span className="font-medium">{booking.playerPhone || "—"}</span>
+          </div>
+          {booking.playerDni && (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">DNI</span>
+              <span className="font-medium">{booking.playerDni}</span>
+            </div>
+          )}
+        </div>
+
+        {booking.notes && (
+          <p className="text-muted-foreground text-xs italic">"{booking.notes}"</p>
         )}
-      </div>
 
-      {booking.notes && (
-        <p className="text-muted-foreground text-xs italic">“{booking.notes}”</p>
-      )}
+        {isPast && (
+          <p className="text-muted-foreground text-[11px]">Este turno ya pasó.</p>
+        )}
 
-      {isPast && (
-        <p className="text-muted-foreground text-[11px]">Este turno ya pasó.</p>
-      )}
+        <div className="flex items-center gap-2">
+          {booking.playerPhone && <WhatsAppLink phone={booking.playerPhone} />}
+          <CopyButton value={copyText} label="Copiar datos" />
+        </div>
 
-      <div className="flex items-center gap-2">
-        {booking.playerPhone && <WhatsAppLink phone={booking.playerPhone} />}
-        <CopyButton value={copyText} label="Copiar datos" />
-      </div>
-
-      <div className="flex gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={onReschedule} className="flex-1">
-          Reprogramar
-        </Button>
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="sm"
-          onClick={handleCancel}
-          disabled={cancelBooking.isPending}
-          className="text-muted-foreground hover:text-destructive flex-1"
+          onClick={() => setAccountOpen(true)}
+          className="w-full justify-start gap-2"
         >
-          {cancelBooking.isPending ? "Cancelando…" : "Cancelar"}
+          <ShoppingBasket className="size-3.5" />
+          {totalItems > 0 ? `Dividir cuenta (${totalItems})` : "Dividir cuenta"}
         </Button>
+
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={onReschedule} className="flex-1">
+            Reprogramar
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleCancel}
+            disabled={cancelBooking.isPending}
+            className="text-muted-foreground hover:text-destructive flex-1"
+          >
+            {cancelBooking.isPending ? "Cancelando…" : "Cancelar"}
+          </Button>
+        </div>
       </div>
-    </div>
+
+      <AddProductsDialog
+        bookingId={booking.id}
+        playerName={booking.playerName}
+        courtPriceCents={booking.slot.priceCents}
+        currentProducts={booking.bookingProducts}
+        open={accountOpen}
+        onOpenChange={setAccountOpen}
+      />
+    </>
   );
 }
 
@@ -422,7 +448,9 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
   const confirmPayment = useConfirmPayment();
   const rejectPayment = useRejectPayment();
   const { data: config } = useTransferConfig();
+  const [accountOpen, setAccountOpen] = useState(false);
   const busy = confirmPayment.isPending || rejectPayment.isPending;
+  const totalItems = booking.bookingProducts.reduce((s, p) => s + p.quantity, 0);
 
   const countdown = timeLeft(booking.paymentExpiresAt);
   const amount = booking.transferAmountCents ?? booking.depositCents;
@@ -439,6 +467,7 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
   }
 
   return (
+    <>
     <div className="flex flex-col gap-3">
       <CardHeader
         tone="amber"
@@ -496,6 +525,17 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
 
       {booking.playerPhone && <WhatsAppLink phone={booking.playerPhone} />}
 
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => setAccountOpen(true)}
+        className="w-full justify-start gap-2"
+      >
+        <ShoppingBasket className="size-3.5" />
+        {totalItems > 0 ? `Dividir cuenta (${totalItems})` : "Dividir cuenta"}
+      </Button>
+
       <div className="flex gap-2">
         <Button
           type="button"
@@ -521,6 +561,16 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
         </Button>
       </div>
     </div>
+
+    <AddProductsDialog
+      bookingId={booking.id}
+      playerName={booking.playerName}
+      courtPriceCents={booking.slot.priceCents}
+      currentProducts={booking.bookingProducts}
+      open={accountOpen}
+      onOpenChange={setAccountOpen}
+    />
+    </>
   );
 }
 
