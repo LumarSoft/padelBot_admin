@@ -35,6 +35,8 @@ export interface UpdateProductRequest {
 export interface BookingProductItem {
   productId: string;
   quantity: number;
+  /** Positions (1..4) of the players sharing this consumo line. [1,2,3,4] = split among all four. */
+  players: number[];
 }
 
 export interface SetBookingProductsRequest {

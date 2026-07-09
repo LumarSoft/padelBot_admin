@@ -66,16 +66,19 @@ function ConfirmedBookingRow({ booking }: { booking: Booking }) {
             type="button"
             onClick={() => setConsumosOpen(true)}
             className="text-muted-foreground hover:text-foreground mt-0.5 flex items-center gap-1 text-xs underline underline-offset-2 transition-colors"
-            title="Editar consumos"
+            title="Ver o dividir la cuenta del turno"
           >
             <ShoppingBasket className="size-3" />
-            {totalItems > 0 ? `${totalItems} ítem${totalItems !== 1 ? "s" : ""}` : "Agregar consumos"}
+            {totalItems > 0
+              ? `Dividir cuenta (${totalItems} ítem${totalItems !== 1 ? "s" : ""})`
+              : "Dividir cuenta"}
           </button>
         </div>
       </div>
       <AddProductsDialog
         bookingId={booking.id}
         playerName={booking.playerName}
+        courtPriceCents={booking.slot.priceCents}
         currentProducts={booking.bookingProducts}
         open={consumosOpen}
         onOpenChange={setConsumosOpen}

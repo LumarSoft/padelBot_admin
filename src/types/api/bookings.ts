@@ -7,6 +7,8 @@ export interface BookingProductEntry {
   id: string;
   quantity: number;
   unitPriceCents: number;
+  /** Positions (1..4) of the players sharing this consumo line. [1,2,3,4] = split among all four. */
+  players: number[];
   product: { id: string; name: string; category: ProductCategory };
 }
 

@@ -220,12 +220,12 @@ function PaymentCard({
                 size="sm"
                 onClick={() => setConsumosOpen(true)}
                 className="text-muted-foreground hover:text-foreground"
-                title="Registrar consumos del turno"
+                title="Ver o dividir la cuenta del turno"
               >
                 <ShoppingBasket className="size-4" />
                 {booking.bookingProducts.length > 0
-                  ? `Consumos (${booking.bookingProducts.reduce((s, p) => s + p.quantity, 0)})`
-                  : "Consumos"}
+                  ? `Dividir cuenta (${booking.bookingProducts.reduce((s, p) => s + p.quantity, 0)})`
+                  : "Dividir cuenta"}
               </Button>
               <Button
                 variant="outline"
@@ -259,6 +259,7 @@ function PaymentCard({
       <AddProductsDialog
         bookingId={booking.id}
         playerName={booking.playerName}
+        courtPriceCents={booking.slot.priceCents}
         currentProducts={booking.bookingProducts}
         open={consumosOpen}
         onOpenChange={setConsumosOpen}
