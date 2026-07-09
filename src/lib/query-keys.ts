@@ -39,4 +39,8 @@ export const queryKeys = {
     list: ["conversations", "list"] as const,
     messages: (id: string) => ["conversations", "messages", id] as const,
   },
+  products: {
+    all: ["products"] as const,
+    list: ["products", "list"] as const,
+  },
 } as const;

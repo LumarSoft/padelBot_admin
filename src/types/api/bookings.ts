@@ -1,6 +1,14 @@
 import type { SlotStatus } from "@/types/api/turnos";
+import type { ProductCategory } from "@/types/api/products";
 
 export type BookingStatus = "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED";
+
+export interface BookingProductEntry {
+  id: string;
+  quantity: number;
+  unitPriceCents: number;
+  product: { id: string; name: string; category: ProductCategory };
+}
 
 export interface BookingSlot {
   id: string;
@@ -37,6 +45,8 @@ export interface Booking {
   receiptUploadedAt: string | null;
   /** True when at least one receipt image is attached (RECEIPT mode → review it). */
   hasReceipt: boolean;
+  /** Products consumed during this court session. */
+  bookingProducts: BookingProductEntry[];
   createdAt: string;
   updatedAt: string;
   slot: BookingSlot;

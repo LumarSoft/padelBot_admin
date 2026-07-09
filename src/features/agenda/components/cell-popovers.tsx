@@ -427,8 +427,10 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
   const countdown = timeLeft(booking.paymentExpiresAt);
   const amount = booking.transferAmountCents ?? booking.depositCents;
   // In RECEIPT mode the player must send a receipt photo before the admin can confirm.
+  // Admin-created bookings (bookedByUserId !== null) are always confirmable — no player receipt needed.
   const receiptMode = config?.paymentVerificationMode === "RECEIPT";
-  const canConfirm = !receiptMode || booking.hasReceipt;
+  const isAdminBooking = booking.bookedByUserId !== null;
+  const canConfirm = !receiptMode || booking.hasReceipt || isAdminBooking;
 
   function handleReject() {
     if (window.confirm(`¿Liberar el turno de ${booking.playerName}? El pago quedará rechazado.`)) {
@@ -485,7 +487,7 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
           <FileCheck2 className="size-3.5" />
           El jugador envió un comprobante para revisar.
         </p>
-      ) : receiptMode ? (
+      ) : receiptMode && !isAdminBooking ? (
         <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
           <Hourglass className="size-3.5" />
           Esperando que el jugador envíe el comprobante.

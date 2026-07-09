@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Building2, CalendarClock, Repeat, Wallet } from "lucide-react";
+import { Building2, CalendarClock, Repeat, ShoppingBasket, Wallet } from "lucide-react";
 import { Tabs, TabsList, TabsTab, TabsPanel, TabsIndicator } from "@/components/ui/tabs";
 import { ClubProfileManager } from "@/features/configuracion/components/club-profile-manager";
 import { CourtsManager } from "@/features/configuracion/components/courts-manager";
 import { RecurringBookingsManager } from "@/features/configuracion/components/recurring-bookings-manager";
 import { TransferConfigManager } from "@/features/configuracion/components/transfer-config-manager";
+import { ProductsManager } from "@/features/productos/components/products-manager";
 import { SetupChecklist } from "@/features/onboarding/components/setup-checklist";
 import { HelpContactCard } from "@/features/onboarding/components/help-contact-card";
 
@@ -15,6 +16,7 @@ const TABS = [
   { value: "pagos", label: "Pagos", icon: Wallet },
   { value: "canchas", label: "Canchas", icon: CalendarClock },
   { value: "fijos", label: "Turnos fijos", icon: Repeat },
+  { value: "productos", label: "Productos", icon: ShoppingBasket },
 ] as const;
 
 type TabValue = (typeof TABS)[number]["value"];
@@ -73,6 +75,10 @@ export function ConfiguracionScreen({ clubName }: { clubName?: string }) {
 
         <TabsPanel value="fijos" className="pt-2">
           <RecurringBookingsManager />
+        </TabsPanel>
+
+        <TabsPanel value="productos" className="flex flex-col gap-6 pt-2">
+          <ProductsManager />
         </TabsPanel>
       </Tabs>
     </div>

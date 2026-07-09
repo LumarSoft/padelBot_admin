@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { bookingsService } from "@/services/bookings.service";
+import { productsService } from "@/services/products.service";
 import { queryKeys } from "@/lib/query-keys";
 import { ApiError } from "@/lib/api/api-error";
 import type {
@@ -11,6 +12,7 @@ import type {
   CreateBookingRequest,
   RescheduleBookingRequest,
 } from "@/types/api/bookings";
+import type { SetBookingProductsRequest } from "@/types/api/products";
 
 export function useBookings(
   filters: BookingFilters = {},
@@ -92,6 +94,19 @@ export function useRejectPayment() {
       toast.success(
         result.cancelled ? "Pago rechazado y turno liberado" : "La reserva ya no estaba pendiente",
       );
+    },
+    onError: (error) => toast.error(error.message),
+  });
+}
+
+export function useSetBookingProducts() {
+  const queryClient = useQueryClient();
+
+  return useMutation<Booking, ApiError, { bookingId: string; body: SetBookingProductsRequest }>({
+    mutationFn: ({ bookingId, body }) => productsService.setBookingProducts(bookingId, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+      toast.success("Consumos guardados");
     },
     onError: (error) => toast.error(error.message),
   });

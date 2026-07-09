@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   CalendarDays,
@@ -12,6 +13,7 @@ import {
   Loader2,
   MapPin,
   MessagesSquare,
+  ShoppingBasket,
   Volume2,
   VolumeX,
   Wallet,
@@ -29,6 +31,7 @@ import {
 } from "@/features/reservas/hooks/use-bookings";
 import { useTransferConfig } from "@/features/configuracion/hooks/use-transfer-config";
 import { ReceiptViewer } from "@/features/pagos/components/receipt-viewer";
+import { AddProductsDialog } from "@/features/productos/components/add-products-dialog";
 import { useSoundStore } from "@/features/realtime/stores/sound-store";
 import { playCashSound, primeAudio } from "@/features/realtime/lib/play-cash-sound";
 import type { Booking } from "@/types/api/bookings";
@@ -101,6 +104,7 @@ function PaymentCard({
   onConfirm: (id: string) => void;
   onReject: (id: string) => void;
 }) {
+  const [consumosOpen, setConsumosOpen] = useState(false);
   const amount =
     booking.transferAmountCents != null
       ? receiptMode
@@ -212,6 +216,18 @@ function PaymentCard({
             </div>
             <div className="flex items-center gap-2">
               <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setConsumosOpen(true)}
+                className="text-muted-foreground hover:text-foreground"
+                title="Registrar consumos del turno"
+              >
+                <ShoppingBasket className="size-4" />
+                {booking.bookingProducts.length > 0
+                  ? `Consumos (${booking.bookingProducts.reduce((s, p) => s + p.quantity, 0)})`
+                  : "Consumos"}
+              </Button>
+              <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onReject(booking.id)}
@@ -239,6 +255,14 @@ function PaymentCard({
           </div>
         </div>
       </div>
+
+      <AddProductsDialog
+        bookingId={booking.id}
+        playerName={booking.playerName}
+        currentProducts={booking.bookingProducts}
+        open={consumosOpen}
+        onOpenChange={setConsumosOpen}
+      />
     </div>
   );
 }
