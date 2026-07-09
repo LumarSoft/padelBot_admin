@@ -137,7 +137,7 @@ export function AddProductsDialog({
           <p className="text-muted-foreground py-6 text-center text-sm">
             No hay productos activos en el catálogo.
             <br />
-            Agregá productos en Configuración → Productos.
+            Agregá productos en la sección Productos.
           </p>
         ) : (
           <div className="flex flex-col gap-4 py-1 max-h-[60vh] overflow-y-auto pr-1">

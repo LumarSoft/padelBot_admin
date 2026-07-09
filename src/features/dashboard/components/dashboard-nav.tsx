@@ -7,6 +7,7 @@ import {
   MessagesSquare,
   Settings,
   LayoutDashboard,
+  ShoppingBasket,
   Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,7 @@ const MAIN_NAV: NavItem[] = [
 ];
 
 const ADMIN_NAV: NavItem[] = [
+  { href: "/panel/productos", label: "Productos", icon: ShoppingBasket },
   { href: "/panel/configuracion", label: "Configuración", icon: Settings },
 ];
 
