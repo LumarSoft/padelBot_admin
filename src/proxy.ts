@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { SESSION_COOKIE_NAME } from "@/lib/env";
+import { OPS_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME } from "@/lib/env";
 
 /**
  * Next.js 16 "Proxy" (formerly Middleware). Optimistic auth only: it just
@@ -16,6 +16,26 @@ const AUTH_ROUTES = ["/login"];
 
 export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
+
+  // The Lumarsoft ops console is a world of its own: its own cookie, its own login, its
+  // own redirect target. A club session grants nothing here (and vice versa), so it is
+  // resolved BEFORE the panel's rules — otherwise a club owner's cookie would satisfy
+  // the "hasSession" check below and walk straight into the cross-tenant console.
+  if (pathname === "/ops" || pathname.startsWith("/ops/")) {
+    const hasOpsSession = Boolean(
+      request.cookies.get(OPS_SESSION_COOKIE_NAME)?.value,
+    );
+    const isOpsLogin = pathname === "/ops/login";
+
+    if (hasOpsSession && isOpsLogin) {
+      return NextResponse.redirect(new URL("/ops", request.url));
+    }
+    if (!hasOpsSession && !isOpsLogin) {
+      return NextResponse.redirect(new URL("/ops/login", request.url));
+    }
+    return NextResponse.next();
+  }
+
   const hasSession = Boolean(request.cookies.get(SESSION_COOKIE_NAME)?.value);
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
