@@ -8,8 +8,9 @@ import { SESSION_COOKIE_NAME } from "@/lib/env";
  * authorization happens in the API and in server components (see lib/session).
  */
 
-// Open to everyone, signed in or not (the public marketing landing).
-const PUBLIC_ROUTES = ["/"];
+// Open to everyone, signed in or not: the marketing landing and the signup flow. `/register`
+// MUST be here — it's the landing's main CTA, and a prospect has no session by definition.
+const PUBLIC_ROUTES = ["/", "/register"];
 // Only for logged-out users; a signed-in visitor is bounced to the panel.
 const AUTH_ROUTES = ["/login"];
 

@@ -23,7 +23,28 @@ export async function proxyToApi(
   if (!token) {
     return NextResponse.json({ message: "No autorizado." }, { status: 401 });
   }
+  return forward(apiPath, options, token);
+}
 
+/**
+ * Same, for endpoints the API itself exposes publicly (the signup lead form). A prospect
+ * has no session by definition, so requiring one here would 401 every signup — which is
+ * exactly what it used to do.
+ *
+ * Only ever point this at routes that are unguarded in the API; it sends no credentials.
+ */
+export async function proxyPublicToApi(
+  apiPath: string,
+  options: ProxyOptions = {},
+): Promise<NextResponse> {
+  return forward(apiPath, options);
+}
+
+async function forward(
+  apiPath: string,
+  options: ProxyOptions,
+  token?: string,
+): Promise<NextResponse> {
   try {
     const data = await apiServerFetch<unknown>(apiPath, {
       method: options.method ?? "GET",

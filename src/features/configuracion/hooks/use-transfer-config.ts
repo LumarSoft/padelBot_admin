@@ -7,6 +7,7 @@ import { queryKeys } from "@/lib/query-keys";
 import { ApiError } from "@/lib/api/api-error";
 import type {
   ClubProfile,
+  MercadoPagoConnectOrigin,
   MercadoPagoStatus,
   TransferConfig,
   UpdateClubProfileRequest,
@@ -60,9 +61,13 @@ export function useMercadoPagoStatus() {
   });
 }
 
-export function useConnectMercadoPago() {
+/**
+ * `origin` is the screen the owner is connecting from; the OAuth callback sends them back
+ * to it, so connecting from the setup wizard doesn't dump them into Configuración.
+ */
+export function useConnectMercadoPago(origin: MercadoPagoConnectOrigin = "configuracion") {
   return useMutation<{ url: string }, ApiError, void>({
-    mutationFn: () => clubsService.connectMercadoPago(),
+    mutationFn: () => clubsService.connectMercadoPago(origin),
     // Redirect the owner's browser to MercadoPago to authorize.
     onSuccess: ({ url }) => {
       window.location.href = url;
