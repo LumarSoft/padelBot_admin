@@ -8,7 +8,7 @@ export default async function ReportesPage() {
   if (session.role !== "owner") redirect("/panel");
 
   return (
-    <div className="animate-in fade-in-50 flex flex-col gap-8 duration-500">
+    <div className="stagger-children flex flex-col gap-8">
       <PageHeader
         title="Reportes"
         description="Ocupación por franja e ingresos del período — para decidir precios y promos con datos."

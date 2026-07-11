@@ -1,4 +1,5 @@
-import { ArrowRight, MessageCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { lumarsoftWhatsApp } from "@/lib/contact";
 import { Container, LandingButton } from "./landing-ui";
 
@@ -30,7 +31,7 @@ export function FinalCta() {
                 variant="secondary"
                 className="px-6 py-3.5 text-base"
               >
-                <MessageCircle className="size-4.5" />
+                <WhatsAppIcon className="size-4.5" />
                 Pedir una demo
               </LandingButton>
             </div>

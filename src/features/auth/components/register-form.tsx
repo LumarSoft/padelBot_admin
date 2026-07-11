@@ -2,7 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { CheckCircle2, MessageCircle } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import { WhatsAppLink } from "@/components/ui/whatsapp-link";
 import * as z from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -86,15 +87,12 @@ export function RegisterForm() {
             </p>
           </div>
         </div>
-        <a
+        <WhatsAppLink
           href={lumarsoftWhatsApp("hire")}
-          target="_blank"
-          rel="noreferrer"
-          className="bg-brand text-brand-foreground hover:bg-brand/90 inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-colors"
+          className="px-4 py-2.5"
         >
-          <MessageCircle className="size-4" />
           ¿Apurado? Escribinos ya por WhatsApp
-        </a>
+        </WhatsAppLink>
         <p className="text-muted-foreground text-center text-xs">{LUMARSOFT.whatsappDisplay}</p>
       </div>
     );

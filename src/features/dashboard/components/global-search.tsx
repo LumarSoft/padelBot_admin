@@ -73,11 +73,14 @@ export function GlobalSearch() {
         }}
         onFocus={() => setOpen(true)}
         placeholder="Buscar jugador o teléfono…"
-        className="h-9 pl-9 text-sm"
+        className="h-9 rounded-full pl-9 text-sm"
         aria-label="Buscar reservas por jugador"
       />
+      {/* Solid (not glass): this dropdown lives inside the glass header, and a
+          descendant's backdrop-filter can't sample the page behind it (CSS
+          backdrop-root), so translucency here reads as cheap transparency. */}
       {showPanel && (
-        <div className="bg-popover absolute top-11 right-0 left-0 z-30 max-h-80 overflow-y-auto rounded-lg border shadow-md">
+        <div className="animate-scale-in bg-popover ring-foreground/10 absolute top-11 right-0 left-0 z-30 max-h-80 origin-top overflow-y-auto rounded-xl p-1 shadow-[inset_0_1px_0_0_var(--glass-highlight),var(--glass-shadow-lg)] ring-1">
           {resultsQuery.isLoading ? (
             <div className="text-muted-foreground flex items-center gap-2 p-3 text-sm">
               <Loader2 className="size-4 animate-spin" />
@@ -91,7 +94,7 @@ export function GlobalSearch() {
                 key={booking.id}
                 type="button"
                 onClick={() => goTo(booking)}
-                className="hover:bg-accent flex w-full flex-col gap-0.5 px-3 py-2 text-left text-sm"
+                className="flex w-full flex-col gap-0.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors duration-150 not-last:mb-0.5 hover:bg-foreground/[0.05] dark:hover:bg-white/[0.06]"
               >
                 <span className="flex items-center justify-between gap-2">
                   <span className="font-medium">{booking.playerName}</span>

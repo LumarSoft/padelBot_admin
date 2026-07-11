@@ -35,7 +35,7 @@ export function AgendaScreen({ initialDayKey }: { initialDayKey?: string } = {})
   const isToday = dayKey === todayKey();
 
   return (
-    <div className="animate-in fade-in-50 flex flex-col gap-6 duration-500">
+    <div className="stagger-children flex flex-col gap-6">
       <PageHeader
         title="Agenda"
         description="La grilla del día: reservá, cancelá, reprogramá o bloqueá turnos en un solo lugar."

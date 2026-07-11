@@ -3,7 +3,7 @@ import { ConversationsScreen } from "@/features/conversations/components/convers
 
 export default function ConversacionesPage() {
   return (
-    <div className="animate-in fade-in-50 flex flex-col gap-6 duration-500">
+    <div className="stagger-children flex flex-col gap-6">
       <PageHeader
         title="Conversaciones"
         description="Los chats entre los jugadores y el bot. Tomá el control cuando haga falta."

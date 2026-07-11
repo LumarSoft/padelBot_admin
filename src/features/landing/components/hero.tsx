@@ -5,7 +5,8 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
-import { ArrowRight, MessageCircle, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { lumarsoftWhatsApp } from "@/lib/contact";
 import { Container, LandingButton, Pill } from "./landing-ui";
 import { WhatsAppMock } from "./whatsapp-mock";
@@ -102,7 +103,9 @@ export function Hero() {
   );
 
   return (
-    <section ref={scope} className="relative overflow-hidden">
+    // overflow-x-clip contains the aurora's horizontal drift while letting
+    // the glow extend up behind the floating glass navbar (no hard seam).
+    <section ref={scope} className="relative overflow-x-clip">
       {/* Brand "aurora" glow backdrop */}
       <div
         aria-hidden
@@ -142,7 +145,7 @@ export function Hero() {
               variant="secondary"
               className="px-6 py-3.5 text-base"
             >
-              <MessageCircle className="size-4.5" />
+              <WhatsAppIcon className="size-4.5" />
               Pedir una demo
             </LandingButton>
           </div>

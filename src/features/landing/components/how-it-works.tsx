@@ -1,9 +1,10 @@
-import { MessageCircle, CalendarCheck, BadgeCheck } from "lucide-react";
+import { CalendarCheck, BadgeCheck } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { Container, SectionHeading } from "./landing-ui";
 
 const STEPS = [
   {
-    icon: MessageCircle,
+    icon: WhatsAppIcon,
     title: "El jugador escribe a tu WhatsApp",
     text: "Pregunta si hay cancha, como le escribiría a cualquier persona. El bot responde al instante, de día o de noche.",
   },

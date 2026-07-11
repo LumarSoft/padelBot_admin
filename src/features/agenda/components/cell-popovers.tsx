@@ -9,10 +9,14 @@ import {
   FileCheck2,
   Hourglass,
   IdCard,
+  Loader2,
   Lock,
+  NotebookPen,
+  Phone,
   RotateCcw,
   ShoppingBasket,
   Trash2,
+  User,
   Wallet,
   X,
 } from "lucide-react";
@@ -68,12 +72,15 @@ function CardHeader({
   title,
   subtitle,
   badge,
+  meta,
 }: {
   disc: React.ReactNode;
   tone: "brand" | "amber" | "muted" | "emerald";
   title: string;
   subtitle: React.ReactNode;
   badge?: React.ReactNode;
+  /** Right-aligned slot (e.g. a price chip). */
+  meta?: React.ReactNode;
 }) {
   const toneClass = {
     brand: "bg-brand/15 text-brand",
@@ -99,6 +106,7 @@ function CardHeader({
         </div>
         <p className="text-muted-foreground truncate text-xs">{subtitle}</p>
       </div>
+      {meta}
     </header>
   );
 }
@@ -242,20 +250,26 @@ export function ReserveCellForm({
   }
 
   const timeText = slot ? formatTimeRange(slot.startsAt, slot.endsAt) : `${band.start} – ${band.end}`;
+  const reserving = creatingSlot || createBooking.isPending;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="stagger-children flex flex-col gap-3">
       <CardHeader
-        tone={freed ? "emerald" : "muted"}
+        tone={freed ? "emerald" : "brand"}
         disc={freed ? <RotateCcw className="size-4" /> : <CalendarClock className="size-4" />}
         title={courtName}
-        subtitle={`${timeText} · ${formatPrice(effectivePrice)}`}
+        subtitle={timeText}
         badge={
           freed ? (
             <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
               Liberado
             </span>
           ) : undefined
+        }
+        meta={
+          <span className="bg-brand/10 text-brand ring-brand/15 shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums ring-1">
+            {formatPrice(effectivePrice)}
+          </span>
         }
       />
 
@@ -267,57 +281,87 @@ export function ReserveCellForm({
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="cell-name">Jugador</Label>
-        <Input
-          id="cell-name"
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
-          placeholder="Juan Pérez"
-          maxLength={100}
-          autoFocus
-          disabled={busy}
-        />
+        <div className="relative">
+          <User className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+          <Input
+            id="cell-name"
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            placeholder="Juan Pérez"
+            maxLength={100}
+            autoFocus
+            autoComplete="off"
+            disabled={busy}
+            className="pl-8"
+          />
+        </div>
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="cell-phone">
           Teléfono <span className="text-muted-foreground font-normal">(opcional)</span>
         </Label>
-        <Input
-          id="cell-phone"
-          value={playerPhone}
-          onChange={(e) => setPlayerPhone(e.target.value)}
-          placeholder="+54911…"
-          maxLength={20}
-          disabled={busy}
-        />
+        <div className="relative">
+          <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+          <Input
+            id="cell-phone"
+            value={playerPhone}
+            onChange={(e) => setPlayerPhone(e.target.value)}
+            placeholder="+54911…"
+            maxLength={20}
+            inputMode="tel"
+            disabled={busy}
+            className="pl-8"
+          />
+        </div>
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="cell-notes">
           Notas <span className="text-muted-foreground font-normal">(opcional)</span>
         </Label>
-        <Input
-          id="cell-notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Observaciones…"
-          maxLength={500}
-          disabled={busy}
-        />
+        <div className="relative">
+          <NotebookPen className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+          <Input
+            id="cell-notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Observaciones…"
+            maxLength={500}
+            disabled={busy}
+            className="pl-8"
+          />
+        </div>
       </div>
 
-      <Button type="submit" disabled={busy || !playerName.trim()} className="w-full">
-        {creatingSlot || createBooking.isPending ? "Reservando…" : "Reservar"}
-      </Button>
+      {/* The CTA "lights up" in brand color the moment a name is typed. */}
       <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        disabled={busy}
-        onClick={handleBlock}
-        className="text-muted-foreground"
+        type="submit"
+        variant="brand"
+        disabled={busy || !playerName.trim()}
+        className="w-full"
       >
-        <Lock className="size-3.5" />
-        Bloquear turno
+        {reserving ? (
+          <>
+            <Loader2 className="size-4 animate-spin" />
+            Reservando…
+          </>
+        ) : (
+          <>Reservar · {formatPrice(effectivePrice)}</>
+        )}
       </Button>
+
+      <div className="border-border/60 bg-muted/30 -mx-3 -mb-3 rounded-b-xl border-t px-3 py-1.5">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={busy}
+          onClick={handleBlock}
+          className="text-muted-foreground hover:text-foreground w-full"
+        >
+          <Lock className="size-3.5" />
+          Bloquear turno
+        </Button>
+      </div>
     </form>
   );
 }

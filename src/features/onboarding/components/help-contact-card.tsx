@@ -1,5 +1,8 @@
-import { Mail, MessageCircle } from "lucide-react";
+import { Mail } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { WhatsAppLink } from "@/components/ui/whatsapp-link";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   lumarsoftEmail,
   lumarsoftWhatsApp,
@@ -31,18 +34,15 @@ export function HelpContactCard({
           <p className="text-muted-foreground mt-1 text-sm">{description}</p>
         </div>
         <div className="flex shrink-0 gap-2">
-          <a
-            href={lumarsoftWhatsApp(intent)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-brand text-brand-foreground hover:bg-brand/90 inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-colors"
-          >
-            <MessageCircle className="size-4" />
+          <WhatsAppLink href={lumarsoftWhatsApp(intent)}>
             WhatsApp
-          </a>
+          </WhatsAppLink>
           <a
             href={lumarsoftEmail(intent)}
-            className="hover:bg-accent inline-flex items-center gap-2 rounded-md border px-3.5 py-2 text-sm font-medium transition-colors"
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-auto px-3.5 py-2",
+            )}
             title={LUMARSOFT.email}
           >
             <Mail className="size-4" />

@@ -78,7 +78,7 @@ export function AgendaCell({
               : undefined
           }
           className={cn(
-            "flex h-14 w-full flex-col items-start justify-center gap-0.5 rounded-lg border px-2 text-left text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+            "ease-fluid flex h-14 w-full flex-col items-start justify-center gap-0.5 rounded-lg border px-2 text-left text-xs transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-[0.97] data-popup-open:scale-[0.97] data-popup-open:ring-2 data-popup-open:ring-brand/40",
             kind === "booked" &&
               (isSettled
                 ? "border-emerald-500/70 bg-emerald-500/20 hover:bg-emerald-500/[0.28] text-foreground"

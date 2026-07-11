@@ -8,7 +8,7 @@ export default async function ProductosPage() {
   const user = await requireSession();
 
   return (
-    <div className="animate-in fade-in-50 flex flex-col gap-8 duration-500">
+    <div className="stagger-children flex flex-col gap-8">
       <PageHeader
         title="Productos"
         description="Pelotas, bebidas, snacks y accesorios que el complejo ofrece."

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ComponentType } from "react";
 import Link from "next/link";
 import {
   Building2,
@@ -7,9 +8,11 @@ import {
   CheckCircle2,
   CircleDashed,
   Loader2,
-  MessageCircle,
   Wallet,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
+import { WhatsAppLink } from "@/components/ui/whatsapp-link";
+import { buttonVariants } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { clubsService } from "@/services/clubs.service";
@@ -26,7 +29,7 @@ type StepState = "done" | "pending" | "manual";
 
 interface SetupStep {
   key: string;
-  icon: typeof Building2;
+  icon: ComponentType<{ className?: string }>;
   title: string;
   description: string;
   state: StepState;
@@ -117,7 +120,7 @@ export function SetupChecklist({
     },
     {
       key: "whatsapp",
-      icon: MessageCircle,
+      icon: WhatsAppIcon,
       title: "Conectar WhatsApp y probar el bot",
       description: hasWhatsApp
         ? `Tu línea ${linePhone ?? ""} está conectada — mandale "hola" desde tu teléfono para ver al bot en acción.`
@@ -150,14 +153,21 @@ export function SetupChecklist({
           </span>
         </div>
 
+        <div className="bg-foreground/[0.06] h-1.5 w-full overflow-hidden rounded-full dark:bg-white/[0.07]">
+          <div
+            className="bg-brand animate-grow-x h-full origin-left rounded-full transition-[width] duration-700 ease-fluid"
+            style={{ width: `${(doneCount / steps.length) * 100}%` }}
+          />
+        </div>
+
         <ul className="flex flex-col gap-2">
           {steps.map((step) => (
             <li
               key={step.key}
-              className="flex items-start gap-3 rounded-lg border p-3"
+              className="border-border/60 bg-card/40 flex items-start gap-3 rounded-xl border p-3 transition-colors"
             >
               {step.state === "done" ? (
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+                <CheckCircle2 className="animate-scale-in mt-0.5 size-5 shrink-0 text-emerald-600 dark:text-emerald-500" />
               ) : (
                 <CircleDashed className="text-muted-foreground mt-0.5 size-5 shrink-0" />
               )}
@@ -175,22 +185,17 @@ export function SetupChecklist({
                 </p>
               </div>
               {step.state === "pending" && step.href && (
-                <Link
-                  href={step.href}
-                  className="bg-brand text-brand-foreground hover:bg-brand/90 inline-flex shrink-0 items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
-                >
+                <Link href={step.href} className={buttonVariants()}>
                   {step.cta}
                 </Link>
               )}
               {step.state === "manual" && step.contactHref && (
-                <a
+                <WhatsAppLink
                   href={step.contactHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="bg-brand text-brand-foreground hover:bg-brand/90 inline-flex shrink-0 items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
+                  className="px-3 py-1.5"
                 >
                   {step.cta}
-                </a>
+                </WhatsAppLink>
               )}
             </li>
           ))}

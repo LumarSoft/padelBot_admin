@@ -9,6 +9,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { AnimatedNumber } from "@/components/ui/animated-number";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useOverviewStats } from "@/features/dashboard/hooks/use-stats";
@@ -37,14 +38,16 @@ function StatCard({
   icon: typeof CalendarDays;
 }) {
   return (
-    <Card>
+    <Card className="group/stat">
       <CardContent className="p-5">
-        <div className="text-muted-foreground flex items-center justify-between">
-          <p className="text-sm">{label}</p>
-          <Icon className="size-4" />
+        <div className="flex items-center justify-between">
+          <p className="text-muted-foreground text-sm">{label}</p>
+          <div className="bg-brand/10 text-brand ring-brand/10 flex size-7 items-center justify-center rounded-lg ring-1 transition-transform duration-300 ease-spring group-hover/stat:scale-110">
+            <Icon className="size-3.5" />
+          </div>
         </div>
         <p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums">
-          {value}
+          <AnimatedNumber value={value} />
         </p>
       </CardContent>
     </Card>
@@ -68,7 +71,7 @@ function BookingsChart({ series }: { series: StatsSeriesPoint[] }) {
         </div>
 
         <div className="flex h-36 items-end gap-1.5">
-          {series.map((point) => {
+          {series.map((point, index) => {
             const heightPct = (point.count / max) * 100;
             return (
               <div
@@ -80,8 +83,11 @@ function BookingsChart({ series }: { series: StatsSeriesPoint[] }) {
                   {point.count}
                 </span>
                 <div
-                  className="bg-brand/80 group-hover/bar:bg-brand w-full rounded-t-sm transition-colors"
-                  style={{ height: `${Math.max(heightPct, point.count > 0 ? 6 : 2)}%` }}
+                  className="bg-brand/80 group-hover/bar:bg-brand animate-bar-rise w-full origin-bottom rounded-t-sm transition-colors"
+                  style={{
+                    height: `${Math.max(heightPct, point.count > 0 ? 6 : 2)}%`,
+                    animationDelay: `${index * 35}ms`,
+                  }}
                 />
                 <span className="text-muted-foreground text-[10px] tabular-nums">
                   {shortDay(point.date).slice(0, 2)}
@@ -114,7 +120,10 @@ function BotImpactCard({ stats }: { stats: OverviewStats }) {
 
         <div>
           <p className="text-3xl font-semibold tracking-tight tabular-nums">
-            {botPct}%
+            <AnimatedNumber
+              value={botPct}
+              format={(n) => `${Math.round(n)}%`}
+            />
           </p>
           <p className="text-muted-foreground text-sm">
             de las reservas las tomó el bot solo
@@ -124,14 +133,21 @@ function BotImpactCard({ stats }: { stats: OverviewStats }) {
 
         <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
           <div
-            className={cn("bg-brand h-full rounded-full transition-all")}
+            className={cn(
+              "bg-brand animate-grow-x h-full origin-left rounded-full transition-all",
+            )}
             style={{ width: `${botPct}%` }}
           />
         </div>
 
         <div className="flex items-center justify-between border-t pt-3">
           <p className="text-muted-foreground text-sm">Señas cobradas en el período</p>
-          <p className="font-semibold tabular-nums">{formatPrice(stats.ingresosCents)}</p>
+          <p className="font-semibold tabular-nums">
+            <AnimatedNumber
+              value={stats.ingresosCents}
+              format={(n) => formatPrice(Math.round(n))}
+            />
+          </p>
         </div>
       </CardContent>
     </Card>

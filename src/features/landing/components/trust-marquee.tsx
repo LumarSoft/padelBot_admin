@@ -1,5 +1,5 @@
+import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import {
-  MessageCircle,
   CreditCard,
   Bot,
   Radio,
@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 const ITEMS = [
-  { icon: MessageCircle, label: "WhatsApp Business" },
+  { icon: WhatsAppIcon, label: "WhatsApp Business" },
   { icon: CreditCard, label: "MercadoPago" },
   { icon: Bot, label: "Atención con IA" },
   { icon: Radio, label: "Tiempo real" },
