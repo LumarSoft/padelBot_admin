@@ -5,7 +5,10 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SessionSync } from "@/features/auth/components/session-sync";
 import { RealtimeSync } from "@/features/realtime/components/realtime-sync";
 import { LogoutButton } from "@/features/auth/components/logout-button";
+import { ChangePasswordDialog } from "@/features/auth/components/change-password-dialog";
 import { DashboardNav } from "@/features/dashboard/components/dashboard-nav";
+import { SubscriptionBanner } from "@/features/dashboard/components/subscription-banner";
+import { GlobalSearch } from "@/features/dashboard/components/global-search";
 
 function initials(name: string): string {
   return name
@@ -67,11 +70,15 @@ export default async function DashboardLayout({
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            <GlobalSearch />
             <ThemeToggle />
+            <ChangePasswordDialog />
             <LogoutButton />
           </div>
         </header>
+
+        <SubscriptionBanner />
 
         <main className="mx-auto w-full max-w-6xl flex-1 p-4 md:p-8">
           {children}

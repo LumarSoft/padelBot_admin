@@ -33,7 +33,7 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatPrice } from "@/lib/format";
 import { useCourts } from "@/features/turnos/hooks/use-courts";
-import { generateSchedule, todayKey } from "@/features/agenda/lib/schedule";
+import { bandsForWeekday, todayKey } from "@/features/agenda/lib/schedule";
 import {
   useRecurringBookings,
   useCreateRecurringBooking,
@@ -70,9 +70,8 @@ function CreateRecurringDialog({ courts }: { courts: Court[] }) {
   const createRecurring = useCreateRecurringBooking();
 
   const selectedCourt = courts.find((c) => c.id === courtId);
-  const schedule = selectedCourt
-    ? generateSchedule(selectedCourt.openTime, selectedCourt.closeTime)
-    : [];
+  // Bands depend on the chosen weekday (per-day opening hours can differ).
+  const schedule = selectedCourt ? bandsForWeekday(selectedCourt, Number(dayOfWeek)) : [];
   const effectiveBandStart = bandStart || schedule[0]?.start || "";
 
   const priceNumber = Number(price);
@@ -168,7 +167,14 @@ function CreateRecurringDialog({ courts }: { courts: Court[] }) {
             </div>
             <div className="flex flex-col gap-2">
               <Label>Día</Label>
-              <Select value={dayOfWeek} onValueChange={(v) => setDayOfWeek(v ?? "1")}>
+              <Select
+                value={dayOfWeek}
+                onValueChange={(v) => {
+                  setDayOfWeek(v ?? "1");
+                  // The new day may have different bands — drop the stale selection.
+                  setBandStart("");
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue>{(v) => dayLabel(Number(v))}</SelectValue>
                 </SelectTrigger>

@@ -132,21 +132,18 @@ export function Hero() {
           </p>
 
           <div className="hero-reveal flex flex-col gap-3 sm:flex-row sm:items-center">
+            <LandingButton href="/register" className="px-6 py-3.5 text-base">
+              Probar gratis 14 días
+              <ArrowRight className="size-4.5" />
+            </LandingButton>
             <LandingButton
               href={lumarsoftWhatsApp("demo")}
               external
+              variant="secondary"
               className="px-6 py-3.5 text-base"
             >
               <MessageCircle className="size-4.5" />
               Pedir una demo
-            </LandingButton>
-            <LandingButton
-              href="/login"
-              variant="secondary"
-              className="px-6 py-3.5 text-base"
-            >
-              Entrar al panel
-              <ArrowRight className="size-4.5" />
             </LandingButton>
           </div>
 

@@ -1,6 +1,8 @@
 import { apiClient } from "@/lib/api/client";
 import type {
   ClubProfile,
+  SubscriptionState,
+  WhatsAppLine,
   ConnectMercadoPagoResponse,
   MercadoPagoStatus,
   TransferConfig,
@@ -11,6 +13,12 @@ import type {
 export const clubsService = {
   getProfile(): Promise<ClubProfile> {
     return apiClient.get<ClubProfile>("/api/clubs/profile");
+  },
+  getSubscription(): Promise<SubscriptionState> {
+    return apiClient.get<SubscriptionState>("/api/clubs/subscription");
+  },
+  getWhatsAppLines(): Promise<WhatsAppLine[]> {
+    return apiClient.get<WhatsAppLine[]>("/api/whatsapp-lines");
   },
   updateProfile(body: UpdateClubProfileRequest): Promise<ClubProfile> {
     return apiClient.patch<ClubProfile>("/api/clubs/profile", body);

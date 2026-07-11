@@ -7,8 +7,13 @@ import {
   CheckCircle2,
   CircleDashed,
   Loader2,
+  MessageCircle,
   Wallet,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
+import { clubsService } from "@/services/clubs.service";
+import { lumarsoftWhatsApp } from "@/lib/contact";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCourts } from "@/features/turnos/hooks/use-courts";
 import {
@@ -50,9 +55,16 @@ export function SetupChecklist({
   const courtsQuery = useCourts();
   const transferQuery = useTransferConfig();
   const mpQuery = useMercadoPagoStatus();
+  const linesQuery = useQuery({
+    queryKey: queryKeys.clubs.whatsappLines,
+    queryFn: clubsService.getWhatsAppLines,
+  });
 
   const isLoading =
-    courtsQuery.isLoading || transferQuery.isLoading || mpQuery.isLoading;
+    courtsQuery.isLoading ||
+    transferQuery.isLoading ||
+    mpQuery.isLoading ||
+    linesQuery.isLoading;
 
   if (isLoading) {
     return (
@@ -68,6 +80,8 @@ export function SetupChecklist({
   const hasCourts = (courtsQuery.data?.length ?? 0) > 0;
   const hasPayments =
     !!mpQuery.data?.connected || !!transferQuery.data?.transferAlias;
+  const hasWhatsApp = (linesQuery.data ?? []).some((line) => line.isActive);
+  const linePhone = (linesQuery.data ?? []).find((line) => line.isActive)?.displayPhone;
 
   const steps: SetupStep[] = [
     {
@@ -101,12 +115,21 @@ export function SetupChecklist({
       href: "/panel/configuracion?tab=canchas",
       cta: "Cargar cancha",
     },
+    {
+      key: "whatsapp",
+      icon: MessageCircle,
+      title: "Conectar WhatsApp y probar el bot",
+      description: hasWhatsApp
+        ? `Tu línea ${linePhone ?? ""} está conectada — mandale "hola" desde tu teléfono para ver al bot en acción.`
+        : "Nosotros conectamos el número por vos (no hace falta que toques Meta). Escribinos y en el día queda andando.",
+      state: hasWhatsApp ? "done" : "manual",
+      contactHref: lumarsoftWhatsApp("whatsapp-setup"),
+      cta: "Pedir conexión",
+    },
   ];
 
-  // Only steps the panel can verify automatically count toward progress.
-  const tracked = steps.filter((s) => s.state !== "manual");
-  const doneCount = tracked.filter((s) => s.state === "done").length;
-  const allDone = doneCount === tracked.length;
+  const doneCount = steps.filter((s) => s.state === "done").length;
+  const allDone = doneCount === steps.length;
 
   if (hideWhenComplete && allDone) return null;
 
@@ -123,7 +146,7 @@ export function SetupChecklist({
             </p>
           </div>
           <span className="text-muted-foreground shrink-0 text-sm tabular-nums">
-            {doneCount}/{tracked.length}
+            {doneCount}/{steps.length}
           </span>
         </div>
 
@@ -158,6 +181,16 @@ export function SetupChecklist({
                 >
                   {step.cta}
                 </Link>
+              )}
+              {step.state === "manual" && step.contactHref && (
+                <a
+                  href={step.contactHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="bg-brand text-brand-foreground hover:bg-brand/90 inline-flex shrink-0 items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
+                >
+                  {step.cta}
+                </a>
               )}
             </li>
           ))}

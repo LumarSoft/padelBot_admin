@@ -3,8 +3,8 @@
 import { useMemo } from "react";
 import { useSlots } from "@/features/turnos/hooks/use-slots";
 import { useBookings } from "@/features/reservas/hooks/use-bookings";
-import { dayRange, localHHMM } from "@/features/agenda/lib/schedule";
-import type { Slot } from "@/types/api/turnos";
+import { dayRange, dayRangeForCourts, localHHMM } from "@/features/agenda/lib/schedule";
+import type { Court, Slot } from "@/types/api/turnos";
 import type { Booking } from "@/types/api/bookings";
 
 export interface AgendaCellData {
@@ -24,8 +24,10 @@ export interface AgendaCellData {
  *  - PENDING_PAYMENT holds (so an unpaid reservation isn't shown as "Libre"),
  *  - CANCELLED bookings (so a freed band reads "Liberado", not a plain "Libre").
  */
-export function useAgendaDay(dayKey: string, courtId?: string) {
-  const range = dayRange(dayKey);
+export function useAgendaDay(dayKey: string, courtId?: string, courts?: Court[]) {
+  // With courts at hand the range extends past midnight when a schedule closes late
+  // ("viernes hasta la 1 AM"), so the late bands' slots are included.
+  const range = courts?.length ? dayRangeForCourts(dayKey, courts) : dayRange(dayKey);
   const filters = { from: range.from, to: range.to, courtId: courtId || undefined };
 
   const slotsQuery = useSlots(filters);

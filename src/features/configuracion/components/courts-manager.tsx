@@ -22,15 +22,30 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatPrice } from "@/lib/format";
 import { CreateCourtDialog } from "@/features/turnos/components/create-court-dialog";
+import { BulkPriceDialog } from "@/features/configuracion/components/bulk-price-dialog";
 import { PriceRulesDialog } from "@/features/configuracion/components/price-rules-dialog";
+import { WeeklyHoursEditor } from "@/features/configuracion/components/weekly-hours-editor";
 import {
   useCourts,
   useUpdateCourt,
   useDeleteCourt,
 } from "@/features/turnos/hooks/use-courts";
-import type { Court } from "@/types/api/turnos";
+import type { Court, WeeklyHours } from "@/types/api/turnos";
+
+const DURATION_OPTIONS = [60, 90, 120] as const;
+
+function durationLabel(minutes: number): string {
+  return minutes % 60 === 0 ? `${minutes / 60} h` : `${minutes} min`;
+}
 
 function EditCourtDialog({
   court,
@@ -45,6 +60,8 @@ function EditCourtDialog({
   const [price, setPrice] = useState(String(court.priceCents / 100));
   const [openTime, setOpenTime] = useState(court.openTime);
   const [closeTime, setCloseTime] = useState(court.closeTime);
+  const [duration, setDuration] = useState(String(court.slotDurationMinutes));
+  const [weeklyHours, setWeeklyHours] = useState<WeeklyHours>(court.weeklyHours ?? {});
   const [courtType, setCourtType] = useState<"INDOOR" | "OUTDOOR">(court.courtType);
   const updateCourt = useUpdateCourt();
 
@@ -52,18 +69,34 @@ function EditCourtDialog({
   const priceNumber = Number(price);
   const priceValid = Number.isFinite(priceNumber) && priceNumber >= 0;
   const newPriceCents = Math.round(priceNumber * 100);
+  const weeklyUnchanged =
+    JSON.stringify(weeklyHours) === JSON.stringify(court.weeklyHours ?? {});
   const unchanged =
     trimmed === court.name &&
     newPriceCents === court.priceCents &&
     openTime === court.openTime &&
     closeTime === court.closeTime &&
+    duration === String(court.slotDurationMinutes) &&
+    weeklyUnchanged &&
     courtType === court.courtType;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     if (!trimmed || !priceValid || unchanged) return;
     updateCourt.mutate(
-      { id: court.id, body: { name: trimmed, priceCents: newPriceCents, openTime, closeTime, courtType } },
+      {
+        id: court.id,
+        body: {
+          name: trimmed,
+          priceCents: newPriceCents,
+          openTime,
+          closeTime,
+          slotDurationMinutes: Number(duration),
+          // {} means "no overrides" — persist as null to clear them.
+          weeklyHours: Object.keys(weeklyHours).length > 0 ? weeklyHours : null,
+          courtType,
+        },
+      },
       { onSuccess: () => onOpenChange(false) },
     );
   }
@@ -122,9 +155,36 @@ function EditCourtDialog({
                 onChange={(e) => setCloseTime(e.target.value)}
                 disabled={updateCourt.isPending}
               />
-              <p className="text-muted-foreground text-xs">00:00 = medianoche</p>
+              <p className="text-muted-foreground text-xs">
+                00:00 = medianoche · menor a la apertura = cierra al día siguiente
+              </p>
             </div>
           </div>
+          <div className="flex flex-col gap-2">
+            <Label>Duración del turno</Label>
+            <Select value={duration} onValueChange={(v) => setDuration(v ?? "90")}>
+              <SelectTrigger disabled={updateCourt.isPending}>
+                <SelectValue>{(v) => durationLabel(Number(v))}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {DURATION_OPTIONS.map((minutes) => (
+                  <SelectItem key={minutes} value={String(minutes)}>
+                    {durationLabel(minutes)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-muted-foreground text-xs">
+              90 min es el estándar de pádel; usá 60 min para fútbol 5 u otros deportes.
+            </p>
+          </div>
+          <WeeklyHoursEditor
+            value={weeklyHours}
+            onChange={setWeeklyHours}
+            defaultOpen={openTime}
+            defaultClose={closeTime}
+            disabled={updateCourt.isPending}
+          />
           <div className="flex flex-col gap-2">
             <Label>Tipo</Label>
             <div className="flex gap-4">
@@ -192,7 +252,10 @@ export function CourtsManager() {
             Administrá las canchas, precios y horarios del club.
           </p>
         </div>
-        <CreateCourtDialog />
+        <div className="flex items-center gap-2">
+          <BulkPriceDialog />
+          <CreateCourtDialog />
+        </div>
       </div>
 
       {courts.length === 0 ? (
@@ -220,7 +283,17 @@ export function CourtsManager() {
                   <TableCell className="font-medium">{court.name}</TableCell>
                   <TableCell className="text-sm">{formatPrice(court.priceCents)}</TableCell>
                   <TableCell className="text-sm tabular-nums">
-                    {court.openTime} – {court.closeTime}
+                    <div className="flex flex-col gap-0.5">
+                      <span>
+                        {court.openTime} – {court.closeTime}
+                      </span>
+                      <span className="text-muted-foreground text-xs">
+                        turnos de {durationLabel(court.slotDurationMinutes)}
+                        {court.weeklyHours &&
+                          Object.keys(court.weeklyHours).length > 0 &&
+                          " · horario especial por día"}
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell className="text-sm">
                     {court.courtType === "INDOOR" ? "Interior" : "Exterior"}

@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatPrice } from "@/lib/format";
-import { generateSchedule } from "@/features/agenda/lib/schedule";
+import { allBandsForCourt } from "@/features/agenda/lib/schedule";
 import {
   useCreatePriceRule,
   useDeletePriceRule,
@@ -34,10 +34,7 @@ export function PriceRulesDialog({
   const createRule = useCreatePriceRule(court.id);
   const deleteRule = useDeletePriceRule(court.id);
 
-  const bands = useMemo(
-    () => generateSchedule(court.openTime, court.closeTime),
-    [court.openTime, court.closeTime],
-  );
+  const bands = useMemo(() => allBandsForCourt(court), [court]);
 
   const rules = rulesQuery.data ?? [];
   // Bands that don't have an exception yet — the only ones offered to add.

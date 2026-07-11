@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/table";
 import { formatDay, formatTimeRange, formatPrice } from "@/lib/format";
 import { useCourts } from "@/features/turnos/hooks/use-courts";
-import { useBookings, useCancelBooking } from "@/features/reservas/hooks/use-bookings";
+import { useBookings, useCancelBooking, useMarkNoShow } from "@/features/reservas/hooks/use-bookings";
+import { AddProductsDialog } from "@/features/productos/components/add-products-dialog";
 import { BookingStatusBadge } from "@/features/reservas/components/booking-status-badge";
 import { RescheduleBookingDialog } from "@/features/reservas/components/reschedule-booking-dialog";
 import { dateToKey, shiftDay } from "@/features/agenda/lib/schedule";
@@ -47,6 +48,8 @@ export function BookingsList() {
   const bookings = bookingsQuery.data ?? [];
 
   const cancelBooking = useCancelBooking();
+  const markNoShow = useMarkNoShow();
+  const [collectingBooking, setCollectingBooking] = useState<Booking | null>(null);
 
   function handleCancel(booking: Booking) {
     if (
@@ -199,6 +202,20 @@ export function BookingsList() {
                     </TableCell>
                     <TableCell>
                       <BookingStatusBadge status={booking.status} />
+                      {booking.settledAt && (
+                        <span className="mt-0.5 block text-xs font-medium text-emerald-600">
+                          cuenta completa ✓
+                        </span>
+                      )}
+                      {booking.depositOutcome && (
+                        <span className="text-muted-foreground mt-0.5 block text-xs">
+                          {booking.depositOutcome === "CREDITED"
+                            ? "seña a crédito"
+                            : booking.depositOutcome === "FORFEITED"
+                              ? "seña perdida"
+                              : "seña devuelta"}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="hidden md:table-cell text-sm">
                       {formatPrice(booking.slot.priceCents)}
@@ -213,6 +230,38 @@ export function BookingsList() {
                     <TableCell>
                       {booking.status === "CONFIRMED" && (
                         <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setCollectingBooking(booking)}
+                            className="text-muted-foreground hover:text-foreground h-7 px-2 text-xs"
+                            title="Cuenta del turno: consumos y quién va pagando"
+                          >
+                            {booking.settledAt ? "Cuenta ✓" : "Cuenta"}
+                          </Button>
+                          {new Date(booking.slot.startsAt) < new Date() &&
+                            (booking.noShowAt ? (
+                              <span className="text-destructive px-2 text-xs font-medium">
+                                Ausente
+                              </span>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      `¿Marcar a ${booking.playerName} como ausente? Suma a su contador de no-shows.`,
+                                    )
+                                  )
+                                    markNoShow.mutate(booking.id);
+                                }}
+                                disabled={markNoShow.isPending}
+                                className="text-muted-foreground hover:text-destructive h-7 px-2 text-xs"
+                              >
+                                Ausente
+                              </Button>
+                            ))}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -247,6 +296,19 @@ export function BookingsList() {
           open={!!reschedulingBooking}
           onOpenChange={(v) => {
             if (!v) setReschedulingBooking(null);
+          }}
+        />
+      )}
+
+      {collectingBooking && (
+        <AddProductsDialog
+          bookingId={collectingBooking.id}
+          playerName={collectingBooking.playerName}
+          courtPriceCents={collectingBooking.slot.priceCents}
+          currentProducts={collectingBooking.bookingProducts}
+          open={!!collectingBooking}
+          onOpenChange={(open) => {
+            if (!open) setCollectingBooking(null);
           }}
         />
       )}

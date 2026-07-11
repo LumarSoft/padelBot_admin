@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PaymentTimeline } from "@/features/pagos/components/payment-timeline";
 import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, ShoppingBasket } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,9 @@ function ConfirmedBookingRow({ booking }: { booking: Booking }) {
             {booking.slot.court.name} ·{" "}
             {formatHourRange(booking.slot.startsAt, booking.slot.endsAt)} hs
           </p>
+          <div className="mt-1">
+            <PaymentTimeline booking={booking} />
+          </div>
           {(booking.payerCuit || booking.payerEmail) && (
             <p className="text-muted-foreground mt-0.5 truncate text-xs">
               Pagó:{" "}

@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   CalendarDays,
   MessagesSquare,
   Settings,
   LayoutDashboard,
   ShoppingBasket,
+  UserRound,
   Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,6 +27,7 @@ const MAIN_NAV: NavItem[] = [
   { href: "/panel", label: "Resumen", icon: LayoutDashboard },
   { href: "/panel/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/panel/pagos", label: "Pagos", icon: Wallet },
+  { href: "/panel/jugadores", label: "Jugadores", icon: UserRound },
   {
     href: "/panel/conversaciones",
     label: "Conversaciones",
@@ -33,6 +36,7 @@ const MAIN_NAV: NavItem[] = [
 ];
 
 const ADMIN_NAV: NavItem[] = [
+  { href: "/panel/reportes", label: "Reportes", icon: BarChart3 },
   { href: "/panel/productos", label: "Productos", icon: ShoppingBasket },
   { href: "/panel/configuracion", label: "Configuración", icon: Settings },
 ];

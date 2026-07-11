@@ -53,6 +53,20 @@ export function useCancelBooking() {
   });
 }
 
+export function useMarkNoShow() {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ noShowAt: string }, ApiError, string>({
+    mutationFn: (id) => bookingsService.markNoShow(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.players.all });
+      toast.success("Marcado como ausente");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+}
+
 export function useRescheduleBooking() {
   const queryClient = useQueryClient();
 

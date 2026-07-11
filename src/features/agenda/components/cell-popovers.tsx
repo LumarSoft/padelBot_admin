@@ -341,6 +341,7 @@ export function BookingActions({
   const cancelBooking = useCancelBooking();
   const [accountOpen, setAccountOpen] = useState(false);
   const totalItems = booking.bookingProducts.reduce((s, p) => s + p.quantity, 0);
+  const isSettled = booking.settledAt != null;
 
   function handleCancel() {
     if (
@@ -389,11 +390,18 @@ export function BookingActions({
         </div>
 
         {booking.notes && (
-          <p className="text-muted-foreground text-xs italic">"{booking.notes}"</p>
+          <p className="text-muted-foreground text-xs italic">&ldquo;{booking.notes}&rdquo;</p>
         )}
 
-        {isPast && (
-          <p className="text-muted-foreground text-[11px]">Este turno ya pasó.</p>
+        {isSettled ? (
+          <p className="flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+            <Check className="size-3.5" />
+            Turno finalizado — cuenta completa
+          </p>
+        ) : (
+          isPast && (
+            <p className="text-muted-foreground text-[11px]">Este turno ya pasó.</p>
+          )
         )}
 
         <div className="flex items-center gap-2">
@@ -406,10 +414,18 @@ export function BookingActions({
           variant="outline"
           size="sm"
           onClick={() => setAccountOpen(true)}
-          className="w-full justify-start gap-2"
+          className={cn(
+            "w-full justify-start gap-2",
+            isSettled &&
+              "border-emerald-500/40 text-emerald-700 hover:text-emerald-700 dark:text-emerald-400",
+          )}
         >
           <ShoppingBasket className="size-3.5" />
-          {totalItems > 0 ? `Dividir cuenta (${totalItems})` : "Dividir cuenta"}
+          {isSettled
+            ? "Cuenta completa ✓"
+            : totalItems > 0
+              ? `Cuenta del turno (${totalItems})`
+              : "Cuenta del turno"}
         </Button>
 
         <div className="flex gap-2">
@@ -533,7 +549,7 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
         className="w-full justify-start gap-2"
       >
         <ShoppingBasket className="size-3.5" />
-        {totalItems > 0 ? `Dividir cuenta (${totalItems})` : "Dividir cuenta"}
+        {totalItems > 0 ? `Cuenta del turno (${totalItems})` : "Cuenta del turno"}
       </Button>
 
       <div className="flex gap-2">

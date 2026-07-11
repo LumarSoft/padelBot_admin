@@ -31,19 +31,13 @@ import {
 } from "@/features/reservas/hooks/use-bookings";
 import { useTransferConfig } from "@/features/configuracion/hooks/use-transfer-config";
 import { ReceiptViewer } from "@/features/pagos/components/receipt-viewer";
+import { PaymentTimeline } from "@/features/pagos/components/payment-timeline";
 import { AddProductsDialog } from "@/features/productos/components/add-products-dialog";
 import { useSoundStore } from "@/features/realtime/stores/sound-store";
 import { playCashSound, primeAudio } from "@/features/realtime/lib/play-cash-sound";
 import type { Booking } from "@/types/api/bookings";
 
 /** Short relative time, e.g. "recién", "hace 4 min", "hace 2 h". */
-function timeAgo(iso: string): string {
-  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
-  if (mins < 1) return "recién";
-  if (mins < 60) return `hace ${mins} min`;
-  const h = Math.floor(mins / 60);
-  return `hace ${h} h`;
-}
 
 /** Receipts to review float to the top; then soonest-to-expire first. */
 function byPriority(a: Booking, b: Booking): number {
@@ -160,13 +154,9 @@ function PaymentCard({
                   </Badge>
                 ) : null}
               </div>
-              <p className="text-muted-foreground mt-0.5 text-xs">
-                {needsReview && booking.receiptUploadedAt
-                  ? `Comprobante recibido ${timeAgo(booking.receiptUploadedAt)}`
-                  : booking.paymentExpiresAt
-                    ? `Reserva tomada ${timeAgo(booking.createdAt)}`
-                    : null}
-              </p>
+              <div className="mt-1">
+                <PaymentTimeline booking={booking} />
+              </div>
             </div>
             <div className="shrink-0 text-right">
               <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">

@@ -35,6 +35,18 @@ export interface Booking {
   payerEmail: string | null;
   status: BookingStatus;
   notes: string | null;
+  /** CRM link (Player id), set automatically when the booking carries a phone. */
+  playerId: string | null;
+  /** When the admin marked this booking as a no-show, or null. */
+  noShowAt: string | null;
+  /** Player credit (cents) consumed at creation to reduce the required transfer. */
+  creditAppliedCents: number;
+  /** Where the paid deposit went when the booking was cancelled, or null. */
+  depositOutcome: "CREDITED" | "FORFEITED" | "REFUNDED" | null;
+  /** Money collected at the front desk for this booking (cents). */
+  localPaymentCents: number;
+  /** "CASH" | "QR" — how the front-desk amount was collected, or null. */
+  localPaymentMethod: "CASH" | "QR" | null;
   recurringBookingId: string | null;
   bookedByUserId: number | null;
   /** Deposit owed (cents) — court price split across the 4 players. */
@@ -43,6 +55,10 @@ export interface Booking {
   transferAmountCents: number | null;
   /** When the pending transfer window expires (ISO). Null for admin-created bookings. */
   paymentExpiresAt: string | null;
+  /** MercadoPago movement id that confirmed this booking (auto or assigned), or null. */
+  mpPaymentId: string | null;
+  /** When the turno's bill was fully settled (todos pagaron), or null. */
+  settledAt: string | null;
   /** When the player sent a transfer receipt photo (RECEIPT mode). Null until one arrives. */
   receiptUploadedAt: string | null;
   /** True when at least one receipt image is attached (RECEIPT mode → review it). */
@@ -60,6 +76,8 @@ export interface BookingFilters {
   courtId?: string;
   status?: BookingStatus;
   playerPhone?: string;
+  /** Global search: matches player name or phone (contains). */
+  search?: string;
 }
 
 export interface CreateBookingRequest {
@@ -71,4 +89,44 @@ export interface CreateBookingRequest {
 
 export interface RescheduleBookingRequest {
   newSlotId: string;
+}
+
+export type PlayerPaymentMethod = "CASH" | "QR" | "TRANSFER";
+
+export interface PlayerPaymentLine {
+  id: string;
+  playerSlot: number;
+  amountCents: number;
+  method: PlayerPaymentMethod;
+  createdAt: string;
+}
+
+export interface PlayerAccount {
+  /** Position 1..4 (J1 = quien reservó). */
+  slot: number;
+  owesCents: number;
+  paidCents: number;
+  remainingCents: number;
+  /** Only J1: the paid deposit credited to them. */
+  depositCreditedCents: number;
+}
+
+/** The turno's bill (mirrors the API's BookingAccountView). */
+export interface BookingAccountView {
+  courtPriceCents: number;
+  consumosTotalCents: number;
+  totalCents: number;
+  depositPaidCents: number;
+  unassignedPaidCents: number;
+  paidCents: number;
+  remainingCents: number;
+  settledAt: string | null;
+  players: [PlayerAccount, PlayerAccount, PlayerAccount, PlayerAccount];
+  payments: PlayerPaymentLine[];
+}
+
+export interface AddPlayerPaymentRequest {
+  playerSlot: number;
+  amountCents: number;
+  method: PlayerPaymentMethod;
 }
