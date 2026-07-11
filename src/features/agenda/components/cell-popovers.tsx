@@ -9,10 +9,14 @@ import {
   FileCheck2,
   Hourglass,
   IdCard,
+  Loader2,
   Lock,
+  NotebookPen,
+  Phone,
   RotateCcw,
   ShoppingBasket,
   Trash2,
+  User,
   Wallet,
   X,
 } from "lucide-react";
@@ -68,12 +72,15 @@ function CardHeader({
   title,
   subtitle,
   badge,
+  meta,
 }: {
   disc: React.ReactNode;
   tone: "brand" | "amber" | "muted" | "emerald";
   title: string;
   subtitle: React.ReactNode;
   badge?: React.ReactNode;
+  /** Right-aligned slot (e.g. a price chip). */
+  meta?: React.ReactNode;
 }) {
   const toneClass = {
     brand: "bg-brand/15 text-brand",
@@ -99,6 +106,7 @@ function CardHeader({
         </div>
         <p className="text-muted-foreground truncate text-xs">{subtitle}</p>
       </div>
+      {meta}
     </header>
   );
 }
@@ -242,20 +250,26 @@ export function ReserveCellForm({
   }
 
   const timeText = slot ? formatTimeRange(slot.startsAt, slot.endsAt) : `${band.start} – ${band.end}`;
+  const reserving = creatingSlot || createBooking.isPending;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="stagger-children flex flex-col gap-3">
       <CardHeader
-        tone={freed ? "emerald" : "muted"}
+        tone={freed ? "emerald" : "brand"}
         disc={freed ? <RotateCcw className="size-4" /> : <CalendarClock className="size-4" />}
         title={courtName}
-        subtitle={`${timeText} · ${formatPrice(effectivePrice)}`}
+        subtitle={timeText}
         badge={
           freed ? (
             <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
               Liberado
             </span>
           ) : undefined
+        }
+        meta={
+          <span className="bg-brand/10 text-brand ring-brand/15 shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums ring-1">
+            {formatPrice(effectivePrice)}
+          </span>
         }
       />
 
@@ -267,57 +281,87 @@ export function ReserveCellForm({
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="cell-name">Jugador</Label>
-        <Input
-          id="cell-name"
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
-          placeholder="Juan Pérez"
-          maxLength={100}
-          autoFocus
-          disabled={busy}
-        />
+        <div className="relative">
+          <User className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+          <Input
+            id="cell-name"
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            placeholder="Juan Pérez"
+            maxLength={100}
+            autoFocus
+            autoComplete="off"
+            disabled={busy}
+            className="pl-8"
+          />
+        </div>
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="cell-phone">
           Teléfono <span className="text-muted-foreground font-normal">(opcional)</span>
         </Label>
-        <Input
-          id="cell-phone"
-          value={playerPhone}
-          onChange={(e) => setPlayerPhone(e.target.value)}
-          placeholder="+54911…"
-          maxLength={20}
-          disabled={busy}
-        />
+        <div className="relative">
+          <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+          <Input
+            id="cell-phone"
+            value={playerPhone}
+            onChange={(e) => setPlayerPhone(e.target.value)}
+            placeholder="+54911…"
+            maxLength={20}
+            inputMode="tel"
+            disabled={busy}
+            className="pl-8"
+          />
+        </div>
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="cell-notes">
           Notas <span className="text-muted-foreground font-normal">(opcional)</span>
         </Label>
-        <Input
-          id="cell-notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Observaciones…"
-          maxLength={500}
-          disabled={busy}
-        />
+        <div className="relative">
+          <NotebookPen className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+          <Input
+            id="cell-notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Observaciones…"
+            maxLength={500}
+            disabled={busy}
+            className="pl-8"
+          />
+        </div>
       </div>
 
-      <Button type="submit" disabled={busy || !playerName.trim()} className="w-full">
-        {creatingSlot || createBooking.isPending ? "Reservando…" : "Reservar"}
-      </Button>
+      {/* The CTA "lights up" in brand color the moment a name is typed. */}
       <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        disabled={busy}
-        onClick={handleBlock}
-        className="text-muted-foreground"
+        type="submit"
+        variant="brand"
+        disabled={busy || !playerName.trim()}
+        className="w-full"
       >
-        <Lock className="size-3.5" />
-        Bloquear turno
+        {reserving ? (
+          <>
+            <Loader2 className="size-4 animate-spin" />
+            Reservando…
+          </>
+        ) : (
+          <>Reservar · {formatPrice(effectivePrice)}</>
+        )}
       </Button>
+
+      <div className="border-border/60 bg-muted/30 -mx-3 -mb-3 rounded-b-xl border-t px-3 py-1.5">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={busy}
+          onClick={handleBlock}
+          className="text-muted-foreground hover:text-foreground w-full"
+        >
+          <Lock className="size-3.5" />
+          Bloquear turno
+        </Button>
+      </div>
     </form>
   );
 }
@@ -341,6 +385,7 @@ export function BookingActions({
   const cancelBooking = useCancelBooking();
   const [accountOpen, setAccountOpen] = useState(false);
   const totalItems = booking.bookingProducts.reduce((s, p) => s + p.quantity, 0);
+  const isSettled = booking.settledAt != null;
 
   function handleCancel() {
     if (
@@ -389,11 +434,18 @@ export function BookingActions({
         </div>
 
         {booking.notes && (
-          <p className="text-muted-foreground text-xs italic">"{booking.notes}"</p>
+          <p className="text-muted-foreground text-xs italic">&ldquo;{booking.notes}&rdquo;</p>
         )}
 
-        {isPast && (
-          <p className="text-muted-foreground text-[11px]">Este turno ya pasó.</p>
+        {isSettled ? (
+          <p className="flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+            <Check className="size-3.5" />
+            Turno finalizado — cuenta completa
+          </p>
+        ) : (
+          isPast && (
+            <p className="text-muted-foreground text-[11px]">Este turno ya pasó.</p>
+          )
         )}
 
         <div className="flex items-center gap-2">
@@ -406,10 +458,18 @@ export function BookingActions({
           variant="outline"
           size="sm"
           onClick={() => setAccountOpen(true)}
-          className="w-full justify-start gap-2"
+          className={cn(
+            "w-full justify-start gap-2",
+            isSettled &&
+              "border-emerald-500/40 text-emerald-700 hover:text-emerald-700 dark:text-emerald-400",
+          )}
         >
           <ShoppingBasket className="size-3.5" />
-          {totalItems > 0 ? `Dividir cuenta (${totalItems})` : "Dividir cuenta"}
+          {isSettled
+            ? "Cuenta completa ✓"
+            : totalItems > 0
+              ? `Cuenta del turno (${totalItems})`
+              : "Cuenta del turno"}
         </Button>
 
         <div className="flex gap-2">
@@ -485,17 +545,25 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
         }
       />
 
+      {/* Payment details row */}
       <div className="bg-muted/40 flex flex-col gap-1 rounded-lg px-2.5 py-2 text-xs">
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground flex items-center gap-1">
             <Wallet className="size-3" />A transferir
           </span>
-          <span className="font-medium">{formatPriceExact(amount)}</span>
+          <span className="font-semibold tabular-nums">{formatPriceExact(amount)}</span>
         </div>
         {countdown && (
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Vencimiento</span>
-            <span className={cn("font-medium", countdown.expired && "text-destructive")}>
+            <span
+              className={cn(
+                "font-medium tabular-nums",
+                countdown.expired
+                  ? "text-destructive"
+                  : "text-amber-600 dark:text-amber-400",
+              )}
+            >
               {countdown.label}
             </span>
           </div>
@@ -511,20 +579,23 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
         )}
       </div>
 
+      {/* Receipt / awaiting-receipt notice */}
       {booking.hasReceipt ? (
-        <p className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
-          <FileCheck2 className="size-3.5" />
-          El jugador envió un comprobante para revisar.
+        <p className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+          <FileCheck2 className="size-3.5 shrink-0" />
+          El jugador envió un comprobante — revisá antes de confirmar.
         </p>
       ) : receiptMode && !isAdminBooking ? (
-        <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-          <Hourglass className="size-3.5" />
+        <p className="text-muted-foreground flex items-center gap-1.5 rounded-lg border border-dashed px-2.5 py-1.5 text-xs">
+          <Hourglass className="size-3.5 shrink-0" />
           Esperando que el jugador envíe el comprobante.
         </p>
       ) : null}
 
+      {/* WhatsApp CTA */}
       {booking.playerPhone && <WhatsAppLink phone={booking.playerPhone} />}
 
+      {/* Account button */}
       <Button
         type="button"
         variant="outline"
@@ -533,21 +604,33 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
         className="w-full justify-start gap-2"
       >
         <ShoppingBasket className="size-3.5" />
-        {totalItems > 0 ? `Dividir cuenta (${totalItems})` : "Dividir cuenta"}
+        {totalItems > 0 ? `Cuenta del turno (${totalItems})` : "Cuenta del turno"}
       </Button>
 
+      {/* Primary action row */}
       <div className="flex gap-2">
-        <Button
+        <button
           type="button"
-          size="sm"
-          disabled={busy || !canConfirm}
+          disabled={busy}
           title={canConfirm ? undefined : "Falta el comprobante del jugador"}
-          onClick={() => confirmPayment.mutate(booking.id, { onSuccess: onDone })}
-          className="flex-1 bg-emerald-600 text-white hover:bg-emerald-600/90"
+          onClick={() => canConfirm && confirmPayment.mutate(booking.id, { onSuccess: onDone })}
+          className={cn(
+            "inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[0.8rem] font-medium text-white transition-all duration-200",
+            "bg-emerald-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_1px_3px_rgba(0,0,0,0.2)]",
+            "hover:bg-emerald-500 active:scale-[0.97] active:bg-emerald-700",
+            "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-emerald-500/50",
+            !canConfirm && "cursor-not-allowed opacity-40",
+            busy && "pointer-events-none opacity-60",
+          )}
         >
-          <Check className="size-3.5" />
+          {confirmPayment.isPending ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Check className="size-3.5" />
+          )}
           {confirmPayment.isPending ? "Confirmando…" : "Confirmar pago"}
-        </Button>
+        </button>
+
         <Button
           type="button"
           variant="ghost"
@@ -560,6 +643,13 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
           Liberar
         </Button>
       </div>
+
+      {/* Hint when receipt is required and missing */}
+      {!canConfirm && (
+        <p className="text-muted-foreground -mt-1 text-center text-[10px]">
+          El jugador aún no envió el comprobante de pago.
+        </p>
+      )}
     </div>
 
     <AddProductsDialog

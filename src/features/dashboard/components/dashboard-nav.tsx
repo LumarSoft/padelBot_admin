@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   CalendarDays,
   MessagesSquare,
   Settings,
   LayoutDashboard,
   ShoppingBasket,
+  UserRound,
   Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,6 +27,7 @@ const MAIN_NAV: NavItem[] = [
   { href: "/panel", label: "Resumen", icon: LayoutDashboard },
   { href: "/panel/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/panel/pagos", label: "Pagos", icon: Wallet },
+  { href: "/panel/jugadores", label: "Jugadores", icon: UserRound },
   {
     href: "/panel/conversaciones",
     label: "Conversaciones",
@@ -33,6 +36,7 @@ const MAIN_NAV: NavItem[] = [
 ];
 
 const ADMIN_NAV: NavItem[] = [
+  { href: "/panel/reportes", label: "Reportes", icon: BarChart3 },
   { href: "/panel/productos", label: "Productos", icon: ShoppingBasket },
   { href: "/panel/configuracion", label: "Configuración", icon: Settings },
 ];
@@ -64,21 +68,21 @@ function NavLink({
       href={item.href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+        "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-fluid active:scale-[0.98]",
         active
-          ? "bg-accent text-foreground"
-          : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+          ? "bg-card/70 text-foreground shadow-[inset_0_1px_0_0_var(--glass-highlight),0_1px_3px_--alpha(var(--color-black)/6%)] ring-1 ring-foreground/[0.06]"
+          : "text-muted-foreground hover:bg-foreground/[0.045] hover:text-foreground dark:hover:bg-white/[0.05]",
       )}
     >
       {active && (
-        <span className="bg-brand absolute top-1/2 left-0 h-4 w-0.5 -translate-y-1/2 rounded-full" />
+        <span className="bg-brand shadow-brand/40 absolute top-1/2 left-0 h-4 w-0.5 -translate-y-1/2 rounded-full shadow-[0_0_8px]" />
       )}
       <Icon
         className={cn(
-          "size-4 transition-colors",
+          "ease-spring size-4 transition-all duration-300",
           active
-            ? "text-foreground"
-            : "text-muted-foreground group-hover:text-foreground",
+            ? "text-brand"
+            : "text-muted-foreground group-hover:-rotate-6 group-hover:scale-[1.15] group-hover:text-foreground",
         )}
       />
       <span className="flex-1">{item.label}</span>

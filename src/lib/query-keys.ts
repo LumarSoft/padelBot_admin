@@ -11,6 +11,7 @@ export const queryKeys = {
   },
   courts: {
     all: ["courts"] as const,
+    scheduledAdjustments: ["courts", "scheduled-adjustments"] as const,
   },
   priceRules: {
     byCourt: (courtId: string) => ["price-rules", courtId] as const,
@@ -22,6 +23,7 @@ export const queryKeys = {
   bookings: {
     all: ["bookings"] as const,
     list: (filters: BookingFilters) => ["bookings", "list", filters] as const,
+    account: (id: string) => ["bookings", "account", id] as const,
   },
   recurringBookings: {
     all: ["recurring-bookings"] as const,
@@ -30,9 +32,25 @@ export const queryKeys = {
     profile: ["clubs", "profile"] as const,
     transferConfig: ["clubs", "transfer-config"] as const,
     mercadopago: ["clubs", "mercadopago"] as const,
+    subscription: ["clubs", "subscription"] as const,
+    whatsappLines: ["clubs", "whatsapp-lines"] as const,
   },
   stats: {
     overview: ["stats", "overview"] as const,
+    occupancy: (weeks: number) => ["stats", "occupancy", weeks] as const,
+    revenue: (from: string, to: string) => ["stats", "revenue", from, to] as const,
+  },
+  payments: {
+    health: ["payments", "health"] as const,
+    moneyIn: ["payments", "money-in"] as const,
+  },
+  users: {
+    all: ["users"] as const,
+  },
+  players: {
+    all: ["players"] as const,
+    list: (search: string) => ["players", "list", search] as const,
+    detail: (id: string) => ["players", "detail", id] as const,
   },
   conversations: {
     all: ["conversations"] as const,

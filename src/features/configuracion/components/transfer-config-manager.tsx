@@ -23,6 +23,7 @@ function TransferConfigForm({
   initialPercent,
   initialRequireDni,
   initialVerificationMode,
+  initialCancellationHours,
 }: {
   initialAlias: string;
   initialHolder: string;
@@ -30,6 +31,7 @@ function TransferConfigForm({
   initialPercent: number;
   initialRequireDni: boolean;
   initialVerificationMode: PaymentVerificationMode;
+  initialCancellationHours: number;
 }) {
   const updateConfig = useUpdateTransferConfig();
   const [alias, setAlias] = useState(initialAlias);
@@ -39,24 +41,30 @@ function TransferConfigForm({
   const [requireDni, setRequireDni] = useState(initialRequireDni);
   const [verificationMode, setVerificationMode] =
     useState<PaymentVerificationMode>(initialVerificationMode);
+  const [cancellationHours, setCancellationHours] = useState(String(initialCancellationHours));
 
   const trimmedAlias = alias.trim();
   const trimmedHolder = holder.trim();
   const percentNumber = Number(percent);
   const percentValid =
     Number.isInteger(percentNumber) && percentNumber >= 1 && percentNumber <= 100;
+  const cancellationNumber = Number(cancellationHours);
+  const cancellationValid =
+    Number.isInteger(cancellationNumber) && cancellationNumber >= 0 && cancellationNumber <= 168;
   const unchanged =
     trimmedAlias === initialAlias &&
     trimmedHolder === initialHolder &&
     mode === initialMode &&
     percentNumber === initialPercent &&
     requireDni === initialRequireDni &&
-    verificationMode === initialVerificationMode;
+    verificationMode === initialVerificationMode &&
+    cancellationNumber === initialCancellationHours;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    if (unchanged || (mode === "DEPOSIT" && !percentValid)) return;
+    if (unchanged || (mode === "DEPOSIT" && !percentValid) || !cancellationValid) return;
     updateConfig.mutate({
+      cancellationWindowHours: cancellationNumber,
       transferAlias: trimmedAlias,
       transferHolder: trimmedHolder,
       depositMode: mode,
@@ -138,6 +146,26 @@ function TransferConfigForm({
           </p>
         </div>
       )}
+
+      <div className="flex flex-col gap-2 border-t pt-4">
+        <Label htmlFor="cancellation-hours">Política de cancelación (horas de aviso)</Label>
+        <Input
+          id="cancellation-hours"
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={168}
+          value={cancellationHours}
+          onChange={(e) => setCancellationHours(e.target.value)}
+          disabled={updateConfig.isPending}
+          className="max-w-28"
+        />
+        <p className="text-muted-foreground text-xs">
+          Si el jugador cancela con {cancellationValid ? cancellationNumber : "N"} h o más de
+          anticipación, la seña queda como crédito a favor para su próxima reserva. Con menos
+          aviso, la seña se pierde. 0 = siempre queda a favor.
+        </p>
+      </div>
 
       <div className="flex flex-col gap-2 border-t pt-4">
         <Label>¿Cómo se confirma el pago?</Label>
@@ -291,6 +319,7 @@ export function TransferConfigManager() {
   const percent = configQuery.data?.depositPercent ?? 25;
   const requireDni = configQuery.data?.requireDniMatch ?? false;
   const verificationMode = configQuery.data?.paymentVerificationMode ?? "AUTO";
+  const cancellationHours = configQuery.data?.cancellationWindowHours ?? 24;
 
   return (
     <section className="flex flex-col gap-4">
@@ -313,13 +342,14 @@ export function TransferConfigManager() {
         // Remount with fresh useState when the saved values change (e.g. after a
         // save), instead of syncing server data into state via an effect.
         <TransferConfigForm
-          key={`${alias}|${holder}|${mode}|${percent}|${requireDni}|${verificationMode}`}
+          key={`${alias}|${holder}|${mode}|${percent}|${requireDni}|${verificationMode}|${cancellationHours}`}
           initialAlias={alias}
           initialHolder={holder}
           initialMode={mode}
           initialPercent={percent}
           initialRequireDni={requireDni}
           initialVerificationMode={verificationMode}
+          initialCancellationHours={cancellationHours}
         />
       )}
     </section>

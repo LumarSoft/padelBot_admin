@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Hourglass, RotateCcw, FileCheck2, Repeat } from "lucide-react";
+import { Plus, CheckCircle2, Hourglass, RotateCcw, FileCheck2, Repeat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/format";
 import {
@@ -54,9 +54,14 @@ export function AgendaCell({
             ? "available"
             : "empty";
 
-  // A band whose end time is already in the past — dim it so the eye skips it.
   const isPast = new Date(buildSlotDateTimes(dayKey, band).endsAt) < new Date();
   const isBot = booking ? booking.bookedByUserId === null : false;
+  // Cuenta completa: the settled turno keeps its color even in the past — that green
+  // check is exactly what the desk scans for ("¿quedó alguna cuenta abierta?").
+  const isSettled = booking?.settledAt != null;
+
+  // Past free cells: no booking form should open — only past booked/pending/blocked remain interactive.
+  const isDisabled = isPast && (kind === "available" || kind === "empty" || kind === "freed");
 
   function close() {
     setOpen(false);
@@ -66,22 +71,42 @@ export function AgendaCell({
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
+          disabled={isDisabled}
+          style={
+            isPast && kind !== "pending" && !isSettled
+              ? { opacity: 0.45, filter: "grayscale(1)" }
+              : undefined
+          }
           className={cn(
-            "flex h-14 w-full flex-col items-start justify-center gap-0.5 rounded-lg border px-2 text-left text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-            kind === "booked" && "border-brand/30 bg-brand/10 hover:bg-brand/15 text-foreground",
+            "ease-fluid flex h-14 w-full flex-col items-start justify-center gap-0.5 rounded-lg border px-2 text-left text-xs transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-[0.97] data-popup-open:scale-[0.97] data-popup-open:ring-2 data-popup-open:ring-brand/40",
+            kind === "booked" &&
+              (isSettled
+                ? "border-emerald-500/70 bg-emerald-500/20 hover:bg-emerald-500/[0.28] text-foreground"
+                : "border-brand/30 bg-brand/10 hover:bg-brand/15 text-foreground"),
             kind === "pending" &&
               "border-amber-400/50 bg-amber-400/10 hover:bg-amber-400/20 text-foreground",
             kind === "freed" &&
               "border-emerald-400/40 bg-emerald-400/[0.07] hover:bg-emerald-400/15 text-foreground",
-            kind === "available" && "border-border hover:border-foreground/20 hover:bg-accent",
+            kind === "available" &&
+              "border-emerald-400/50 bg-emerald-400/[0.18] hover:bg-emerald-400/[0.28] hover:border-emerald-400/70 text-foreground",
             kind === "blocked" &&
               "border-dashed border-destructive/30 bg-destructive/5 text-muted-foreground",
             kind === "empty" &&
-              "text-muted-foreground/50 hover:text-muted-foreground border-dashed border-border/60 hover:bg-accent/50",
-            isPast && kind !== "pending" && "opacity-55",
+              "border-dashed border-emerald-400/30 bg-emerald-400/[0.08] hover:bg-emerald-400/[0.16] text-muted-foreground/70",
+            isDisabled && "cursor-not-allowed",
           )}
         >
-          {kind === "booked" && (
+          {kind === "booked" && isSettled && (
+            <>
+              <span className="line-clamp-1 font-medium">{booking!.playerName}</span>
+              <span className="flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="size-3" />
+                Finalizado
+              </span>
+            </>
+          )}
+
+          {kind === "booked" && !isSettled && (
             <>
               <span className="line-clamp-1 font-medium">{booking!.playerName}</span>
               <span className="text-muted-foreground flex items-center gap-1">

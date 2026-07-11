@@ -22,3 +22,41 @@ export interface OverviewStats {
   /** Per-day count of non-cancelled bookings created over the last 14 days. */
   series: StatsSeriesPoint[];
 }
+
+export interface OccupancyCell {
+  /** 0 = Sunday … 6 = Saturday (club-local). */
+  weekday: number;
+  bandStart: string;
+  offered: number;
+  occupied: number;
+}
+
+export interface OccupancyReport {
+  weeks: number;
+  fromDateKey: string;
+  toDateKey: string;
+  bandStarts: string[];
+  cells: OccupancyCell[];
+}
+
+export interface RevenueDay {
+  dateKey: string;
+  depositCents: number;
+  productsCents: number;
+  /** Front-desk cash collected (modo mostrador). */
+  cashCents: number;
+  /** Front-desk QR collected. */
+  qrCents: number;
+  bookings: number;
+}
+
+export interface RevenueReport {
+  fromDateKey: string;
+  toDateKey: string;
+  totalDepositCents: number;
+  totalProductsCents: number;
+  totalCashCents: number;
+  totalQrCents: number;
+  totalBookings: number;
+  days: RevenueDay[];
+}

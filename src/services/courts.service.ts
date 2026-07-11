@@ -1,5 +1,12 @@
 import { apiClient } from "@/lib/api/client";
-import type { Court, CreateCourtRequest, UpdateCourtRequest } from "@/types/api/turnos";
+import type {
+  BulkPriceAdjustRequest,
+  BulkPriceAdjustResult,
+  Court,
+  CreateCourtRequest,
+  ScheduledPriceAdjustment,
+  UpdateCourtRequest,
+} from "@/types/api/turnos";
 
 export const courtsService = {
   list(): Promise<Court[]> {
@@ -13,5 +20,14 @@ export const courtsService = {
   },
   remove(id: string): Promise<void> {
     return apiClient.del<void>(`/api/courts/${id}`);
+  },
+  bulkPrice(body: BulkPriceAdjustRequest): Promise<BulkPriceAdjustResult> {
+    return apiClient.post<BulkPriceAdjustResult>("/api/courts/bulk-price", body);
+  },
+  listScheduledAdjustments(): Promise<ScheduledPriceAdjustment[]> {
+    return apiClient.get<ScheduledPriceAdjustment[]>("/api/courts/scheduled-price-adjustments");
+  },
+  removeScheduledAdjustment(id: string): Promise<void> {
+    return apiClient.del<void>(`/api/courts/scheduled-price-adjustments/${id}`);
   },
 };

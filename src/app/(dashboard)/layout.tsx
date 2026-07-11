@@ -5,7 +5,10 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SessionSync } from "@/features/auth/components/session-sync";
 import { RealtimeSync } from "@/features/realtime/components/realtime-sync";
 import { LogoutButton } from "@/features/auth/components/logout-button";
+import { ChangePasswordDialog } from "@/features/auth/components/change-password-dialog";
 import { DashboardNav } from "@/features/dashboard/components/dashboard-nav";
+import { SubscriptionBanner } from "@/features/dashboard/components/subscription-banner";
+import { GlobalSearch } from "@/features/dashboard/components/global-search";
 
 function initials(name: string): string {
   return name
@@ -30,8 +33,11 @@ export default async function DashboardLayout({
       <SessionSync user={user} />
       <RealtimeSync />
 
-      <aside className="bg-sidebar text-sidebar-foreground sticky top-0 hidden h-svh flex-col border-r md:flex">
-        <div className="flex h-14 items-center border-b px-5">
+      {/* Ambient brand glow the glass surfaces blur against. */}
+      <div aria-hidden className="ambient-bg" />
+
+      <aside className="glass-panel text-sidebar-foreground border-border/60 sticky top-0 hidden h-svh flex-col border-r md:flex">
+        <div className="border-border/60 flex h-14 items-center border-b px-5">
           <Logo />
         </div>
 
@@ -39,9 +45,9 @@ export default async function DashboardLayout({
           <DashboardNav />
         </div>
 
-        <div className="border-t px-3 py-3">
-          <div className="flex items-center gap-3 rounded-md px-2 py-1.5">
-            <div className="bg-brand/10 text-brand flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
+        <div className="border-border/60 border-t px-3 py-3">
+          <div className="bg-card/50 ring-foreground/[0.05] flex items-center gap-3 rounded-xl px-2.5 py-2 shadow-[inset_0_1px_0_0_var(--glass-highlight)] ring-1">
+            <div className="from-brand to-brand/70 flex size-8 shrink-0 items-center justify-center rounded-full bg-linear-to-b text-xs font-semibold text-white shadow-[inset_0_1px_0_0_--alpha(var(--color-white)/25%)]">
               {initials(user.clubName)}
             </div>
             <div className="min-w-0">
@@ -55,7 +61,7 @@ export default async function DashboardLayout({
       </aside>
 
       <div className="flex min-w-0 flex-col">
-        <header className="bg-background/80 sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b px-4 backdrop-blur md:px-6">
+        <header className="glass-panel border-border/60 sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b px-4 md:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <span className="md:hidden">
               <Logo showWordmark={false} />
@@ -67,11 +73,15 @@ export default async function DashboardLayout({
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            <GlobalSearch />
             <ThemeToggle />
+            <ChangePasswordDialog />
             <LogoutButton />
           </div>
         </header>
+
+        <SubscriptionBanner />
 
         <main className="mx-auto w-full max-w-6xl flex-1 p-4 md:p-8">
           {children}

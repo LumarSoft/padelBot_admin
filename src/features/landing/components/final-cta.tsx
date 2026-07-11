@@ -1,4 +1,5 @@
-import { ArrowRight, MessageCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { lumarsoftWhatsApp } from "@/lib/contact";
 import { Container, LandingButton } from "./landing-ui";
 
@@ -16,25 +17,22 @@ export function FinalCta() {
               ¿Listo para que tu cancha se reserve sola?
             </h2>
             <p className="text-muted-foreground text-lg text-pretty">
-              Te mostramos PadelBot funcionando con tu complejo en una demo de 15
-              minutos. Sin compromiso.
+              Creá tu club vos mismo y probalo gratis 14 días — o pedinos una demo
+              de 15 minutos. Sin compromiso, sin tarjeta.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
+              <LandingButton href="/register" className="px-6 py-3.5 text-base">
+                Probar gratis 14 días
+                <ArrowRight className="size-4.5" />
+              </LandingButton>
               <LandingButton
                 href={lumarsoftWhatsApp("demo")}
                 external
-                className="px-6 py-3.5 text-base"
-              >
-                <MessageCircle className="size-4.5" />
-                Pedir una demo
-              </LandingButton>
-              <LandingButton
-                href="/login"
                 variant="secondary"
                 className="px-6 py-3.5 text-base"
               >
-                Entrar al panel
-                <ArrowRight className="size-4.5" />
+                <WhatsAppIcon className="size-4.5" />
+                Pedir una demo
               </LandingButton>
             </div>
           </div>

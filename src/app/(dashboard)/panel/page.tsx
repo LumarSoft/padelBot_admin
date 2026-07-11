@@ -43,7 +43,7 @@ export default async function OverviewPage() {
   const session = await getSession();
 
   return (
-    <div className="animate-in fade-in-50 flex flex-col gap-8 duration-500">
+    <div className="stagger-children flex flex-col gap-8">
       <PageHeader
         title={`Hola, ${session?.name?.split(" ")[0] ?? ""}`}
         description={`Esto es lo que pasa hoy en ${session?.clubName}.`}
@@ -60,7 +60,7 @@ export default async function OverviewPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           {SHORTCUTS.map(({ href, title, description, icon: Icon }) => (
             <Link key={href} href={href} className="group">
-              <Card className="hover:border-brand/40 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md">
+              <Card className="group-hover:ring-brand/30 ease-fluid transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-glass-lg">
                 <CardContent className="flex items-start gap-4 p-5">
                   <div className="bg-brand/10 text-brand flex size-10 shrink-0 items-center justify-center rounded-lg">
                     <Icon className="size-5" />

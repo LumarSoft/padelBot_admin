@@ -19,7 +19,7 @@ function TabsList({ className, ...props }: TabsPrimitive.List.Props) {
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        "relative inline-flex h-10 w-fit items-center justify-center gap-1 rounded-xl bg-muted p-1 text-muted-foreground",
+        "relative inline-flex h-10 w-fit items-center justify-center gap-1 rounded-xl bg-foreground/[0.05] p-1 text-muted-foreground shadow-[inset_0_1px_2px_--alpha(var(--color-black)/5%)] backdrop-blur-sm dark:bg-black/20",
         className
       )}
       {...props}
@@ -36,7 +36,7 @@ function TabsIndicator({ className, ...props }: TabsPrimitive.Indicator.Props) {
     <TabsPrimitive.Indicator
       data-slot="tabs-indicator"
       className={cn(
-        "absolute top-1/2 left-0 z-0 h-8 w-(--active-tab-width) -translate-y-1/2 translate-x-(--active-tab-left) rounded-lg bg-background shadow-sm ring-1 ring-foreground/5 transition-[transform,width] duration-300 ease-out",
+        "absolute top-1/2 left-0 z-0 h-8 w-(--active-tab-width) -translate-y-1/2 translate-x-(--active-tab-left) rounded-lg bg-card shadow-[inset_0_1px_0_0_var(--glass-highlight),0_1px_3px_--alpha(var(--color-black)/10%)] ring-1 ring-foreground/5 transition-[translate,width] duration-[350ms] ease-spring",
         className
       )}
       {...props}
@@ -62,7 +62,7 @@ function TabsPanel({ className, ...props }: TabsPrimitive.Panel.Props) {
     <TabsPrimitive.Panel
       data-slot="tabs-panel"
       className={cn(
-        "outline-none data-[selected]:animate-in data-[selected]:fade-in-50",
+        "outline-none data-[selected]:animate-in data-[selected]:fade-in-0 data-[selected]:slide-in-from-bottom-1 data-[selected]:duration-300 data-[selected]:ease-fluid",
         className
       )}
       {...props}

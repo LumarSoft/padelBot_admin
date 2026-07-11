@@ -3,7 +3,9 @@ import { proxyToApi } from "@/lib/api/proxy";
 
 type Context = { params: Promise<{ id: string }> };
 
-export async function PATCH(_request: NextRequest, { params }: Context) {
+export async function PATCH(request: NextRequest, { params }: Context) {
   const { id } = await params;
-  return proxyToApi(`/bookings/${id}/confirm-payment`, { method: "PATCH" });
+  // Optional body: assigning a concrete detected transfer (casi-match queue).
+  const body = await request.json().catch(() => undefined);
+  return proxyToApi(`/bookings/${id}/confirm-payment`, { method: "PATCH", body });
 }

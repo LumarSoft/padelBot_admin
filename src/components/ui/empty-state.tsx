@@ -15,8 +15,8 @@ export function EmptyState({
   action,
 }: EmptyStateProps) {
   return (
-    <div className="border-border/70 animate-in fade-in-50 flex min-h-[22rem] flex-col items-center justify-center rounded-xl border border-dashed p-10 text-center duration-500">
-      <div className="bg-muted text-muted-foreground mb-4 flex size-12 items-center justify-center rounded-full">
+    <div className="border-border/70 animate-fade-up bg-card/30 flex min-h-[22rem] flex-col items-center justify-center rounded-2xl border border-dashed p-10 text-center backdrop-blur-sm">
+      <div className="bg-brand/10 text-brand ring-brand/15 mb-4 flex size-12 items-center justify-center rounded-2xl shadow-[inset_0_1px_0_0_var(--glass-highlight)] ring-1">
         <Icon className="size-6" />
       </div>
       <h3 className="text-base font-medium">{title}</h3>

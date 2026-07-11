@@ -6,7 +6,7 @@ export default async function PagosPage() {
   await requireSession();
 
   return (
-    <div className="animate-in fade-in-50 flex flex-col gap-8 duration-500">
+    <div className="stagger-children flex flex-col gap-8">
       <PageHeader
         title="Pagos"
         description="Confirmá las señas pendientes y revisá los pagos concretados por día."

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Mail, MessageCircle } from "lucide-react";
+import { Mail } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { LUMARSOFT, lumarsoftEmail, lumarsoftWhatsApp } from "@/lib/contact";
 import { BrandWordmark } from "./brand-wordmark";
 import { Container } from "./landing-ui";
@@ -63,7 +64,7 @@ export function LandingFooter() {
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm transition-colors"
             >
-              <MessageCircle className="size-4" />
+              <WhatsAppIcon className="size-4" />
               {LUMARSOFT.whatsappDisplay}
             </a>
             <a

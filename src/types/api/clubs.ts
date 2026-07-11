@@ -17,6 +17,8 @@ export interface TransferConfig {
   requireDniMatch: boolean;
   /** How the club verifies deposits: automatically (MercadoPago) or by receipt photo (manual). */
   paymentVerificationMode: PaymentVerificationMode;
+  /** Hours before the slot inside which cancelling forfeits the deposit; earlier → player credit. */
+  cancellationWindowHours: number;
 }
 
 export interface UpdateTransferConfigRequest {
@@ -26,15 +28,22 @@ export interface UpdateTransferConfigRequest {
   depositPercent?: number;
   requireDniMatch?: boolean;
   paymentVerificationMode?: PaymentVerificationMode;
+  cancellationWindowHours?: number;
 }
 
 export interface ClubProfile {
   name: string;
   slug: string;
+  /** Extra line the bot appends to its welcome (reglas de la casa). */
+  botWelcomeExtra: string | null;
+  /** "Cómo llegar" the bot answers on request. */
+  locationInfo: string | null;
 }
 
 export interface UpdateClubProfileRequest {
   name: string;
+  botWelcomeExtra?: string;
+  locationInfo?: string;
 }
 
 export interface MercadoPagoStatus {
@@ -48,4 +57,24 @@ export interface MercadoPagoStatus {
 export interface ConnectMercadoPagoResponse {
   /** URL the owner's browser must visit to authorize their MercadoPago account. */
   url: string;
+}
+
+export type SubscriptionStatus = "TRIAL" | "ACTIVE" | "PAST_DUE" | "CANCELLED";
+
+/** Effective subscription state (mirrors the API's SubscriptionState). */
+export interface SubscriptionState {
+  subscriptionStatus: SubscriptionStatus;
+  plan: string;
+  trialEndsAt: string | null;
+  currentPeriodEnd: string | null;
+  severity: "ok" | "trial" | "warning" | "blocked";
+  botAllowed: boolean;
+  daysLeft: number | null;
+}
+
+export interface WhatsAppLine {
+  id: string;
+  phoneNumberId: string;
+  displayPhone: string;
+  isActive: boolean;
 }

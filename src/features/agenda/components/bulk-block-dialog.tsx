@@ -24,22 +24,27 @@ import {
 } from "@/components/ui/select";
 import { useCourts } from "@/features/turnos/hooks/use-courts";
 import { useBulkBlockSlots } from "@/features/turnos/hooks/use-slots";
-import { generateSchedule, todayKey, type ScheduleBand } from "@/features/agenda/lib/schedule";
+import {
+  allBandsForCourt,
+  bandSortMinutes,
+  todayKey,
+  type ScheduleBand,
+} from "@/features/agenda/lib/schedule";
 import type { Court } from "@/types/api/turnos";
 
-/** Union of all courts' schedule bands, sorted by start time. */
+/** Union of all courts' schedule bands (any weekday), in chronological order. */
 function buildUnionSchedule(courts: Court[]): ScheduleBand[] {
   const seen = new Set<string>();
   const all: ScheduleBand[] = [];
   for (const court of courts) {
-    for (const band of generateSchedule(court.openTime, court.closeTime)) {
+    for (const band of allBandsForCourt(court)) {
       if (!seen.has(band.start)) {
         seen.add(band.start);
         all.push(band);
       }
     }
   }
-  return all.sort((a, b) => a.start.localeCompare(b.start));
+  return all.sort((a, b) => bandSortMinutes(a) - bandSortMinutes(b));
 }
 
 export function BulkBlockDialog() {

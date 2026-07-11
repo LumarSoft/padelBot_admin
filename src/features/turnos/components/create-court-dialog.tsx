@@ -14,7 +14,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useCreateCourt } from "@/features/turnos/hooks/use-courts";
+
+const DURATION_OPTIONS = [60, 90, 120] as const;
+
+function durationLabel(minutes: number): string {
+  return minutes % 60 === 0 ? `${minutes / 60} h` : `${minutes} min`;
+}
 
 export function CreateCourtDialog() {
   const [open, setOpen] = useState(false);
@@ -22,6 +35,7 @@ export function CreateCourtDialog() {
   const [price, setPrice] = useState("");
   const [openTime, setOpenTime] = useState("09:00");
   const [closeTime, setCloseTime] = useState("00:00");
+  const [duration, setDuration] = useState("90");
   const [courtType, setCourtType] = useState<"INDOOR" | "OUTDOOR">("INDOOR");
   const createCourt = useCreateCourt();
 
@@ -38,6 +52,7 @@ export function CreateCourtDialog() {
         priceCents: Math.round(priceNumber * 100),
         openTime,
         closeTime,
+        slotDurationMinutes: Number(duration),
         courtType,
       },
       {
@@ -46,6 +61,7 @@ export function CreateCourtDialog() {
           setPrice("");
           setOpenTime("09:00");
           setCloseTime("00:00");
+          setDuration("90");
           setCourtType("INDOOR");
           setOpen(false);
         },
@@ -113,8 +129,28 @@ export function CreateCourtDialog() {
                 onChange={(e) => setCloseTime(e.target.value)}
                 disabled={createCourt.isPending}
               />
-              <p className="text-muted-foreground text-xs">00:00 = medianoche</p>
+              <p className="text-muted-foreground text-xs">
+                00:00 = medianoche · menor a la apertura = cierra al día siguiente
+              </p>
             </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Duración del turno</Label>
+            <Select value={duration} onValueChange={(v) => setDuration(v ?? "90")}>
+              <SelectTrigger disabled={createCourt.isPending}>
+                <SelectValue>{(v) => durationLabel(Number(v))}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {DURATION_OPTIONS.map((minutes) => (
+                  <SelectItem key={minutes} value={String(minutes)}>
+                    {durationLabel(minutes)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-muted-foreground text-xs">
+              90 min es el estándar de pádel; usá 60 min para fútbol 5 u otros deportes.
+            </p>
           </div>
           <div className="flex flex-col gap-2">
             <Label>Tipo</Label>

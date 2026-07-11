@@ -21,12 +21,13 @@ import {
 import { useCourts } from "@/features/turnos/hooks/use-courts";
 import { CreateBookingDialog } from "@/features/reservas/components/create-booking-dialog";
 import { AgendaGrid } from "@/features/agenda/components/agenda-grid";
+import { WeekStrip } from "@/features/agenda/components/week-strip";
 import { BookingsList } from "@/features/agenda/components/bookings-list";
 import { BulkBlockDialog } from "@/features/agenda/components/bulk-block-dialog";
 import { formatDayLabel, shiftDay, todayKey } from "@/features/agenda/lib/schedule";
 
-export function AgendaScreen() {
-  const [dayKey, setDayKey] = useState(todayKey);
+export function AgendaScreen({ initialDayKey }: { initialDayKey?: string } = {}) {
+  const [dayKey, setDayKey] = useState(initialDayKey ?? todayKey());
   const [courtId, setCourtId] = useState("");
 
   const courtsQuery = useCourts();
@@ -34,7 +35,7 @@ export function AgendaScreen() {
   const isToday = dayKey === todayKey();
 
   return (
-    <div className="animate-in fade-in-50 flex flex-col gap-6 duration-500">
+    <div className="stagger-children flex flex-col gap-6">
       <PageHeader
         title="Agenda"
         description="La grilla del día: reservá, cancelá, reprogramá o bloqueá turnos en un solo lugar."
@@ -112,6 +113,8 @@ export function AgendaScreen() {
               </Select>
             )}
           </div>
+
+          <WeekStrip dayKey={dayKey} courts={courts} onSelectDay={setDayKey} />
 
           <AgendaGrid dayKey={dayKey} courtId={courtId} />
         </TabsPanel>

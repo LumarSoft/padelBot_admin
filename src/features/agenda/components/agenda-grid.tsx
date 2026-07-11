@@ -2,11 +2,18 @@
 
 import { useMemo } from "react";
 import { LayoutGrid, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useCourts } from "@/features/turnos/hooks/use-courts";
 import { useAgendaDay } from "@/features/agenda/hooks/use-agenda-day";
 import { AgendaCell } from "@/features/agenda/components/agenda-cell";
-import { generateSchedule, type ScheduleBand } from "@/features/agenda/lib/schedule";
+import {
+  bandsForDate,
+  bandSortMinutes,
+  buildSlotDateTimes,
+  todayKey,
+  type ScheduleBand,
+} from "@/features/agenda/lib/schedule";
 import type { Court } from "@/types/api/turnos";
 
 interface AgendaGridProps {
@@ -14,19 +21,19 @@ interface AgendaGridProps {
   courtId: string;
 }
 
-/** Union of all courts' schedule bands, sorted by start time. */
-function buildUnionSchedule(courts: Court[]): ScheduleBand[] {
+/** Union of all courts' bands for the day, in chronological order (past-midnight last). */
+function buildUnionSchedule(courts: Court[], dayKey: string): ScheduleBand[] {
   const seen = new Set<string>();
   const all: ScheduleBand[] = [];
   for (const court of courts) {
-    for (const band of generateSchedule(court.openTime, court.closeTime)) {
+    for (const band of bandsForDate(court, dayKey)) {
       if (!seen.has(band.start)) {
         seen.add(band.start);
         all.push(band);
       }
     }
   }
-  return all.sort((a, b) => a.start.localeCompare(b.start));
+  return all.sort((a, b) => bandSortMinutes(a) - bandSortMinutes(b));
 }
 
 export function AgendaGrid({ dayKey, courtId }: AgendaGridProps) {
@@ -34,9 +41,20 @@ export function AgendaGrid({ dayKey, courtId }: AgendaGridProps) {
   const allCourts = courtsQuery.data ?? [];
   const courts = courtId ? allCourts.filter((c) => c.id === courtId) : allCourts;
 
-  const schedule = useMemo(() => buildUnionSchedule(courts), [courts]);
+  const schedule = useMemo(() => buildUnionSchedule(courts, dayKey), [courts, dayKey]);
 
-  const { cellFor, isLoading } = useAgendaDay(dayKey, courtId);
+  const courtValidBands = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const court of courts) {
+      map.set(court.id, new Set(bandsForDate(court, dayKey).map((b) => b.start)));
+    }
+    return map;
+  }, [courts, dayKey]);
+
+  const { cellFor, isLoading } = useAgendaDay(dayKey, courtId, courts);
+
+  const isToday = dayKey === todayKey();
+  const nowUtc = new Date();
 
   if (courtsQuery.isLoading) {
     return (
@@ -82,25 +100,42 @@ export function AgendaGrid({ dayKey, courtId }: AgendaGridProps) {
         ))}
 
         {/* Time rows */}
-        {schedule.map((band) => (
+        {schedule.map((band) => {
+          const { startsAt, endsAt } = buildSlotDateTimes(dayKey, band);
+          const isCurrent =
+            isToday && nowUtc >= new Date(startsAt) && nowUtc < new Date(endsAt);
+          return (
           <div key={band.start} className="contents">
-            <div className="bg-muted/30 text-muted-foreground sticky left-0 z-[1] flex items-center justify-end border-r px-2 py-1.5 text-xs tabular-nums">
+            <div
+              className={cn(
+                "bg-muted/30 text-muted-foreground sticky left-0 z-[1] flex items-center justify-end border-r px-2 py-1.5 text-xs tabular-nums",
+                isCurrent && "bg-brand/5 text-brand font-semibold",
+              )}
+            >
               {band.start}
             </div>
-            {courts.map((court) => (
-              <div key={court.id} className="p-1">
-                <AgendaCell
-                  courtId={court.id}
-                  courtName={court.name}
-                  courtPriceCents={court.priceCents}
-                  dayKey={dayKey}
-                  band={band}
-                  data={cellFor(court.id, band.start)}
-                />
-              </div>
-            ))}
+            {courts.map((court) => {
+              const inSchedule = courtValidBands.get(court.id)?.has(band.start) ?? false;
+              return (
+                <div key={court.id} className="p-1">
+                  {inSchedule ? (
+                    <AgendaCell
+                      courtId={court.id}
+                      courtName={court.name}
+                      courtPriceCents={court.priceCents}
+                      dayKey={dayKey}
+                      band={band}
+                      data={cellFor(court.id, band.start)}
+                    />
+                  ) : (
+                    <div className="h-14 w-full rounded-lg border border-dashed border-border/25 bg-muted/20 cursor-not-allowed" />
+                  )}
+                </div>
+              );
+            })}
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

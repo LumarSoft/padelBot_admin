@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,8 +104,11 @@ export function LoginForm() {
         </CardContent>
       </Card>
 
-      <p className="text-muted-foreground text-center text-xs">
-        Cada club ve únicamente sus propios datos.
+      <p className="text-muted-foreground text-center text-sm">
+        ¿Todavía no tenés cuenta?{" "}
+        <Link href="/register" className="text-foreground font-medium underline underline-offset-2">
+          Creá tu club gratis
+        </Link>
       </p>
     </div>
   );

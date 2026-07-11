@@ -26,7 +26,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const body = (await response.json().catch(() => ({}))) as ErrorBody;
     throw new ApiError(
       response.status,
-      body.message ?? `Request failed with status ${response.status}`,
+      body.message ?? `Error en la solicitud (estado ${response.status})`,
       body.fieldErrors,
     );
   }
