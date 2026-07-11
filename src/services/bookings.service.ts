@@ -15,6 +15,7 @@ function buildQuery(filters: BookingFilters): string {
   if (filters.courtId) params.set("courtId", filters.courtId);
   if (filters.status) params.set("status", filters.status);
   if (filters.playerPhone) params.set("playerPhone", filters.playerPhone);
+  if (filters.search) params.set("search", filters.search);
   const qs = params.toString();
   return qs ? `?${qs}` : "";
 }
