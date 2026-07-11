@@ -81,7 +81,7 @@ export function AgendaCell({
             "flex h-14 w-full flex-col items-start justify-center gap-0.5 rounded-lg border px-2 text-left text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
             kind === "booked" &&
               (isSettled
-                ? "border-emerald-500/60 bg-emerald-500/[0.16] hover:bg-emerald-500/[0.24] text-foreground"
+                ? "border-emerald-500/70 bg-emerald-500/20 hover:bg-emerald-500/[0.28] text-foreground"
                 : "border-brand/30 bg-brand/10 hover:bg-brand/15 text-foreground"),
             kind === "pending" &&
               "border-amber-400/50 bg-amber-400/10 hover:bg-amber-400/20 text-foreground",
@@ -96,16 +96,21 @@ export function AgendaCell({
             isDisabled && "cursor-not-allowed",
           )}
         >
-          {kind === "booked" && (
+          {kind === "booked" && isSettled && (
+            <>
+              <span className="line-clamp-1 font-medium">{booking!.playerName}</span>
+              <span className="flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="size-3" />
+                Finalizado
+              </span>
+            </>
+          )}
+
+          {kind === "booked" && !isSettled && (
             <>
               <span className="line-clamp-1 font-medium">{booking!.playerName}</span>
               <span className="text-muted-foreground flex items-center gap-1">
-                {isSettled ? (
-                  <span className="inline-flex items-center gap-0.5 rounded bg-emerald-500/15 px-1 text-[9px] font-semibold text-emerald-700 dark:text-emerald-400">
-                    <CheckCircle2 className="size-2.5" />
-                    Finalizado
-                  </span>
-                ) : booking!.recurringBookingId ? (
+                {booking!.recurringBookingId ? (
                   <span className="bg-brand/15 text-brand inline-flex items-center gap-0.5 rounded px-1 text-[9px] font-medium">
                     <Repeat className="size-2.5" />
                     Fijo
