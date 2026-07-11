@@ -502,17 +502,55 @@ const METHODS: {
   value: PlayerPaymentMethod;
   label: string;
   icon: typeof Banknote;
+  /** Tailwind classes for the action button (idle state). */
+  btnClass: string;
+  /** Tailwind classes for the badge in the payment history. */
+  badgeClass: string;
+  /** Icon color class for the badge. */
+  iconClass: string;
 }[] = [
-  { value: "CASH", label: "Efectivo", icon: Banknote },
-  { value: "QR", label: "QR", icon: QrCode },
-  { value: "TRANSFER", label: "Transf.", icon: Landmark },
+  {
+    value: "CASH",
+    label: "Efectivo",
+    icon: Banknote,
+    btnClass:
+      "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30",
+    badgeClass:
+      "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 backdrop-blur-sm",
+    iconClass: "text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    value: "QR",
+    label: "QR",
+    icon: QrCode,
+    btnClass:
+      "border-violet-500/40 bg-violet-500/10 text-violet-700 hover:bg-violet-500/20 dark:text-violet-400 dark:border-violet-500/30",
+    badgeClass:
+      "border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-400 backdrop-blur-sm",
+    iconClass: "text-violet-600 dark:text-violet-400",
+  },
+  {
+    value: "TRANSFER",
+    label: "Transf.",
+    icon: Landmark,
+    btnClass:
+      "border-blue-500/40 bg-blue-500/10 text-blue-700 hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30",
+    badgeClass:
+      "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400 backdrop-blur-sm",
+    iconClass: "text-blue-600 dark:text-blue-400",
+  },
 ];
 
 const METHOD_LABELS: Record<PlayerPaymentMethod, string> = {
-  CASH: "efectivo",
+  CASH: "Efectivo",
   QR: "QR",
-  TRANSFER: "transferencia",
+  TRANSFER: "Transferencia",
 };
+
+/** Quick lookup for badge/button metadata by method value. */
+const METHOD_META = Object.fromEntries(
+  METHODS.map((m) => [m.value, m]),
+) as Record<PlayerPaymentMethod, (typeof METHODS)[number]>;
 
 /**
  * The settlement half of the bill: what each player owes (from the on-screen draft),
@@ -568,6 +606,10 @@ function SettlementSection({
         const isJ1 = slot === 1;
         const paidBesidesDeposit =
           paid - (isJ1 ? serverAccount.depositPaidCents : 0);
+        // Payments that belong to this specific player slot
+        const slotPayments = serverAccount.payments.filter(
+          (p) => p.playerSlot === slot,
+        );
         return (
           <div
             key={slot}
@@ -576,6 +618,7 @@ function SettlementSection({
               remaining === 0 && "border-emerald-500/40 bg-emerald-500/[0.04]",
             )}
           >
+            {/* ── Row 1: name + status ── */}
             <div className="flex items-center justify-between gap-2">
               <p className="min-w-0 truncate text-sm font-medium">
                 J{slot}
@@ -592,70 +635,90 @@ function SettlementSection({
                 </span>
               )}
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-muted-foreground text-xs tabular-nums">
-                debe {formatPrice(owes)}
-                {isJ1 && serverAccount.depositPaidCents > 0 && (
-                  <span>
-                    {" "}
-                    · seña {formatPrice(serverAccount.depositPaidCents)} ✓
-                  </span>
-                )}
-                {paidBesidesDeposit > 0 &&
-                  ` · pagó ${formatPrice(paidBesidesDeposit)}`}
-              </p>
-              {remaining > 0 && (
-                <div className="flex items-center gap-1">
-                  {METHODS.map(({ value, label, icon: Icon }) => (
-                    <Button
-                      key={value}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-7 px-2 text-xs"
-                      disabled={busy}
-                      title={`Registrar ${formatPrice(remaining)} en ${label.toLowerCase()}`}
-                      onClick={() => onPay(slot, remaining, value)}
-                    >
-                      {payingSlot === slot && busy ? (
-                        <Loader2 className="size-3 animate-spin" />
-                      ) : (
-                        <Icon className="size-3" />
-                      )}
-                      {label}
-                    </Button>
-                  ))}
-                </div>
+
+            {/* ── Row 2: debt info ── */}
+            <p className="text-muted-foreground text-xs tabular-nums">
+              debe {formatPrice(owes)}
+              {isJ1 && serverAccount.depositPaidCents > 0 && (
+                <span>
+                  {" "}
+                  · seña {formatPrice(serverAccount.depositPaidCents)} ✓
+                </span>
               )}
-            </div>
+              {paidBesidesDeposit > 0 &&
+                ` · pagó ${formatPrice(paidBesidesDeposit)}`}
+            </p>
+
+            {/* ── Inline payment badges (one per registered payment) ── */}
+            {slotPayments.length > 0 && (
+              <div className="flex flex-col gap-1">
+                {slotPayments.map((payment) => {
+                  const meta = METHOD_META[payment.method];
+                  const Icon = meta.icon;
+                  return (
+                    <div
+                      key={payment.id}
+                      className={cn(
+                        "flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs backdrop-blur-sm",
+                        meta.badgeClass,
+                      )}
+                    >
+                      <Icon className={cn("size-3 shrink-0", meta.iconClass)} />
+                      <span className="font-semibold tabular-nums">
+                        {formatPrice(payment.amountCents)}
+                      </span>
+                      {/* Method pill */}
+                      <span
+                        className={cn(
+                          "rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide",
+                          meta.badgeClass,
+                        )}
+                      >
+                        {METHOD_LABELS[payment.method]}
+                      </span>
+                      {/* Undo button */}
+                      <button
+                        type="button"
+                        onClick={() => onUndo(payment.id)}
+                        disabled={busy}
+                        title="Deshacer este pago"
+                        className="text-current/40 hover:text-destructive ml-auto shrink-0 transition-colors"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ── Pay buttons (only while there's still a remainder) ── */}
+            {remaining > 0 && (
+              <div className="flex items-center gap-1">
+                {METHODS.map(({ value, label, icon: Icon, btnClass }) => (
+                  <Button
+                    key={value}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={cn("h-7 px-2 text-xs transition-colors", btnClass)}
+                    disabled={busy}
+                    title={`Registrar ${formatPrice(remaining)} en ${label.toLowerCase()}`}
+                    onClick={() => onPay(slot, remaining, value)}
+                  >
+                    {payingSlot === slot && busy ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <Icon className="size-3" />
+                    )}
+                    {label}
+                  </Button>
+                ))}
+              </div>
+            )}
           </div>
         );
       })}
-
-      {serverAccount.payments.length > 0 && (
-        <div className="flex flex-col gap-1 pt-1">
-          {serverAccount.payments.map((payment) => (
-            <div
-              key={payment.id}
-              className="text-muted-foreground flex items-center justify-between gap-2 px-1 text-xs"
-            >
-              <span className="tabular-nums">
-                J{payment.playerSlot} pagó {formatPrice(payment.amountCents)} en{" "}
-                {METHOD_LABELS[payment.method]}
-              </span>
-              <button
-                type="button"
-                onClick={() => onUndo(payment.id)}
-                disabled={busy}
-                title="Deshacer este pago"
-                className="hover:text-destructive"
-              >
-                <X className="size-3" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
 
       {serverAccount.unassignedPaidCents > 0 && (
         <p className="text-muted-foreground px-1 text-xs">
