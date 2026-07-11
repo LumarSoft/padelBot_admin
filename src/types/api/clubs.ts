@@ -59,6 +59,9 @@ export interface ConnectMercadoPagoResponse {
   url: string;
 }
 
+/** Screen the connect flow started from, so the OAuth callback returns the owner to it. */
+export type MercadoPagoConnectOrigin = "configuracion" | "setup";
+
 export type SubscriptionStatus = "TRIAL" | "ACTIVE" | "PAST_DUE" | "CANCELLED";
 
 /** Effective subscription state (mirrors the API's SubscriptionState). */

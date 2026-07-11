@@ -311,6 +311,16 @@
 }
 
 @layer utilities {
+  /* Signup flow: the elements GSAP cascades in — every question's heading and options,
+     and the closing screen's badge, title and blocks. They are born transparent, because
+     letting React paint them and only then having GSAP write the from-state flashed the
+     finished screen for one frame before it animated in. GSAP's inline styles outrank
+     this, so it stops applying the moment it takes over — which is why every animation
+     path, reduced motion included, must reveal them. */
+  .signup-stage :is([data-animate], [data-badge], [data-title], [data-rise]) {
+    opacity: 0;
+  }
+
   /* Subtle dotted grid used as a page backdrop on auth screens. */
   .bg-dot-grid {
     background-image: radial-gradient(

@@ -61,4 +61,7 @@ export const queryKeys = {
     all: ["products"] as const,
     list: ["products", "list"] as const,
   },
+  onboarding: {
+    status: ["onboarding", "status"] as const,
+  },
 } as const;

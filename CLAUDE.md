@@ -43,4 +43,22 @@ Path alias: `@/*` maps to `src/` (e.g. `@/features/...`, `@/lib/...`). Static as
 
 ## Onboarding & configuration flow
 
-A new club's owner must be able to set the complex up in ~15 minutes. The panel exposes this as a **setup checklist** (`src/features/onboarding`) shown on the overview and at the top of `/configuracion`, driving the owner through: club data → WhatsApp line → MercadoPago/transfer alias → first court (with padel presets). When stuck, the owner contacts **Lumarsoft** by WhatsApp/email (`src/lib/contact.ts`). The full spec lives in `../docs/ONBOARDING-Y-CONFIGURACION.md`; pending work is in `../docs/ROADMAP.md`.
+Club creation is **managed**, and it has two halves.
+
+**1. The signup** (`/register`, `src/features/signup`) — a public, full-screen, one-question-per-screen flow (not a form). Choice questions are a single tap and auto-advance; the prompts address the prospect by name once they've given it. It ends in an **editable review** (correcting one answer returns straight to the review — it never re-walks the flow) and posts to `POST /onboarding/request`. The questions are declared in `lib/questions.ts` and do double duty: they **pre-load the `/setup` wizard** (courts, hours, price, deposit policy) so provisioning is half done before we ever sit with the club, and they qualify the lead. The ops alert renders them as a readable briefing.
+
+Two things that are easy to break here, both of which were live bugs:
+- `/register` **must** be in the proxy's `PUBLIC_ROUTES` — a prospect has no session, and anything else bounces the landing's main CTA to `/login`.
+- Its BFF route **must** use `proxyPublicToApi`, not `proxyToApi` — the authenticated proxy 401s a request with no session cookie, i.e. every signup.
+- It also lives **outside** the `(auth)` route group, whose layout boxes children into a 384px card.
+
+**2. The provisioning + setup.** We create the tenant (`POST /onboarding/register` with the ops secret); the club is created **empty** — no demo courts or example bookings.
+
+The complex is then configured in the **account setup wizard** at `/setup` (`src/features/setup`), a full-screen, owner-only flow we normally drive sitting with the club. Seven steps — complejo → canchas → cobros/MercadoPago → WhatsApp → turnos fijos → equipo → kiosco — each of which **can be skipped** and stays editable from `/panel/configuracion` afterwards. Key pieces:
+
+- **The wizard writes through the panel's existing endpoints** (courts, transfer-config, whatsapp-lines, users, products, recurring-bookings). It owns no write logic of its own; the only onboarding-specific routes are `GET /onboarding/status` (aggregated state), `PATCH /onboarding/progress` (resume position) and `POST /onboarding/complete`.
+- **Step state is derived from real data**, never from stored progress — a club configured by hand reads as done without opening the wizard. `status.ready` gates on the three steps the bot can't run without (canchas, pagos, whatsapp).
+- **The screen lives in the URL** (`/setup?step=pagos`), because MercadoPago's OAuth callback bounces the browser out of the app and must land the owner back on the step they left. That return path is carried inside the encrypted OAuth `state` (`origin: "setup" | "configuracion"`) and resolved against a whitelist API-side — never a caller-supplied URL.
+- **`BotPreview`** renders a live WhatsApp mock from the config being typed (real court prices, the real seña amount, the real alias), so nothing is configured blind.
+
+`SetupChecklist` (`src/features/onboarding`) is now only the panel's entry point into the wizard — it reports, it doesn't configure. When stuck, the owner contacts **Lumarsoft** by WhatsApp/email (`src/lib/contact.ts`).
