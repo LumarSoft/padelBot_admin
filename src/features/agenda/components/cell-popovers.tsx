@@ -545,17 +545,25 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
         }
       />
 
+      {/* Payment details row */}
       <div className="bg-muted/40 flex flex-col gap-1 rounded-lg px-2.5 py-2 text-xs">
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground flex items-center gap-1">
             <Wallet className="size-3" />A transferir
           </span>
-          <span className="font-medium">{formatPriceExact(amount)}</span>
+          <span className="font-semibold tabular-nums">{formatPriceExact(amount)}</span>
         </div>
         {countdown && (
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Vencimiento</span>
-            <span className={cn("font-medium", countdown.expired && "text-destructive")}>
+            <span
+              className={cn(
+                "font-medium tabular-nums",
+                countdown.expired
+                  ? "text-destructive"
+                  : "text-amber-600 dark:text-amber-400",
+              )}
+            >
               {countdown.label}
             </span>
           </div>
@@ -571,20 +579,23 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
         )}
       </div>
 
+      {/* Receipt / awaiting-receipt notice */}
       {booking.hasReceipt ? (
-        <p className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
-          <FileCheck2 className="size-3.5" />
-          El jugador envió un comprobante para revisar.
+        <p className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+          <FileCheck2 className="size-3.5 shrink-0" />
+          El jugador envió un comprobante — revisá antes de confirmar.
         </p>
       ) : receiptMode && !isAdminBooking ? (
-        <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-          <Hourglass className="size-3.5" />
+        <p className="text-muted-foreground flex items-center gap-1.5 rounded-lg border border-dashed px-2.5 py-1.5 text-xs">
+          <Hourglass className="size-3.5 shrink-0" />
           Esperando que el jugador envíe el comprobante.
         </p>
       ) : null}
 
+      {/* WhatsApp CTA */}
       {booking.playerPhone && <WhatsAppLink phone={booking.playerPhone} />}
 
+      {/* Account button */}
       <Button
         type="button"
         variant="outline"
@@ -596,18 +607,30 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
         {totalItems > 0 ? `Cuenta del turno (${totalItems})` : "Cuenta del turno"}
       </Button>
 
+      {/* Primary action row */}
       <div className="flex gap-2">
-        <Button
+        <button
           type="button"
-          size="sm"
-          disabled={busy || !canConfirm}
+          disabled={busy}
           title={canConfirm ? undefined : "Falta el comprobante del jugador"}
-          onClick={() => confirmPayment.mutate(booking.id, { onSuccess: onDone })}
-          className="flex-1 bg-emerald-600 text-white hover:bg-emerald-600/90"
+          onClick={() => canConfirm && confirmPayment.mutate(booking.id, { onSuccess: onDone })}
+          className={cn(
+            "inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[0.8rem] font-medium text-white transition-all duration-200",
+            "bg-emerald-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_1px_3px_rgba(0,0,0,0.2)]",
+            "hover:bg-emerald-500 active:scale-[0.97] active:bg-emerald-700",
+            "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-emerald-500/50",
+            !canConfirm && "cursor-not-allowed opacity-40",
+            busy && "pointer-events-none opacity-60",
+          )}
         >
-          <Check className="size-3.5" />
+          {confirmPayment.isPending ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Check className="size-3.5" />
+          )}
           {confirmPayment.isPending ? "Confirmando…" : "Confirmar pago"}
-        </Button>
+        </button>
+
         <Button
           type="button"
           variant="ghost"
@@ -620,6 +643,13 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
           Liberar
         </Button>
       </div>
+
+      {/* Hint when receipt is required and missing */}
+      {!canConfirm && (
+        <p className="text-muted-foreground -mt-1 text-center text-[10px]">
+          El jugador aún no envió el comprobante de pago.
+        </p>
+      )}
     </div>
 
     <AddProductsDialog
