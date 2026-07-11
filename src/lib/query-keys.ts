@@ -64,4 +64,12 @@ export const queryKeys = {
   onboarding: {
     status: ["onboarding", "status"] as const,
   },
+  ops: {
+    leads: (status?: string) => ["ops", "leads", status ?? "all"] as const,
+    leadsSummary: ["ops", "leads", "summary"] as const,
+    clubs: ["ops", "clubs"] as const,
+    business: ["ops", "metrics", "business"] as const,
+    bot: ["ops", "metrics", "bot"] as const,
+    health: ["ops", "health"] as const,
+  },
 } as const;

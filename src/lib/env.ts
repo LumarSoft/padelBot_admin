@@ -19,3 +19,14 @@ export const SESSION_COOKIE_NAME = "pb_session";
 
 /** Session lifetime, in seconds, used for the cookie Max-Age (7 days). */
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
+
+/**
+ * The Lumarsoft ops console (`/ops`) keeps its OWN cookie, separate from the club session.
+ * Two reasons: the tokens verify against different secrets API-side and are not
+ * interchangeable, and being signed into a club panel must never imply being signed into
+ * the console that sees every club.
+ */
+export const OPS_SESSION_COOKIE_NAME = "pb_ops_session";
+
+/** Shorter than a club session on purpose — this token reads across every tenant (12h). */
+export const OPS_SESSION_MAX_AGE = 60 * 60 * 12;
