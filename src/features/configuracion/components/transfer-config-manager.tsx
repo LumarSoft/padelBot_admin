@@ -14,7 +14,11 @@ import {
   useTransferConfig,
   useUpdateTransferConfig,
 } from "@/features/configuracion/hooks/use-transfer-config";
-import type { DepositMode, PaymentVerificationMode } from "@/types/api/clubs";
+import type {
+  DepositMode,
+  PaymentVerificationMode,
+  PlayerRescheduleMode,
+} from "@/types/api/clubs";
 
 function TransferConfigForm({
   initialAlias,
@@ -24,6 +28,9 @@ function TransferConfigForm({
   initialRequireDni,
   initialVerificationMode,
   initialCancellationHours,
+  initialReschedule,
+  initialRescheduleCutoff,
+  initialMaxReschedules,
 }: {
   initialAlias: string;
   initialHolder: string;
@@ -32,6 +39,9 @@ function TransferConfigForm({
   initialRequireDni: boolean;
   initialVerificationMode: PaymentVerificationMode;
   initialCancellationHours: number;
+  initialReschedule: PlayerRescheduleMode;
+  initialRescheduleCutoff: number;
+  initialMaxReschedules: number;
 }) {
   const updateConfig = useUpdateTransferConfig();
   const [alias, setAlias] = useState(initialAlias);
@@ -42,6 +52,9 @@ function TransferConfigForm({
   const [verificationMode, setVerificationMode] =
     useState<PaymentVerificationMode>(initialVerificationMode);
   const [cancellationHours, setCancellationHours] = useState(String(initialCancellationHours));
+  const [reschedule, setReschedule] = useState<PlayerRescheduleMode>(initialReschedule);
+  const [rescheduleCutoff, setRescheduleCutoff] = useState(String(initialRescheduleCutoff));
+  const [maxReschedules, setMaxReschedules] = useState(String(initialMaxReschedules));
 
   const trimmedAlias = alias.trim();
   const trimmedHolder = holder.trim();
@@ -51,6 +64,13 @@ function TransferConfigForm({
   const cancellationNumber = Number(cancellationHours);
   const cancellationValid =
     Number.isInteger(cancellationNumber) && cancellationNumber >= 0 && cancellationNumber <= 168;
+  const cutoffNumber = Number(rescheduleCutoff);
+  const cutoffValid = Number.isInteger(cutoffNumber) && cutoffNumber >= 0 && cutoffNumber <= 168;
+  const maxReschedulesNumber = Number(maxReschedules);
+  const maxReschedulesValid =
+    Number.isInteger(maxReschedulesNumber) && maxReschedulesNumber >= 0 && maxReschedulesNumber <= 10;
+  const rescheduleValid = reschedule !== "SELF" || (cutoffValid && maxReschedulesValid);
+
   const unchanged =
     trimmedAlias === initialAlias &&
     trimmedHolder === initialHolder &&
@@ -58,11 +78,15 @@ function TransferConfigForm({
     percentNumber === initialPercent &&
     requireDni === initialRequireDni &&
     verificationMode === initialVerificationMode &&
-    cancellationNumber === initialCancellationHours;
+    cancellationNumber === initialCancellationHours &&
+    reschedule === initialReschedule &&
+    cutoffNumber === initialRescheduleCutoff &&
+    maxReschedulesNumber === initialMaxReschedules;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    if (unchanged || (mode === "DEPOSIT" && !percentValid) || !cancellationValid) return;
+    if (unchanged || (mode === "DEPOSIT" && !percentValid) || !cancellationValid || !rescheduleValid)
+      return;
     updateConfig.mutate({
       cancellationWindowHours: cancellationNumber,
       transferAlias: trimmedAlias,
@@ -70,7 +94,11 @@ function TransferConfigForm({
       depositMode: mode,
       requireDniMatch: requireDni,
       paymentVerificationMode: verificationMode,
+      playerReschedule: reschedule,
       ...(mode === "DEPOSIT" ? { depositPercent: percentNumber } : {}),
+      // Only meaningful in SELF; sending them anyway keeps the club's numbers if they flip back.
+      ...(cutoffValid ? { playerRescheduleCutoffHours: cutoffNumber } : {}),
+      ...(maxReschedulesValid ? { maxPlayerReschedules: maxReschedulesNumber } : {}),
     });
   }
 
@@ -161,10 +189,102 @@ function TransferConfigForm({
           className="max-w-28"
         />
         <p className="text-muted-foreground text-xs">
-          Si el jugador cancela con {cancellationValid ? cancellationNumber : "N"} h o más de
-          anticipación, la seña queda como crédito a favor para su próxima reserva. Con menos
-          aviso, la seña se pierde. 0 = siempre queda a favor.
+          Cuando cancelás un turno desde la agenda: si faltaban{" "}
+          {cancellationValid ? cancellationNumber : "N"} h o más, la seña le queda al jugador como
+          crédito a favor para su próxima reserva; con menos aviso, se pierde. 0 = siempre queda a
+          favor. (El jugador no puede cancelar por WhatsApp — solo pedir el cambio de horario que
+          configurás abajo.)
         </p>
+      </div>
+
+      <div className="flex flex-col gap-3 border-t pt-4">
+        <div>
+          <Label>Si un jugador no puede venir, ¿qué puede hacer desde WhatsApp?</Label>
+          <p className="text-muted-foreground mt-1 text-xs">
+            El bot <span className="font-medium">nunca cancela</span>: le ofrece <em>mover</em> el
+            turno a otro horario. La seña sigue aplicada (no devolvés plata), la cancha que libera
+            se le ofrece sola a la lista de espera, y el jugador no pierde nada. Cancelar de verdad
+            lo seguís decidiendo vos, desde la agenda.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          {(
+            [
+              {
+                value: "SELF",
+                label: "Que lo mueva solo",
+                hint: "El bot le muestra los horarios libres y lo cambia. Te ahorra el llamado.",
+              },
+              {
+                value: "REQUEST",
+                label: "Que me lo pida y yo decido",
+                hint: "El bot no mueve nada: te llega un aviso al panel con el pedido y vos resolvés.",
+              },
+              {
+                value: "OFF",
+                label: "Nada — que hable con el club",
+                hint: "El bot ni lo ofrece y lo deriva a ustedes.",
+              },
+            ] as const
+          ).map((option) => (
+            <label key={option.value} className="flex cursor-pointer items-start gap-2 text-sm">
+              <input
+                type="radio"
+                name="player-reschedule"
+                value={option.value}
+                checked={reschedule === option.value}
+                onChange={() => setReschedule(option.value)}
+                disabled={updateConfig.isPending}
+                className="mt-0.5 accent-[var(--brand)]"
+              />
+              <span>
+                <span className="font-medium">{option.label}</span>
+                <span className="text-muted-foreground block text-xs">{option.hint}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+
+        {reschedule === "SELF" && (
+          <div className="flex flex-col gap-4 rounded-lg border p-3">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="reschedule-cutoff">Hasta cuántas horas antes puede moverlo solo</Label>
+              <Input
+                id="reschedule-cutoff"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={168}
+                value={rescheduleCutoff}
+                onChange={(e) => setRescheduleCutoff(e.target.value)}
+                disabled={updateConfig.isPending}
+                className="max-w-28"
+              />
+              <p className="text-muted-foreground text-xs">
+                Más cerca del turno que eso, el bot no lo mueve: te llega el pedido a vos. Es lo que
+                evita que te liberen una cancha cuando ya no llegás a revenderla. 0 = sin límite.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="max-reschedules">Cuántas veces puede mover el mismo turno</Label>
+              <Input
+                id="max-reschedules"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={10}
+                value={maxReschedules}
+                onChange={(e) => setMaxReschedules(e.target.value)}
+                disabled={updateConfig.isPending}
+                className="max-w-28"
+              />
+              <p className="text-muted-foreground text-xs">
+                Al llegar al tope, el próximo cambio te lo pide a vos. Sin tope, un turno se puede
+                patear indefinidamente.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-2 border-t pt-4">
@@ -234,7 +354,9 @@ function TransferConfigForm({
           disabled={
             updateConfig.isPending ||
             unchanged ||
-            (mode === "DEPOSIT" && !percentValid)
+            (mode === "DEPOSIT" && !percentValid) ||
+            !cancellationValid ||
+            !rescheduleValid
           }
         >
           {updateConfig.isPending ? "Guardando…" : "Guardar"}
@@ -320,6 +442,10 @@ export function TransferConfigManager() {
   const requireDni = configQuery.data?.requireDniMatch ?? false;
   const verificationMode = configQuery.data?.paymentVerificationMode ?? "AUTO";
   const cancellationHours = configQuery.data?.cancellationWindowHours ?? 24;
+  const reschedule = configQuery.data?.playerReschedule ?? "SELF";
+  // The API stores "no cutoff" as null; the form shows it as 0.
+  const rescheduleCutoff = configQuery.data?.playerRescheduleCutoffHours ?? 0;
+  const maxReschedules = configQuery.data?.maxPlayerReschedules ?? 1;
 
   return (
     <section className="flex flex-col gap-4">
@@ -342,7 +468,7 @@ export function TransferConfigManager() {
         // Remount with fresh useState when the saved values change (e.g. after a
         // save), instead of syncing server data into state via an effect.
         <TransferConfigForm
-          key={`${alias}|${holder}|${mode}|${percent}|${requireDni}|${verificationMode}|${cancellationHours}`}
+          key={`${alias}|${holder}|${mode}|${percent}|${requireDni}|${verificationMode}|${cancellationHours}|${reschedule}|${rescheduleCutoff}|${maxReschedules}`}
           initialAlias={alias}
           initialHolder={holder}
           initialMode={mode}
@@ -350,6 +476,9 @@ export function TransferConfigManager() {
           initialRequireDni={requireDni}
           initialVerificationMode={verificationMode}
           initialCancellationHours={cancellationHours}
+          initialReschedule={reschedule}
+          initialRescheduleCutoff={rescheduleCutoff}
+          initialMaxReschedules={maxReschedules}
         />
       )}
     </section>

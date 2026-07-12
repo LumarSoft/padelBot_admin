@@ -4,6 +4,15 @@ export type DepositMode = "DEPOSIT" | "FULL";
 /** AUTO = reconcile via MercadoPago; RECEIPT = player sends a receipt photo verified by hand. */
 export type PaymentVerificationMode = "AUTO" | "RECEIPT";
 
+/**
+ * What a player may do from WhatsApp when they can't make it. The bot never *cancels* — it
+ * MOVES the booking, which keeps the deposit alive, frees the court for the waitlist, and takes
+ * no money out of the club. A real cancellation stays a decision of the club, from the panel.
+ *
+ * SELF = the bot moves it; REQUEST = the staff is notified and decides; OFF = not offered.
+ */
+export type PlayerRescheduleMode = "SELF" | "REQUEST" | "OFF";
+
 export interface TransferConfig {
   /** MercadoPago alias/CVU players transfer the deposit to. */
   transferAlias: string | null;
@@ -19,6 +28,12 @@ export interface TransferConfig {
   paymentVerificationMode: PaymentVerificationMode;
   /** Hours before the slot inside which cancelling forfeits the deposit; earlier → player credit. */
   cancellationWindowHours: number;
+  /** What the player may do from WhatsApp when they can't make it. */
+  playerReschedule: PlayerRescheduleMode;
+  /** Below this many hours before the slot, SELF degrades to REQUEST. Null = no cutoff. */
+  playerRescheduleCutoffHours: number | null;
+  /** How many times ONE booking may be moved by the player. */
+  maxPlayerReschedules: number;
 }
 
 export interface UpdateTransferConfigRequest {
@@ -29,6 +44,10 @@ export interface UpdateTransferConfigRequest {
   requireDniMatch?: boolean;
   paymentVerificationMode?: PaymentVerificationMode;
   cancellationWindowHours?: number;
+  playerReschedule?: PlayerRescheduleMode;
+  /** 0 = no cutoff. */
+  playerRescheduleCutoffHours?: number;
+  maxPlayerReschedules?: number;
 }
 
 export interface ClubProfile {
