@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
-import { Lock } from "lucide-react";
+import { Loader2, Lock, LockOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCourts } from "@/features/turnos/hooks/use-courts";
-import { useBulkBlockSlots } from "@/features/turnos/hooks/use-slots";
+import {
+  useBulkBlockSlots,
+  useBulkUnblockSlots,
+} from "@/features/turnos/hooks/use-slots";
 import {
   allBandsForCourt,
   bandSortMinutes,
@@ -47,8 +50,11 @@ function buildUnionSchedule(courts: Court[]): ScheduleBand[] {
   return all.sort((a, b) => bandSortMinutes(a) - bandSortMinutes(b));
 }
 
+type Mode = "block" | "unblock";
+
 export function BulkBlockDialog() {
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<Mode>("block");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [fromDate, setFromDate] = useState(todayKey);
   const [toDate, setToDate] = useState(todayKey);
@@ -59,6 +65,10 @@ export function BulkBlockDialog() {
   const courtsQuery = useCourts();
   const courts = courtsQuery.data ?? [];
   const bulkBlock = useBulkBlockSlots();
+  const bulkUnblock = useBulkUnblockSlots();
+
+  const unblocking = mode === "unblock";
+  const busy = bulkBlock.isPending || bulkUnblock.isPending;
 
   const schedule = useMemo(() => buildUnionSchedule(courts), [courts]);
 
@@ -72,6 +82,7 @@ export function BulkBlockDialog() {
   }, [allDay, fromBand, toBand, schedule]);
 
   function reset() {
+    setMode("block");
     setSelected(new Set());
     setFromDate(todayKey());
     setToDate(todayKey());
@@ -95,20 +106,20 @@ export function BulkBlockDialog() {
   }
 
   const datesValid = !!fromDate && !!toDate && fromDate <= toDate;
-  const canSubmit = selected.size > 0 && datesValid && !bulkBlock.isPending;
+  const canSubmit = selected.size > 0 && datesValid && !busy;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSubmit) return;
-    bulkBlock.mutate(
-      { courtIds: [...selected], fromDate, toDate, slotStarts },
-      {
-        onSuccess: () => {
-          reset();
-          setOpen(false);
-        },
+    const body = { courtIds: [...selected], fromDate, toDate, slotStarts };
+    const done = {
+      onSuccess: () => {
+        reset();
+        setOpen(false);
       },
-    );
+    };
+    if (unblocking) bulkUnblock.mutate(body, done);
+    else bulkBlock.mutate(body, done);
   }
 
   return (
@@ -121,16 +132,47 @@ export function BulkBlockDialog() {
     >
       <DialogTrigger render={<Button variant="outline" />}>
         <Lock className="size-4" />
-        Bloquear varios
+        Bloqueos
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Bloquear varios turnos</DialogTitle>
+          <DialogTitle>
+            {unblocking ? "Desbloquear varios turnos" : "Bloquear varios turnos"}
+          </DialogTitle>
           <DialogDescription>
-            Ideal para torneos o cierres: bloquea las canchas y días elegidos. Los turnos
-            ya reservados se respetan.
+            {unblocking
+              ? "Libera de una todos los turnos bloqueados en las canchas y días elegidos. Las reservas no se tocan."
+              : "Ideal para torneos o cierres: bloquea las canchas y días elegidos. Los turnos ya reservados se respetan."}
           </DialogDescription>
         </DialogHeader>
+
+        {/* Un bloqueo masivo se deshace igual de rápido que se hizo. */}
+        <div className="bg-muted/50 flex rounded-lg border p-0.5">
+          {(
+            [
+              { value: "block", label: "Bloquear", icon: Lock },
+              { value: "unblock", label: "Desbloquear", icon: LockOpen },
+            ] as const
+          ).map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setMode(value)}
+              disabled={busy}
+              aria-pressed={mode === value}
+              className={cn(
+                "ease-fluid flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200",
+                mode === value
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Icon className="size-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
@@ -195,7 +237,7 @@ export function BulkBlockDialog() {
               onChange={(e) => setAllDay(e.target.checked)}
               className="size-4 accent-[var(--brand)]"
             />
-            Bloquear todo el día
+            {unblocking ? "Todo el día" : "Bloquear todo el día"}
           </label>
 
           {!allDay && schedule.length > 0 && (
@@ -246,8 +288,15 @@ export function BulkBlockDialog() {
           )}
 
           <DialogFooter>
-            <Button type="submit" disabled={!canSubmit}>
-              {bulkBlock.isPending ? "Bloqueando…" : "Bloquear"}
+            <Button type="submit" variant={unblocking ? "brand" : "default"} disabled={!canSubmit}>
+              {busy && <Loader2 className="animate-spin" />}
+              {busy
+                ? unblocking
+                  ? "Desbloqueando…"
+                  : "Bloqueando…"
+                : unblocking
+                  ? "Desbloquear turnos"
+                  : "Bloquear turnos"}
             </Button>
           </DialogFooter>
         </form>

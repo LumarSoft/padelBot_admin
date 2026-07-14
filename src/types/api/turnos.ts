@@ -26,6 +26,8 @@ export interface Court {
   slotDurationMinutes: number;
   weeklyHours: WeeklyHours | null;
   courtType: CourtType;
+  /** Per-band price exceptions over `priceCents` — resolve a band's price with them. */
+  priceRules: { dayOfWeek: number | null; startTime: string; priceCents: number }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -116,6 +118,10 @@ export interface BulkBlockResult {
   blocked: number;
   created: number;
   skipped: number;
+}
+
+export interface BulkUnblockResult {
+  unblocked: number;
 }
 
 export interface BulkPriceAdjustRequest {

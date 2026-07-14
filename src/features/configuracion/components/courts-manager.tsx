@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { CalendarClock, DollarSign, Loader2, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -103,7 +104,8 @@ function EditCourtDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      {/* Wider than the default: this form carries the per-weekday hours editor. */}
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Editar cancha</DialogTitle>
           <DialogDescription>
@@ -221,17 +223,22 @@ function EditCourtDialog({
 export function CourtsManager() {
   const courtsQuery = useCourts();
   const deleteCourt = useDeleteCourt();
+  const confirm = useConfirm();
   const [editingCourt, setEditingCourt] = useState<Court | null>(null);
   const [pricingCourt, setPricingCourt] = useState<Court | null>(null);
 
   const courts = courtsQuery.data ?? [];
 
-  function handleDelete(court: Court): void {
-    if (
-      window.confirm(`¿Eliminar "${court.name}"? Se borrarán también sus turnos.`)
-    ) {
-      deleteCourt.mutate(court.id);
-    }
+  async function handleDelete(court: Court): Promise<void> {
+    const ok = await confirm({
+      title: `¿Eliminar "${court.name}"?`,
+      description:
+        "Se borran también todos sus turnos y las reservas que tengan cargadas. No se puede deshacer.",
+      confirmLabel: "Eliminar la cancha",
+      cancelLabel: "No, volver",
+      tone: "destructive",
+    });
+    if (ok) deleteCourt.mutate(court.id);
   }
 
   if (courtsQuery.isLoading) {
@@ -329,7 +336,7 @@ export function CourtsManager() {
                         variant="ghost"
                         size="icon"
                         aria-label={`Eliminar ${court.name}`}
-                        onClick={() => handleDelete(court)}
+                        onClick={() => void handleDelete(court)}
                         disabled={deleteCourt.isPending}
                         className="text-muted-foreground hover:text-destructive size-8"
                       >

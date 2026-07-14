@@ -2,6 +2,7 @@ import { apiClient } from "@/lib/api/client";
 import type {
   BulkBlockResult,
   BulkBlockSlotsRequest,
+  BulkUnblockResult,
   CreateSlotRequest,
   Slot,
   SlotFilters,
@@ -33,5 +34,8 @@ export const slotsService = {
   },
   bulkBlock(body: BulkBlockSlotsRequest): Promise<BulkBlockResult> {
     return apiClient.post<BulkBlockResult>("/api/slots/bulk-block", body);
+  },
+  bulkUnblock(body: BulkBlockSlotsRequest): Promise<BulkUnblockResult> {
+    return apiClient.post<BulkUnblockResult>("/api/slots/bulk-unblock", body);
   },
 };

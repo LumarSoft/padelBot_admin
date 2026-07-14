@@ -11,6 +11,7 @@ import {
   ToggleRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -233,6 +234,7 @@ function EditProductDialog({
 export function ProductsManager() {
   const productsQuery = useProducts();
   const deleteProduct = useDeleteProduct();
+  const confirm = useConfirm();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const products = productsQuery.data ?? [];
@@ -243,10 +245,16 @@ export function ProductsManager() {
     return acc;
   }, {});
 
-  function handleDelete(product: Product) {
-    if (window.confirm(`¿Eliminar "${product.name}"?`)) {
-      deleteProduct.mutate(product.id);
-    }
+  async function handleDelete(product: Product) {
+    const ok = await confirm({
+      title: `¿Eliminar "${product.name}"?`,
+      description:
+        "Sale del catálogo. Los consumos ya cargados en una cuenta no se tocan.",
+      confirmLabel: "Eliminar",
+      cancelLabel: "No, volver",
+      tone: "destructive",
+    });
+    if (ok) deleteProduct.mutate(product.id);
   }
 
   if (productsQuery.isLoading) {
@@ -336,7 +344,7 @@ export function ProductsManager() {
                               variant="ghost"
                               size="icon"
                               aria-label={`Eliminar ${product.name}`}
-                              onClick={() => handleDelete(product)}
+                              onClick={() => void handleDelete(product)}
                               disabled={deleteProduct.isPending}
                               className="text-muted-foreground hover:text-destructive size-8"
                             >

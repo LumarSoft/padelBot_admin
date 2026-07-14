@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Check, Copy, KeyRound, Loader2, Plus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -160,6 +161,7 @@ export function TeamManager() {
   const usersQuery = useUsers();
   const updateUser = useUpdateUser();
   const resetPassword = useResetUserPassword();
+  const confirm = useConfirm();
   const currentUserId = useAuthStore((state) => state.user?.id);
   const [resetResult, setResetResult] = useState<{ email: string; tempPassword: string } | null>(
     null,
@@ -167,8 +169,16 @@ export function TeamManager() {
 
   const users = usersQuery.data ?? [];
 
-  function handleReset(user: ClubUser) {
-    if (!window.confirm(`¿Generar una nueva contraseña temporal para ${user.name}?`)) return;
+  async function handleReset(user: ClubUser) {
+    const ok = await confirm({
+      title: `¿Generar una contraseña temporal para ${user.name}?`,
+      description:
+        "La contraseña actual deja de funcionar al instante. Le vas a tener que pasar la nueva para que entre y la cambie.",
+      confirmLabel: "Generar contraseña",
+      cancelLabel: "No, volver",
+      tone: "destructive",
+    });
+    if (!ok) return;
     resetPassword.mutate(user.id, {
       onSuccess: ({ tempPassword }) => {
         setResetResult({ email: user.email, tempPassword });
@@ -254,7 +264,7 @@ export function TeamManager() {
                             size="icon"
                             aria-label={`Resetear contraseña de ${user.name}`}
                             title="Resetear contraseña"
-                            onClick={() => handleReset(user)}
+                            onClick={() => void handleReset(user)}
                             disabled={resetPassword.isPending}
                             className="text-muted-foreground hover:text-foreground size-8"
                           >

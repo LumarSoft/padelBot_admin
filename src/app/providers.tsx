@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
+import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 
 function makeQueryClient(): QueryClient {
   return new QueryClient({
@@ -29,8 +30,10 @@ export function Providers({ children }: { children: ReactNode }) {
       disableTransitionOnChange
     >
       <QueryClientProvider client={queryClient}>
-        {children}
-        <Toaster richColors position="top-right" />
+        <ConfirmProvider>
+          {children}
+          <Toaster richColors position="top-right" />
+        </ConfirmProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

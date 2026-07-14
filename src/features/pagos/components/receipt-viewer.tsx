@@ -116,12 +116,12 @@ export function ReceiptViewer({
               Rechazar
             </Button>
             <Button
+              variant="success"
               onClick={() => {
                 onConfirm(booking.id);
                 setOpen(false);
               }}
               disabled={anyBusy}
-              className="bg-emerald-600 text-white hover:bg-emerald-600/90"
             >
               {busy ? <Loader2 className="animate-spin" /> : <Check />}
               Confirmar reserva

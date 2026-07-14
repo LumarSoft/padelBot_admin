@@ -228,6 +228,7 @@ function PaymentCard({
                 Rechazar
               </Button>
               <Button
+                variant="success"
                 size="sm"
                 onClick={() => onConfirm(booking.id)}
                 disabled={anyBusy || !canConfirm}
@@ -236,7 +237,6 @@ function PaymentCard({
                     ? undefined
                     : "Esperando el comprobante del jugador para poder confirmar"
                 }
-                className="bg-emerald-600 text-white hover:bg-emerald-600/90"
               >
                 {busy ? <Loader2 className="animate-spin" /> : <Check />}
                 Confirmar reserva

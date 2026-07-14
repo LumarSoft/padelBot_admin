@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Check, CircleDashed, Loader2 } from "lucide-react";
+import { ArrowRight, Check, CheckCircle2, CircleDashed, Loader2 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -39,10 +39,33 @@ export function SetupChecklist({
 
   const doneCount = status.steps.filter((step) => step.done).length;
   const allDone = doneCount === status.steps.length;
+  const complete = allDone || !!status.setupCompletedAt;
 
   // Once the owner has finished the wizard, stop nagging them on the overview — the
   // remaining optional steps live in Configuración and don't need a permanent banner.
-  if (hideWhenComplete && (allDone || status.setupCompletedAt)) return null;
+  if (hideWhenComplete && complete) return null;
+
+  // In Configuración the card stays, but a finished setup is not a to-do list any more:
+  // a checklist of seven ticks is noise the owner has to scan past every time. One line
+  // that says everything is in order, and the real settings right below it.
+  if (complete) {
+    return (
+      <Card className="border-emerald-500/40 bg-emerald-500/[0.06]">
+        <CardContent className="flex items-center gap-3 py-1">
+          <CheckCircle2 className="size-5 shrink-0 text-emerald-600 dark:text-emerald-500" />
+          <div className="min-w-0">
+            <p className="font-medium text-emerald-700 dark:text-emerald-400">
+              Cuenta configurada completamente de forma correcta
+            </p>
+            <p className="text-muted-foreground mt-0.5 text-sm text-pretty">
+              {clubName ?? "Tu complejo"} está listo: el bot toma reservas y cobra las señas.
+              Podés ajustar lo que quieras desde acá abajo.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

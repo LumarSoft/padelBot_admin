@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { Loader2, Plus, RefreshCw, Repeat, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -284,17 +285,19 @@ export function RecurringBookingsManager() {
   const recurring = recurringQuery.data ?? [];
 
   const deleteRecurring = useDeleteRecurringBooking();
+  const confirm = useConfirm();
   const applyRecurring = useApplyRecurringBooking();
   const updateRecurring = useUpdateRecurringBooking();
 
-  function handleDelete(rb: RecurringBooking) {
-    if (
-      window.confirm(
-        `¿Eliminar el turno fijo de ${rb.playerName} (${dayLabel(rb.dayOfWeek)} ${rb.slotStart})? No se borran las reservas ya generadas.`,
-      )
-    ) {
-      deleteRecurring.mutate(rb.id);
-    }
+  async function handleDelete(rb: RecurringBooking) {
+    const ok = await confirm({
+      title: `¿Eliminar el turno fijo de ${rb.playerName}?`,
+      description: `${dayLabel(rb.dayOfWeek)} ${rb.slotStart}. Deja de generar turnos nuevos; las reservas ya generadas quedan en la agenda.`,
+      confirmLabel: "Eliminar el fijo",
+      cancelLabel: "No, volver",
+      tone: "destructive",
+    });
+    if (ok) deleteRecurring.mutate(rb.id);
   }
 
   return (
@@ -403,7 +406,7 @@ export function RecurringBookingsManager() {
                         variant="ghost"
                         size="icon"
                         aria-label="Eliminar turno fijo"
-                        onClick={() => handleDelete(rb)}
+                        onClick={() => void handleDelete(rb)}
                         disabled={deleteRecurring.isPending}
                         className="text-muted-foreground hover:text-destructive size-8"
                       >

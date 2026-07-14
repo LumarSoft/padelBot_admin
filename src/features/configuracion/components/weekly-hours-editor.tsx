@@ -78,13 +78,15 @@ export function WeeklyHoursEditor({
           const mode = modeOf(value, key);
           const hours = value[key];
           return (
-            <div key={key} className="grid grid-cols-[5.5rem_1fr_auto] items-center gap-2">
-              <span className="text-sm">{label}</span>
+            // The custom hours wrap onto their own line when the dialog is too narrow to
+            // hold day + mode + both times — otherwise the time inputs push out of it.
+            <div key={key} className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+              <span className="w-20 shrink-0 text-sm">{label}</span>
               <Select
                 value={mode}
                 onValueChange={(v) => setMode(key, (v as DayMode) ?? "default")}
               >
-                <SelectTrigger className="h-8 text-xs" disabled={disabled}>
+                <SelectTrigger className="h-8 min-w-0 flex-1 text-xs" disabled={disabled}>
                   <SelectValue>{(v) => MODE_LABELS[v as DayMode]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -95,14 +97,14 @@ export function WeeklyHoursEditor({
                   ))}
                 </SelectContent>
               </Select>
-              {mode === "custom" && hours ? (
-                <div className="flex items-center gap-1">
+              {mode === "custom" && hours && (
+                <div className="flex w-full items-center gap-1 pl-20 sm:w-auto sm:pl-0">
                   <Input
                     type="time"
                     value={hours.open}
                     onChange={(e) => setHours(key, "open", e.target.value)}
                     disabled={disabled}
-                    className="h-8 w-24 text-xs"
+                    className="h-8 min-w-0 flex-1 text-xs sm:w-24 sm:flex-none"
                     aria-label={`Apertura ${label}`}
                   />
                   <span className="text-muted-foreground text-xs">–</span>
@@ -111,12 +113,10 @@ export function WeeklyHoursEditor({
                     value={hours.close}
                     onChange={(e) => setHours(key, "close", e.target.value)}
                     disabled={disabled}
-                    className="h-8 w-24 text-xs"
+                    className="h-8 min-w-0 flex-1 text-xs sm:w-24 sm:flex-none"
                     aria-label={`Cierre ${label}`}
                   />
                 </div>
-              ) : (
-                <span />
               )}
             </div>
           );

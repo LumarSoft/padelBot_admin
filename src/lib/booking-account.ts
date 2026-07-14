@@ -1,3 +1,18 @@
+/**
+ * The seña already in the club's pocket for this booking: what the player transferred plus any
+ * credit consumed at booking time. Only a CONFIRMED booking has actually been paid — a pending
+ * one is still just a quote. Mirrors the API's `loadAccount`, which credits this to J1 (quien
+ * reservó) in the turno's bill.
+ */
+export function paidDepositCents(booking: {
+  status: string;
+  transferAmountCents: number | null;
+  creditAppliedCents: number;
+}): number {
+  if (booking.status !== "CONFIRMED") return 0;
+  return (booking.transferAmountCents ?? 0) + booking.creditAppliedCents;
+}
+
 /** A consumo line that contributes to the turno's bill. */
 export interface AccountLine {
   unitPriceCents: number;

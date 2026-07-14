@@ -8,6 +8,7 @@ import { ApiError } from "@/lib/api/api-error";
 import type {
   BulkBlockResult,
   BulkBlockSlotsRequest,
+  BulkUnblockResult,
   CreateSlotRequest,
   Slot,
   SlotFilters,
@@ -59,6 +60,26 @@ export function useBulkBlockSlots() {
         parts.push(`${result.skipped} omitido${result.skipped === 1 ? "" : "s"} (reservados o ya bloqueados)`);
       }
       toast.success(parts.join(" · "));
+    },
+    onError: (error) => toast.error(error.message),
+  });
+}
+
+/** Frees every blocked turno in the chosen courts/dates — the undo of `useBulkBlockSlots`. */
+export function useBulkUnblockSlots() {
+  const queryClient = useQueryClient();
+
+  return useMutation<BulkUnblockResult, ApiError, BulkBlockSlotsRequest>({
+    mutationFn: (body) => slotsService.bulkUnblock(body),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.slots.all });
+      if (result.unblocked === 0) {
+        toast.info("No había turnos bloqueados en ese rango");
+        return;
+      }
+      toast.success(
+        `${result.unblocked} turno${result.unblocked === 1 ? "" : "s"} desbloqueado${result.unblocked === 1 ? "" : "s"}`,
+      );
     },
     onError: (error) => toast.error(error.message),
   });

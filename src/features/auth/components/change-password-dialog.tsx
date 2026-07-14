@@ -5,8 +5,12 @@ import { KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  PasswordInput,
+  PasswordRequirements,
+} from "@/components/ui/password-input";
+import { isPasswordValid } from "@/lib/password";
 import {
   Dialog,
   DialogContent,
@@ -35,12 +39,29 @@ export function ChangePasswordDialog() {
   });
 
   const mismatch = confirm.length > 0 && next !== confirm;
+  const weak = next.length > 0 && !isPasswordValid(next);
   const canSubmit =
-    current.length > 0 && next.length >= 8 && next === confirm && !changePassword.isPending;
+    current.length > 0 &&
+    isPasswordValid(next) &&
+    next === confirm &&
+    !changePassword.isPending;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canSubmit) return;
+    // Never fail silently: say what's missing instead of leaving a dead button.
+    if (!current) {
+      toast.error("Escribí tu contraseña actual");
+      return;
+    }
+    if (!isPasswordValid(next)) {
+      toast.error("La nueva contraseña no cumple los requisitos");
+      return;
+    }
+    if (next !== confirm) {
+      toast.error("Las contraseñas no coinciden");
+      return;
+    }
+    if (changePassword.isPending) return;
     changePassword.mutate({ currentPassword: current, newPassword: next });
   }
 
@@ -68,14 +89,15 @@ export function ChangePasswordDialog() {
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Cambiar contraseña</DialogTitle>
-          <DialogDescription>Mínimo 8 caracteres.</DialogDescription>
+          <DialogDescription>
+            Elegí una contraseña que cumpla los tres requisitos.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="pw-current">Contraseña actual</Label>
-            <Input
+            <PasswordInput
               id="pw-current"
-              type="password"
               value={current}
               onChange={(e) => setCurrent(e.target.value)}
               autoComplete="current-password"
@@ -84,29 +106,32 @@ export function ChangePasswordDialog() {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="pw-next">Nueva contraseña</Label>
-            <Input
+            <PasswordInput
               id="pw-next"
-              type="password"
               value={next}
               onChange={(e) => setNext(e.target.value)}
               autoComplete="new-password"
+              aria-invalid={weak || undefined}
+              aria-describedby="pw-rules"
               disabled={changePassword.isPending}
             />
+            <PasswordRequirements id="pw-rules" value={next} />
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="pw-confirm">Repetir nueva contraseña</Label>
-            <Input
+            <PasswordInput
               id="pw-confirm"
-              type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               autoComplete="new-password"
+              aria-invalid={mismatch || undefined}
               disabled={changePassword.isPending}
             />
             {mismatch && <p className="text-destructive text-xs">Las contraseñas no coinciden.</p>}
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={!canSubmit}>
+            {/* Enabled on purpose even when invalid: pressing it says what's missing. */}
+            <Button type="submit" disabled={changePassword.isPending} aria-disabled={!canSubmit}>
               {changePassword.isPending ? "Guardando…" : "Guardar"}
             </Button>
           </DialogFooter>

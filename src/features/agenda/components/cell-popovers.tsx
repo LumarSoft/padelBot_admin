@@ -25,7 +25,9 @@ import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { formatPrice, formatPriceExact, formatTimeRange } from "@/lib/format";
+import { paidDepositCents } from "@/lib/booking-account";
 import { waLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 import { ApiError } from "@/lib/api/api-error";
@@ -383,18 +385,21 @@ export function BookingActions({
   onDone: () => void;
 }) {
   const cancelBooking = useCancelBooking();
+  const confirm = useConfirm();
   const [accountOpen, setAccountOpen] = useState(false);
   const totalItems = booking.bookingProducts.reduce((s, p) => s + p.quantity, 0);
   const isSettled = booking.settledAt != null;
+  const depositPaid = paidDepositCents(booking);
 
-  function handleCancel() {
-    if (
-      window.confirm(
-        `¿Cancelar la reserva de ${booking.playerName} (${formatTimeRange(booking.slot.startsAt, booking.slot.endsAt)})?`,
-      )
-    ) {
-      cancelBooking.mutate(booking.id, { onSuccess: onDone });
-    }
+  async function handleCancel() {
+    const ok = await confirm({
+      title: `¿Cancelar la reserva de ${booking.playerName}?`,
+      description: `${booking.slot.court.name} · ${formatTimeRange(booking.slot.startsAt, booking.slot.endsAt)}. El turno queda libre para reasignar${depositPaid > 0 ? ` y la seña de ${formatPrice(depositPaid)} vuelve como crédito del jugador si cancelás a tiempo` : ""}.`,
+      confirmLabel: "Cancelar la reserva",
+      cancelLabel: "No, volver",
+      tone: "destructive",
+    });
+    if (ok) cancelBooking.mutate(booking.id, { onSuccess: onDone });
   }
 
   const copyText = booking.playerPhone
@@ -421,6 +426,24 @@ export function BookingActions({
             <span className="text-muted-foreground">Precio</span>
             <span className="font-medium">{formatPrice(booking.slot.priceCents)}</span>
           </div>
+          {/* La plata que ya entró: sin esto el mostrador vuelve a cobrar la seña. */}
+          {depositPaid > 0 && (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Seña paga</span>
+                <span className="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
+                  <Check className="size-3" />
+                  {formatPrice(depositPaid)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Resta de la cancha</span>
+                <span className="font-semibold tabular-nums">
+                  {formatPrice(Math.max(0, booking.slot.priceCents - depositPaid))}
+                </span>
+              </div>
+            </>
+          )}
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Teléfono</span>
             <span className="font-medium">{booking.playerPhone || "—"}</span>
@@ -507,6 +530,7 @@ export function BookingActions({
 export function PendingActions({ booking, onDone }: { booking: Booking; onDone: () => void }) {
   const confirmPayment = useConfirmPayment();
   const rejectPayment = useRejectPayment();
+  const confirm = useConfirm();
   const { data: config } = useTransferConfig();
   const [accountOpen, setAccountOpen] = useState(false);
   const busy = confirmPayment.isPending || rejectPayment.isPending;
@@ -520,10 +544,16 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
   const isAdminBooking = booking.bookedByUserId !== null;
   const canConfirm = !receiptMode || booking.hasReceipt || isAdminBooking;
 
-  function handleReject() {
-    if (window.confirm(`¿Liberar el turno de ${booking.playerName}? El pago quedará rechazado.`)) {
-      rejectPayment.mutate(booking.id, { onSuccess: onDone });
-    }
+  async function handleReject() {
+    const ok = await confirm({
+      title: `¿Liberar el turno de ${booking.playerName}?`,
+      description:
+        "El pago queda rechazado y la franja vuelve a estar disponible para otro jugador.",
+      confirmLabel: "Liberar el turno",
+      cancelLabel: "No, volver",
+      tone: "destructive",
+    });
+    if (ok) rejectPayment.mutate(booking.id, { onSuccess: onDone });
   }
 
   return (

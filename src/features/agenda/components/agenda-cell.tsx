@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, CheckCircle2, Hourglass, RotateCcw, FileCheck2, Repeat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/format";
+import { paidDepositCents } from "@/lib/booking-account";
 import {
   Popover,
   PopoverContent,
@@ -56,6 +57,7 @@ export function AgendaCell({
 
   const isPast = new Date(buildSlotDateTimes(dayKey, band).endsAt) < new Date();
   const isBot = booking ? booking.bookedByUserId === null : false;
+  const depositPaid = booking ? paidDepositCents(booking) : 0;
   // Cuenta completa: the settled turno keeps its color even in the past — that green
   // check is exactly what the desk scans for ("¿quedó alguna cuenta abierta?").
   const isSettled = booking?.settledAt != null;
@@ -121,6 +123,16 @@ export function AgendaCell({
                   </span>
                 ) : null}
                 {formatPrice(booking!.slot.priceCents)}
+                {/* Money already in: the desk must see at a glance that this turno has a seña. */}
+                {depositPaid > 0 && (
+                  <span
+                    className="inline-flex items-center gap-0.5 font-medium text-emerald-600 dark:text-emerald-400"
+                    title={`Seña de ${formatPrice(depositPaid)} paga`}
+                  >
+                    <CheckCircle2 className="size-2.5" />
+                    seña
+                  </span>
+                )}
               </span>
             </>
           )}

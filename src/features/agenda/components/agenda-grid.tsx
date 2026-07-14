@@ -11,6 +11,7 @@ import {
   bandsForDate,
   bandSortMinutes,
   buildSlotDateTimes,
+  resolveBandPriceCents,
   todayKey,
   type ScheduleBand,
 } from "@/features/agenda/lib/schedule";
@@ -122,7 +123,9 @@ export function AgendaGrid({ dayKey, courtId }: AgendaGridProps) {
                     <AgendaCell
                       courtId={court.id}
                       courtName={court.name}
-                      courtPriceCents={court.priceCents}
+                      // The band's price, not the court's default: a band with a price
+                      // exception must quote the exception even before its slot exists.
+                      courtPriceCents={resolveBandPriceCents(court, dayKey, band.start)}
                       dayKey={dayKey}
                       band={band}
                       data={cellFor(court.id, band.start)}

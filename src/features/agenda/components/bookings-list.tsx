@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CalendarCheck, Loader2, X, CalendarClock, Phone } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -48,17 +49,31 @@ export function BookingsList() {
   const bookings = bookingsQuery.data ?? [];
 
   const cancelBooking = useCancelBooking();
+  const confirm = useConfirm();
   const markNoShow = useMarkNoShow();
   const [collectingBooking, setCollectingBooking] = useState<Booking | null>(null);
 
-  function handleCancel(booking: Booking) {
-    if (
-      window.confirm(
-        `¿Cancelar la reserva de ${booking.playerName} (${formatDay(booking.slot.startsAt)} · ${formatTimeRange(booking.slot.startsAt, booking.slot.endsAt)})?`,
-      )
-    ) {
-      cancelBooking.mutate(booking.id);
-    }
+  async function handleCancel(booking: Booking) {
+    const ok = await confirm({
+      title: `¿Cancelar la reserva de ${booking.playerName}?`,
+      description: `${booking.slot.court.name} · ${formatDay(booking.slot.startsAt)} · ${formatTimeRange(booking.slot.startsAt, booking.slot.endsAt)}. El turno queda libre para reasignar.`,
+      confirmLabel: "Cancelar la reserva",
+      cancelLabel: "No, volver",
+      tone: "destructive",
+    });
+    if (ok) cancelBooking.mutate(booking.id);
+  }
+
+  async function handleNoShow(booking: Booking) {
+    const ok = await confirm({
+      title: `¿Marcar a ${booking.playerName} como ausente?`,
+      description:
+        "Suma una ausencia a su historial. Con varias, el bot le va a pedir el pago del total por adelantado.",
+      confirmLabel: "Marcar ausente",
+      cancelLabel: "No, volver",
+      tone: "destructive",
+    });
+    if (ok) markNoShow.mutate(booking.id);
   }
 
   const hasFilters = !!courtId || !!statusFilter;
@@ -248,14 +263,7 @@ export function BookingsList() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => {
-                                  if (
-                                    window.confirm(
-                                      `¿Marcar a ${booking.playerName} como ausente? Suma a su contador de no-shows.`,
-                                    )
-                                  )
-                                    markNoShow.mutate(booking.id);
-                                }}
+                                onClick={() => void handleNoShow(booking)}
                                 disabled={markNoShow.isPending}
                                 className="text-muted-foreground hover:text-destructive h-7 px-2 text-xs"
                               >
@@ -273,7 +281,7 @@ export function BookingsList() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleCancel(booking)}
+                            onClick={() => void handleCancel(booking)}
                             disabled={cancelBooking.isPending}
                             className="text-muted-foreground hover:text-destructive h-7 px-2 text-xs"
                           >

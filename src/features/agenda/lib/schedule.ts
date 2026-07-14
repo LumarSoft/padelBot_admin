@@ -158,6 +158,45 @@ export function bandsForDate(court: CourtScheduleConfig, dayKey: string): Schedu
   return bandsForWeekday(court, weekdayOfKey(dayKey));
 }
 
+/** A court price exception, as needed to resolve a band's price. */
+export interface CourtPriceRule {
+  /** 0 = Sunday … 6 = Saturday, or null for every day. */
+  dayOfWeek: number | null;
+  /** "HH:MM" band start the price applies to. */
+  startTime: string;
+  priceCents: number;
+}
+
+/** The pricing-relevant fields of a Court (mirrors the API's price resolution). */
+export interface CourtPricingConfig {
+  priceCents: number;
+  priceRules?: CourtPriceRule[];
+}
+
+/**
+ * The price of a band on a given day: the court's price exceptions over its default price,
+ * a weekday-specific rule beating an all-days one. Mirrors the API's
+ * `availability/lib/pricing.ts` — keep them in sync, or the panel quotes one price and the
+ * bot another for the very same turno.
+ */
+export function resolveBandPriceCents(
+  court: CourtPricingConfig,
+  dayKey: string,
+  bandStart: string,
+): number {
+  const weekday = weekdayOfKey(dayKey);
+  let dayRule: CourtPriceRule | undefined;
+  let allDaysRule: CourtPriceRule | undefined;
+
+  for (const rule of court.priceRules ?? []) {
+    if (rule.startTime !== bandStart) continue;
+    if (rule.dayOfWeek === weekday) dayRule = rule;
+    else if (rule.dayOfWeek === null || rule.dayOfWeek === undefined) allDaysRule = rule;
+  }
+
+  return (dayRule ?? allDaysRule)?.priceCents ?? court.priceCents;
+}
+
 /** Minutes since the grid day's midnight — chronological sort key across midnight. */
 export function bandSortMinutes(band: ScheduleBand): number {
   return band.startOffset * 1440 + minutesOf(band.start);
