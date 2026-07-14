@@ -2,6 +2,7 @@ import { apiClient } from "@/lib/api/client";
 import type {
   BotMetrics,
   BusinessMetrics,
+  ClubUser,
   Lead,
   LeadStatus,
   LeadsSummary,
@@ -9,6 +10,7 @@ import type {
   OpsClub,
   OpsHealth,
   ProvisionLeadPayload,
+  ResetPasswordResult,
   SubscriptionState,
   UpdateLeadPayload,
   UpdateSubscriptionPayload,
@@ -50,6 +52,17 @@ export const opsService = {
     return apiClient.patch<SubscriptionState>(
       `/api/ops/clubs/${id}/subscription`,
       payload,
+    );
+  },
+  listClubUsers(id: string): Promise<ClubUser[]> {
+    return apiClient.get<ClubUser[]>(`/api/ops/clubs/${id}/users`);
+  },
+  resetClubUserPassword(
+    id: string,
+    userId: number,
+  ): Promise<ResetPasswordResult> {
+    return apiClient.post<ResetPasswordResult>(
+      `/api/ops/clubs/${id}/users/${userId}/reset-password`,
     );
   },
 

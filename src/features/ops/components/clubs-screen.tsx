@@ -12,11 +12,13 @@ import { cn } from "@/lib/utils";
 import { formatUsd, SUBSCRIPTION_LABELS, timeAgo } from "@/features/ops/lib/labels";
 import { useOpsClubs } from "@/features/ops/hooks/use-ops";
 import { SubscriptionDialog } from "@/features/ops/components/subscription-dialog";
+import { ClubPasswordDialog } from "@/features/ops/components/club-password-dialog";
 import type { OpsClub } from "@/types/api/ops";
 
 export function ClubsScreen() {
   const clubs = useOpsClubs();
   const [editing, setEditing] = useState<OpsClub | null>(null);
+  const [managingPw, setManagingPw] = useState<OpsClub | null>(null);
 
   return (
     <div className="space-y-6">
@@ -30,14 +32,19 @@ export function ClubsScreen() {
       ) : clubs.data && clubs.data.length > 0 ? (
         <div className="space-y-3">
           {clubs.data.map((club) => (
-            <ClubRow key={club.id} club={club} onEdit={() => setEditing(club)} />
+            <ClubRow
+              key={club.id}
+              club={club}
+              onEdit={() => setEditing(club)}
+              onManagePasswords={() => setManagingPw(club)}
+            />
           ))}
         </div>
       ) : (
         <EmptyState
           icon={BuildingIcon}
           title="Todavía no hay clubes"
-          description="Cuando provisiones un lead, el club aparece acá."
+          description="Cuando confirmás una solicitud, el club aparece acá."
         />
       )}
 
@@ -48,11 +55,27 @@ export function ClubsScreen() {
           onOpenChange={(open) => !open && setEditing(null)}
         />
       )}
+
+      {managingPw && (
+        <ClubPasswordDialog
+          club={managingPw}
+          open
+          onOpenChange={(open) => !open && setManagingPw(null)}
+        />
+      )}
     </div>
   );
 }
 
-function ClubRow({ club, onEdit }: { club: OpsClub; onEdit: () => void }) {
+function ClubRow({
+  club,
+  onEdit,
+  onManagePasswords,
+}: {
+  club: OpsClub;
+  onEdit: () => void;
+  onManagePasswords: () => void;
+}) {
   const { subscription, readiness, activity } = club;
 
   return (
@@ -95,9 +118,14 @@ function ClubRow({ club, onEdit }: { club: OpsClub; onEdit: () => void }) {
             </p>
           </div>
 
-          <Button variant="outline" size="sm" onClick={onEdit}>
-            Suscripción
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button variant="outline" size="sm" onClick={onManagePasswords}>
+              Contraseñas
+            </Button>
+            <Button variant="outline" size="sm" onClick={onEdit}>
+              Suscripción
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

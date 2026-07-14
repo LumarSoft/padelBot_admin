@@ -12,6 +12,8 @@ export interface SessionUser {
   clubId: string;
   clubName: string;
   role: UserRole;
+  /** True while on a temporary password: the panel forces a change before letting them in. */
+  mustChangePassword: boolean;
 }
 
 /** Credentials submitted from the login form. */

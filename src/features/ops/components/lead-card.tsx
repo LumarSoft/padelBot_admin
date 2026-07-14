@@ -102,7 +102,7 @@ export function LeadCard({ lead }: LeadCardProps) {
             </WhatsAppLink>
             {lead.status !== "CONVERTED" && (
               <Button size="sm" onClick={() => setProvisionOpen(true)}>
-                Provisionar
+                Confirmar solicitud
               </Button>
             )}
           </div>

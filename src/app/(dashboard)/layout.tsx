@@ -6,6 +6,7 @@ import { SessionSync } from "@/features/auth/components/session-sync";
 import { RealtimeSync } from "@/features/realtime/components/realtime-sync";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { ChangePasswordDialog } from "@/features/auth/components/change-password-dialog";
+import { ForcePasswordChangeDialog } from "@/features/auth/components/force-password-change-dialog";
 import { DashboardNav } from "@/features/dashboard/components/dashboard-nav";
 import { SubscriptionBanner } from "@/features/dashboard/components/subscription-banner";
 import { GlobalSearch } from "@/features/dashboard/components/global-search";
@@ -32,6 +33,9 @@ export default async function DashboardLayout({
     <div className="grid min-h-svh grid-cols-1 md:grid-cols-[16rem_1fr]">
       <SessionSync user={user} />
       <RealtimeSync />
+
+      {/* Temporary-password gate: blocks the panel until the user picks their own. */}
+      {user.mustChangePassword && <ForcePasswordChangeDialog />}
 
       {/* Ambient brand glow the glass surfaces blur against. */}
       <div aria-hidden className="ambient-bg" />

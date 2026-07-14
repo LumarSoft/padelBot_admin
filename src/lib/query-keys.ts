@@ -68,6 +68,7 @@ export const queryKeys = {
     leads: (status?: string) => ["ops", "leads", status ?? "all"] as const,
     leadsSummary: ["ops", "leads", "summary"] as const,
     clubs: ["ops", "clubs"] as const,
+    clubUsers: (clubId: string) => ["ops", "clubs", clubId, "users"] as const,
     business: ["ops", "metrics", "business"] as const,
     bot: ["ops", "metrics", "bot"] as const,
     health: ["ops", "health"] as const,

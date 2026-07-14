@@ -56,11 +56,11 @@ export function ProvisionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Provisionar club</DialogTitle>
+          <DialogTitle>Confirmar solicitud</DialogTitle>
           <DialogDescription>
-            Crea el club vacío y su usuario dueño, en período de prueba. Las
-            canchas, precios y cobros se cargan después en la puesta a punto,
-            sentados con el complejo.
+            Confirmás que este club pidió su cuenta: se crea el club vacío y su
+            usuario dueño, en período de prueba. Las canchas, precios y cobros se
+            cargan después en la puesta a punto, sentados con el complejo.
           </DialogDescription>
         </DialogHeader>
 
@@ -123,7 +123,7 @@ export function ProvisionDialog({
               type="submit"
               disabled={provision.isPending || password.length < 8}
             >
-              {provision.isPending ? "Creando…" : "Crear club"}
+              {provision.isPending ? "Creando…" : "Confirmar y crear cuenta"}
             </Button>
           </DialogFooter>
         </form>

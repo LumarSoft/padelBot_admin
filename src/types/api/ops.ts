@@ -114,6 +114,25 @@ export interface UpdateSubscriptionPayload {
   plan?: string;
 }
 
+export type ClubUserRoleApi = "OWNER" | "STAFF";
+
+/** A club's panel user, as ops sees it when handling a password-reset request. */
+export interface ClubUser {
+  id: number;
+  name: string;
+  email: string;
+  role: ClubUserRoleApi;
+  isActive: boolean;
+  mustChangePassword: boolean;
+  lastLoginAt: string | null;
+}
+
+/** Result of a password reset — the temp password is shown once, never stored. */
+export interface ResetPasswordResult {
+  email: string;
+  tempPassword: string;
+}
+
 // ── Metrics ──────────────────────────────────────────────────────────────────
 
 export interface BusinessMetrics {

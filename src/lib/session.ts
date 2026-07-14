@@ -24,6 +24,8 @@ const sessionClaimsSchema = z.object({
   clubId: z.string(),
   clubName: z.string(),
   role: z.enum(["owner", "staff"]),
+  // Older tokens (issued before the claim existed) simply default to false.
+  mustChangePassword: z.boolean().default(false),
 });
 
 function decodeJwtPayload(token: string): unknown {
@@ -46,8 +48,8 @@ export function decodeSessionUser(token: string): SessionUser | null {
     logger.warn("session", "Session token has unexpected claims");
     return null;
   }
-  const { sub, email, name, clubId, clubName, role } = claims.data;
-  return { id: sub, email, name, clubId, clubName, role };
+  const { sub, email, name, clubId, clubName, role, mustChangePassword } = claims.data;
+  return { id: sub, email, name, clubId, clubName, role, mustChangePassword };
 }
 
 /** Read the raw JWT from the session cookie (or null). */
@@ -105,6 +107,7 @@ export function createMockSessionToken(user: SessionUser): string {
       clubId: user.clubId,
       clubName: user.clubName,
       role: user.role,
+      mustChangePassword: user.mustChangePassword,
     }),
   ).toString("base64url");
   return `${header}.${payload}.`;

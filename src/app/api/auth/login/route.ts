@@ -28,6 +28,7 @@ function buildMockSession(email: string): { token: string; user: SessionUser } {
     clubId: "mock-club-1",
     clubName: "Club Demo Pádel",
     role: "owner",
+    mustChangePassword: false,
   };
   return { token: createMockSessionToken(user), user };
 }

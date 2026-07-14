@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/api/api-error";
 import type {
   BotMetrics,
   BusinessMetrics,
+  ClubUser,
   Lead,
   LeadStatus,
   LeadsSummary,
@@ -120,6 +121,29 @@ export function useUpdateSubscription() {
     },
     onError: (error) =>
       toast.error(errorMessage(error, "No pudimos actualizar la suscripción.")),
+  });
+}
+
+export function useClubUsers(clubId: string, enabled = true) {
+  return useQuery<ClubUser[]>({
+    queryKey: queryKeys.ops.clubUsers(clubId),
+    queryFn: () => opsService.listClubUsers(clubId),
+    enabled,
+  });
+}
+
+export function useResetClubUserPassword(clubId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: number) =>
+      opsService.resetClubUserPassword(clubId, userId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.ops.clubUsers(clubId),
+      });
+    },
+    onError: (error) =>
+      toast.error(errorMessage(error, "No pudimos resetear la contraseña.")),
   });
 }
 
