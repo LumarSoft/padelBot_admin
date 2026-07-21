@@ -1,0 +1,431 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Motion: iOS-like fluid deceleration + a gentle spring overshoot. */
+  --ease-fluid: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.35, 0.64, 1);
+
+  /* Layered "material" shadows (theme-dependent, see :root / .dark). */
+  --shadow-glass: var(--glass-shadow);
+  --shadow-glass-lg: var(--glass-shadow-lg);
+
+  --animate-fade-up: fade-up 0.55s var(--ease-fluid) both;
+  --animate-scale-in: scale-in 0.3s var(--ease-fluid) both;
+  --animate-bar-rise: bar-rise 0.7s var(--ease-fluid) both;
+  --animate-grow-x: grow-x 0.9s var(--ease-fluid) both;
+}
+
+:root {
+  /* Cool-tinted neutrals: the canvas sits slightly below the cards so
+     translucent surfaces read as layers, Apple-style. */
+  --background: oklch(0.972 0.004 255);
+  --foreground: oklch(0.16 0.012 260);
+  --card: oklch(0.995 0.002 255);
+  --card-foreground: oklch(0.16 0.012 260);
+  --popover: oklch(0.995 0.002 255);
+  --popover-foreground: oklch(0.16 0.012 260);
+  --primary: oklch(0.21 0.015 260);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.955 0.006 255);
+  --secondary-foreground: oklch(0.21 0.015 260);
+  --muted: oklch(0.955 0.006 255);
+  --muted-foreground: oklch(0.5 0.015 260);
+  --accent: oklch(0.945 0.008 255);
+  --accent-foreground: oklch(0.21 0.015 260);
+  --destructive: oklch(0.577 0.245 27.325);
+  --brand: oklch(0.546 0.215 264);
+  --brand-foreground: oklch(0.985 0 0);
+  --border: oklch(0.9 0.008 255);
+  --input: oklch(0.895 0.008 255);
+  --ring: oklch(0.546 0.215 264);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.75rem;
+  --sidebar: oklch(0.975 0.004 255);
+  --sidebar-foreground: oklch(0.16 0.012 260);
+  --sidebar-primary: oklch(0.21 0.015 260);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.945 0.008 255);
+  --sidebar-accent-foreground: oklch(0.21 0.015 260);
+  --sidebar-border: oklch(0.9 0.008 255);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Ambient glow intensity (dark mode needs stronger glows to read). */
+  --ambient-1: 10%;
+  --ambient-2: 9%;
+  --ambient-3: 6%;
+
+  /* Glass material. */
+  --glass-highlight: oklch(1 0 0 / 60%);
+  --glass-overlay-solidity: 86%;
+  --glass-shadow: 0 1px 2px oklch(0 0 0 / 4%), 0 8px 24px -12px oklch(0 0 0 / 14%);
+  --glass-shadow-lg: 0 2px 6px oklch(0 0 0 / 5%), 0 24px 48px -16px oklch(0 0 0 / 24%);
+}
+
+.dark {
+  --background: oklch(0.135 0.014 262);
+  --foreground: oklch(0.97 0.005 250);
+  --card: oklch(0.195 0.016 262);
+  --card-foreground: oklch(0.97 0.005 250);
+  --popover: oklch(0.215 0.016 262);
+  --popover-foreground: oklch(0.97 0.005 250);
+  --primary: oklch(0.93 0.005 250);
+  --primary-foreground: oklch(0.17 0.014 262);
+  --secondary: oklch(0.26 0.015 262);
+  --secondary-foreground: oklch(0.97 0.005 250);
+  --muted: oklch(0.26 0.015 262);
+  --muted-foreground: oklch(0.71 0.012 258);
+  --accent: oklch(0.27 0.015 262);
+  --accent-foreground: oklch(0.97 0.005 250);
+  --destructive: oklch(0.704 0.191 22.216);
+  --brand: oklch(0.645 0.19 264);
+  --brand-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.645 0.19 264);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.17 0.015 262);
+  --sidebar-foreground: oklch(0.97 0.005 250);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.27 0.015 262);
+  --sidebar-accent-foreground: oklch(0.97 0.005 250);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+
+  --ambient-1: 22%;
+  --ambient-2: 16%;
+  --ambient-3: 12%;
+
+  --glass-highlight: oklch(1 0 0 / 9%);
+  /* Dark floating layers need to be near-solid or the page bleeds through. */
+  --glass-overlay-solidity: 95%;
+  --glass-shadow: 0 1px 2px oklch(0 0 0 / 30%), 0 8px 24px -12px oklch(0 0 0 / 50%);
+  --glass-shadow-lg: 0 2px 6px oklch(0 0 0 / 35%), 0 24px 48px -16px oklch(0 0 0 / 65%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1, "cv11";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+  }
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--brand) 28%, transparent);
+  }
+  /* Headings: slightly tighter tracking for a refined, Linear-like feel. */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.018em;
+  }
+}
+
+@layer base {
+  /* Thin, unobtrusive scrollbars. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted-foreground);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Glass material system.
+ * Three densities, all with a specular top edge (inset highlight) so surfaces
+ * catch "light" the way Apple's materials do:
+ *  - glass-card:    content surfaces (cards, list items).
+ *  - glass-panel:   app chrome (sidebar, headers, floating navs).
+ *  - glass-overlay: floating layers (dialogs, popovers, menus) — most opaque
+ *                   so text stays readable over any backdrop.
+ * ------------------------------------------------------------------------- */
+
+@utility glass-card {
+  background: color-mix(in oklch, var(--card) 78%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-highlight),
+    var(--glass-shadow);
+}
+
+@utility glass-panel {
+  background: color-mix(in oklch, var(--sidebar) 62%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6);
+}
+
+@utility glass-overlay {
+  background: color-mix(
+    in oklch,
+    var(--popover) var(--glass-overlay-solidity),
+    transparent
+  );
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  backdrop-filter: blur(24px) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-highlight),
+    var(--glass-shadow-lg);
+}
+
+/* Without backdrop-filter support, fall back to solid surfaces. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-card {
+    background: var(--card);
+  }
+  .glass-panel {
+    background: var(--sidebar);
+  }
+  .glass-overlay {
+    background: var(--popover);
+  }
+}
+
+/* Fixed ambient backdrop: soft brand glows the glass surfaces can refract.
+   Pure gradients (no blur) so it costs nothing to composite. */
+@utility ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      52rem 36rem at 14% -8%,
+      color-mix(in oklch, var(--brand) var(--ambient-1), transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      44rem 30rem at 88% -6%,
+      color-mix(in oklch, oklch(0.75 0.12 195) var(--ambient-2), transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      64rem 44rem at 50% 118%,
+      color-mix(in oklch, var(--brand) var(--ambient-3), transparent),
+      transparent 64%
+    );
+}
+
+/* Cascade entrance: direct children fade-up one after another. */
+@utility stagger-children {
+  > * {
+    animation: fade-up 0.55s var(--ease-fluid) both;
+  }
+  > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  > *:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  > *:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  > *:nth-child(4) {
+    animation-delay: 180ms;
+  }
+  > *:nth-child(5) {
+    animation-delay: 240ms;
+  }
+  > *:nth-child(6) {
+    animation-delay: 300ms;
+  }
+  > *:nth-child(n + 7) {
+    animation-delay: 360ms;
+  }
+}
+
+@layer utilities {
+  /* Signup flow: the elements GSAP cascades in — every question's heading and options,
+     and the closing screen's badge, title and blocks. They are born transparent, because
+     letting React paint them and only then having GSAP write the from-state flashed the
+     finished screen for one frame before it animated in. GSAP's inline styles outrank
+     this, so it stops applying the moment it takes over — which is why every animation
+     path, reduced motion included, must reveal them. */
+  .signup-stage :is([data-animate], [data-badge], [data-title], [data-rise]) {
+    opacity: 0;
+  }
+
+  /* Subtle dotted grid used as a page backdrop on auth screens. */
+  .bg-dot-grid {
+    background-image: radial-gradient(
+      color-mix(in oklch, var(--foreground) 12%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+  }
+
+  /* Landing: slow-drifting "aurora" glow behind the hero. */
+  .animate-aurora {
+    animation: aurora-drift 16s ease-in-out infinite;
+  }
+
+  /* Landing: seamless horizontal marquee (two identical groups, shift -50%). */
+  .animate-marquee {
+    animation: marquee 36s linear infinite;
+  }
+  .marquee-row:hover .animate-marquee {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-aurora,
+    .animate-marquee,
+    .animate-fade-up,
+    .animate-scale-in,
+    .animate-bar-rise,
+    .animate-grow-x {
+      animation: none;
+    }
+    .stagger-children > * {
+      animation: none;
+    }
+  }
+}
+
+/* Glass toasts (sonner tags every toast with .cn-toast). */
+[data-sonner-toast].cn-toast {
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  backdrop-filter: blur(16px) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-highlight),
+    var(--glass-shadow-lg) !important;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    scale: 0.97;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* Chart bars grow from the baseline (pair with origin-bottom). */
+@keyframes bar-rise {
+  from {
+    scale: 1 0;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+
+/* Progress fills sweep in from the left (pair with origin-left). */
+@keyframes grow-x {
+  from {
+    scale: 0 1;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+
+@keyframes aurora-drift {
+  0%,
+  100% {
+    transform: translate3d(-3%, 0, 0) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate3d(4%, 3%, 0) scale(1.12);
+    opacity: 1;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
