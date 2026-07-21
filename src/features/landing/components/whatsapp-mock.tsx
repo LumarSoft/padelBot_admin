@@ -27,7 +27,7 @@ const CONVERSATION: Bubble[] = [
   { from: "player", text: "Dale, joya 🙌", time: "20:42" },
   {
     from: "bot",
-    text: "Listo, te lo reservo 90 min. Para confirmarlo, transferí la seña de $5.000 al alias padelbot.centro y te aviso apenas la reciba.",
+    text: "Listo, te lo reservo 90 min. Para confirmarlo, transferí la seña de $5.000 al alias gtp.centro y te aviso apenas la reciba.",
     time: "20:42",
   },
   { from: "player", text: "Ya te transferí ✅", time: "20:45" },

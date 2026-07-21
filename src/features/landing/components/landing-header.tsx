@@ -20,7 +20,7 @@ export function LandingHeader() {
         className="pointer-events-none absolute inset-x-0 top-0 h-[5.5rem] bg-linear-to-b from-background via-background/60 to-transparent"
       />
       <div className="glass-panel ring-foreground/[0.07] relative mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 rounded-2xl px-4 shadow-[inset_0_1px_0_0_var(--glass-highlight),var(--glass-shadow)] ring-1 sm:px-5">
-        <Link href="/" aria-label="PadelBot — inicio">
+        <Link href="/" aria-label="GTP — inicio">
           <BrandWordmark />
         </Link>
 

@@ -19,7 +19,7 @@ No test runner is configured yet.
 
 ## Product
 
-This is the **PadelBot** owner panel + public landing for a multi-tenant padel-booking SaaS (see `../docs/BITACORA.md`). The backend is `../padelBot_api` (NestJS). The panel never talks to the DB and never holds the JWT in JS — see the BFF/proxy section below.
+This is the **GTP** owner panel + public landing for a multi-tenant padel-booking SaaS (see `../docs/BITACORA.md`). The backend is `../padelBot_api` (NestJS). The panel never talks to the DB and never holds the JWT in JS — see the BFF/proxy section below.
 
 ## Architecture
 

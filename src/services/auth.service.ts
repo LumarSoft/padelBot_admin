@@ -7,7 +7,7 @@ import type {
 
 /**
  * Auth API calls (browser side). These hit the internal BFF routes, which in
- * turn talk to padelbot_api and manage the session cookie.
+ * turn talk to gtp_api and manage the session cookie.
  */
 export const authService = {
   async login(credentials: LoginRequest): Promise<SessionUser> {

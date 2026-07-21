@@ -12,7 +12,7 @@ interface ProxyOptions {
 }
 
 /**
- * Forwards a request to padelbot_api, attaching the session JWT from the cookie.
+ * Forwards a request to gtp_api, attaching the session JWT from the cookie.
  * Used by the internal BFF route handlers so the token never reaches the browser.
  */
 export async function proxyToApi(

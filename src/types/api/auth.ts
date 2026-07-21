@@ -28,7 +28,7 @@ export interface LoginResponse {
 }
 
 /**
- * Shape padelbot_api is expected to return from `POST /auth/login`.
+ * Shape gtp_api is expected to return from `POST /auth/login`.
  * `token` is a JWT whose claims include the user's `clubId`.
  */
 export interface ApiLoginResponse {

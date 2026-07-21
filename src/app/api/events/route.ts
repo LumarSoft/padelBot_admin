@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /**
- * Streaming BFF endpoint: opens an SSE connection to padelbot_api with the
+ * Streaming BFF endpoint: opens an SSE connection to gtp_api with the
  * session JWT (kept server-side) and pipes it straight to the browser. The
  * browser's EventSource talks only to this same-origin route, so the token
  * never reaches the client. When the browser disconnects, `request.signal`

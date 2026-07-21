@@ -1,8 +1,9 @@
 {
-  "name": "padelbot_admin",
+  "name": "gtp_admin",
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "lsof -ti:3000 | xargs kill -9 2>/dev/null; true",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

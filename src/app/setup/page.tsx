@@ -5,7 +5,7 @@ import { requireSession } from "@/lib/session";
 import { SetupWizard } from "@/features/setup/components/setup-wizard";
 
 export const metadata: Metadata = {
-  title: "Puesta a punto · PadelBot",
+  title: "Puesta a punto · GTP",
 };
 
 export default async function SetupPage() {

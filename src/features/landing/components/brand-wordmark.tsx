@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * PadelBot brand mark for the public landing — a rounded brand tile with a
+ * GTP brand mark for the public landing — a rounded brand tile with a
  * "ball" plus the product wordmark. Mirrors the in-app Logo visual language.
  */
 export function BrandWordmark({
@@ -17,7 +17,7 @@ export function BrandWordmark({
         <span className="bg-brand-foreground size-3 rounded-full" />
       </span>
       {showWordmark && (
-        <span className="text-lg font-semibold tracking-tight">PadelBot</span>
+        <span className="text-lg font-semibold tracking-tight">GTP</span>
       )}
     </span>
   );

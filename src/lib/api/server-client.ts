@@ -5,7 +5,7 @@ import { ApiError, type FieldErrors } from "@/lib/api/api-error";
 
 /**
  * Server-side HTTP client. Used only by route handlers / server components to
- * reach padelbot_api. Attaches the JWT (read from the session cookie) as a
+ * reach gtp_api. Attaches the JWT (read from the session cookie) as a
  * Bearer token. The token never crosses to the browser.
  */
 
