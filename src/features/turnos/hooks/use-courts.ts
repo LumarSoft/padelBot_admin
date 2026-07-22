@@ -21,6 +21,8 @@ export function useCreateCourt() {
     mutationFn: (body) => courtsService.create(body),
     onSuccess: (court) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.courts.all });
+      // Keep the setup wizard's aggregated status (and its counts) in sync.
+      queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
       toast.success(`Cancha "${court.name}" creada`);
     },
     onError: (error) => toast.error(error.message),
@@ -48,6 +50,7 @@ export function useDeleteCourt() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.courts.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.slots.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
       toast.success("Cancha eliminada");
     },
     onError: (error) => toast.error(error.message),

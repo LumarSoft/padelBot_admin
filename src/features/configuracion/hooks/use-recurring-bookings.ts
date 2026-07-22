@@ -16,6 +16,9 @@ function invalidateAll(queryClient: ReturnType<typeof useQueryClient>) {
   // Applying / editing a fixed slot can materialize bookings on real slots.
   queryClient.invalidateQueries({ queryKey: queryKeys.slots.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+  // The setup wizard's finish screen reads its "turnos fijos" count off this aggregate,
+  // so a fixed slot created mid-setup has to freshen it or the recap reads 0.
+  queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
 }
 
 export function useRecurringBookings() {

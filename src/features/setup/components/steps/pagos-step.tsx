@@ -130,7 +130,9 @@ function PagosForm({
   const [holder, setHolder] = useState(initial.holder);
   const [mode, setMode] = useState<DepositMode>(initial.mode);
   const [percent, setPercent] = useState(String(initial.percent));
-  const [requireDni, setRequireDni] = useState(initial.requireDni);
+  // Only meaningful in RECEIPT mode; AUTO forces it on (see effectiveRequireDni). We keep
+  // the loaded value so switching AUTO→RECEIPT doesn't silently drop it.
+  const [requireDni] = useState(initial.requireDni);
   const [verification, setVerification] = useState<PaymentVerificationMode>(
     initial.verification,
   );
@@ -149,6 +151,11 @@ function PagosForm({
 
   const canSave = (mode !== "DEPOSIT" || percentValid) && cancellationValid;
 
+  // Auto-reconciliation matches a transfer to its reservation by the payer's DNI, so it
+  // can't confirm on its own without it. The requirement is therefore forced on (not an
+  // optional toggle) whenever verification is AUTO.
+  const effectiveRequireDni = verification === "AUTO" ? true : requireDni;
+
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     if (!canSave) return;
@@ -157,7 +164,7 @@ function PagosForm({
         transferAlias: alias.trim(),
         transferHolder: holder.trim(),
         depositMode: mode,
-        requireDniMatch: requireDni,
+        requireDniMatch: effectiveRequireDni,
         paymentVerificationMode: verification,
         cancellationWindowHours: cancellationNumber,
         ...(mode === "DEPOSIT" ? { depositPercent: percentNumber } : {}),
@@ -348,22 +355,24 @@ function PagosForm({
         </div>
 
         {verification === "AUTO" && (
-          <label className="flex cursor-pointer items-start gap-2.5 text-sm">
+          <div className="flex items-start gap-2.5 text-sm">
             <input
               type="checkbox"
-              checked={requireDni}
-              onChange={(e) => setRequireDni(e.target.checked)}
-              disabled={updateConfig.isPending}
+              checked
+              readOnly
+              disabled
+              aria-label="Exigir el DNI del que transfiere (obligatorio con cobro automático)"
               className="mt-0.5 accent-[var(--brand)]"
             />
             <span>
-              <span className="font-medium">Exigir el DNI del que transfiere</span>
+              <span className="font-medium">Exige el DNI del que transfiere</span>
               <span className="text-muted-foreground block text-xs text-pretty">
-                El bot pide el DNI al reservar y solo confirma si quien transfirió es esa
-                misma persona. El importe queda redondo. Si no coincide, va a revisión manual.
+                Obligatorio con el cobro automático: el bot necesita el DNI para reconocer la
+                transferencia y confirmar solo. Lo pide al reservar y confirma cuando quien
+                transfirió es esa misma persona; si no coincide, va a revisión manual.
               </span>
             </span>
-          </label>
+          </div>
         )}
 
         <div className="flex flex-col gap-2 border-t pt-5">
