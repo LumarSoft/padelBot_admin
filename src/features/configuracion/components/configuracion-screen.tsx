@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Building2, CalendarClock, Repeat, Users, Wallet } from "lucide-react";
+import { Bot, Building2, CalendarClock, Repeat, Users, Wallet } from "lucide-react";
 import { Tabs, TabsList, TabsTab, TabsPanel, TabsIndicator } from "@/components/ui/tabs";
 import { ClubProfileManager } from "@/features/configuracion/components/club-profile-manager";
 import { CourtsManager } from "@/features/configuracion/components/courts-manager";
+import { FaqManager } from "@/features/configuracion/components/faq-manager";
 import { RecurringBookingsManager } from "@/features/configuracion/components/recurring-bookings-manager";
 import { TransferConfigManager } from "@/features/configuracion/components/transfer-config-manager";
 import { TeamManager } from "@/features/configuracion/components/team-manager";
@@ -13,6 +14,7 @@ import { HelpContactCard } from "@/features/onboarding/components/help-contact-c
 
 const TABS = [
   { value: "complejo", label: "Complejo", icon: Building2 },
+  { value: "bot", label: "Bot", icon: Bot },
   { value: "pagos", label: "Pagos", icon: Wallet },
   { value: "canchas", label: "Canchas", icon: CalendarClock },
   { value: "fijos", label: "Turnos fijos", icon: Repeat },
@@ -63,6 +65,17 @@ export function ConfiguracionScreen({ clubName }: { clubName?: string }) {
           </div>
           <ClubProfileManager />
           <HelpContactCard />
+        </TabsPanel>
+
+        <TabsPanel value="bot" className="flex flex-col gap-6 pt-2">
+          <div>
+            <h2 className="text-base font-semibold">Preguntas del bot</h2>
+            <p className="text-muted-foreground text-sm">
+              Lo que el bot responde sobre el complejo: servicios, formas de pago, reglas,
+              alquileres, estacionamiento y todo lo que te suelen preguntar.
+            </p>
+          </div>
+          <FaqManager />
         </TabsPanel>
 
         <TabsPanel value="pagos" className="pt-2">

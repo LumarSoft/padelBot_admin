@@ -7,10 +7,12 @@ import { queryKeys } from "@/lib/query-keys";
 import { ApiError } from "@/lib/api/api-error";
 import type {
   ClubProfile,
+  FaqEntry,
   MercadoPagoConnectOrigin,
   MercadoPagoStatus,
   TransferConfig,
   UpdateClubProfileRequest,
+  UpdateFaqRequest,
   UpdateTransferConfigRequest,
 } from "@/types/api/clubs";
 
@@ -29,6 +31,26 @@ export function useUpdateClubProfile() {
     onSuccess: (profile) => {
       queryClient.setQueryData(queryKeys.clubs.profile, profile);
       toast.success("Datos del complejo actualizados");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+}
+
+export function useFaq() {
+  return useQuery<FaqEntry[]>({
+    queryKey: queryKeys.clubs.faq,
+    queryFn: () => clubsService.getFaq(),
+  });
+}
+
+export function useUpdateFaq() {
+  const queryClient = useQueryClient();
+
+  return useMutation<FaqEntry[], ApiError, UpdateFaqRequest>({
+    mutationFn: (body) => clubsService.updateFaq(body),
+    onSuccess: (entries) => {
+      queryClient.setQueryData(queryKeys.clubs.faq, entries);
+      toast.success("Preguntas del bot actualizadas");
     },
     onError: (error) => toast.error(error.message),
   });
