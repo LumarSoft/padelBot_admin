@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,9 +24,10 @@ import {
   useCourts,
   useCreateCourt,
   useDeleteCourt,
+  useUpdateCourt,
 } from "@/features/turnos/hooks/use-courts";
 import type { StepProps } from "@/features/setup/components/setup-wizard";
-import type { CourtType, WeeklyHours } from "@/types/api/turnos";
+import type { Court, CourtType, WeeklyHours } from "@/types/api/turnos";
 
 const DURATIONS = [60, 90, 120] as const;
 
@@ -170,6 +171,7 @@ function DraftFields({
 export function CanchasStep({ clubName, nav }: StepProps) {
   const courtsQuery = useCourts();
   const createCourt = useCreateCourt();
+  const updateCourt = useUpdateCourt();
   const deleteCourt = useDeleteCourt();
 
   const courts = courtsQuery.data ?? [];
@@ -181,6 +183,8 @@ export function CanchasStep({ clubName, nav }: StepProps) {
   const [name, setName] = useState("");
   const [draft, setDraft] = useState<CourtDraft>(DEFAULT_DRAFT);
   const [adding, setAdding] = useState(false);
+  // A court being edited in place; null when adding or idle.
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const priceNumber = Number(draft.price);
   const priceValid = Number.isFinite(priceNumber) && priceNumber >= 0;
@@ -188,8 +192,30 @@ export function CanchasStep({ clubName, nav }: StepProps) {
   const countNumber = Number(count);
   const countValid = Number.isInteger(countNumber) && countNumber >= 1 && countNumber <= 20;
 
-  const isBulk = !hasCourts && !adding;
-  const busy = createCourt.isPending;
+  const isEditing = editingId !== null;
+  const isBulk = !hasCourts && !adding && !isEditing;
+  const busy = createCourt.isPending || updateCourt.isPending;
+
+  function startEditing(court: Court) {
+    setAdding(false);
+    setEditingId(court.id);
+    setName(court.name);
+    setDraft({
+      price: String(Math.round(court.priceCents / 100)),
+      openTime: court.openTime,
+      closeTime: court.closeTime,
+      duration: String(court.slotDurationMinutes),
+      courtType: court.courtType,
+      weeklyHours: court.weeklyHours ?? {},
+    });
+  }
+
+  function resetForm() {
+    setAdding(false);
+    setEditingId(null);
+    setName("");
+    setDraft(DEFAULT_DRAFT);
+  }
 
   function draftBody(courtName: string) {
     return {
@@ -224,9 +250,28 @@ export function CanchasStep({ clubName, nav }: StepProps) {
 
     const trimmed = name.trim();
     if (!trimmed) return;
+
+    if (isEditing && editingId) {
+      await updateCourt.mutateAsync({
+        id: editingId,
+        body: {
+          name: trimmed,
+          priceCents,
+          openTime: draft.openTime,
+          closeTime: draft.closeTime,
+          slotDurationMinutes: Number(draft.duration),
+          courtType: draft.courtType,
+          // {} means "no per-day overrides" — send null so the API clears any it had.
+          weeklyHours:
+            Object.keys(draft.weeklyHours).length > 0 ? draft.weeklyHours : null,
+        },
+      });
+      resetForm();
+      return;
+    }
+
     await createCourt.mutateAsync(draftBody(trimmed));
-    setName("");
-    setAdding(false);
+    resetForm();
   }
 
   const bubbles: PreviewBubble[] = [
@@ -294,7 +339,14 @@ export function CanchasStep({ clubName, nav }: StepProps) {
           {hasCourts && (
             <div className="flex flex-col gap-2">
               {courts.map((court) => (
-                <Card key={court.id} size="sm" className="animate-fade-up">
+                <Card
+                  key={court.id}
+                  size="sm"
+                  className={cn(
+                    "animate-fade-up",
+                    editingId === court.id && "ring-brand/50 ring-1",
+                  )}
+                >
                   <CardContent className="flex items-center gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{court.name}</p>
@@ -308,9 +360,20 @@ export function CanchasStep({ clubName, nav }: StepProps) {
                       type="button"
                       variant="ghost"
                       size="icon"
+                      aria-label={`Editar ${court.name}`}
+                      onClick={() => startEditing(court)}
+                      disabled={busy || deleteCourt.isPending}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
                       aria-label={`Eliminar ${court.name}`}
                       onClick={() => deleteCourt.mutate(court.id)}
-                      disabled={deleteCourt.isPending}
+                      disabled={busy || deleteCourt.isPending}
                       className="text-muted-foreground hover:text-destructive"
                     >
                       <Trash2 className="size-4" />
@@ -321,15 +384,15 @@ export function CanchasStep({ clubName, nav }: StepProps) {
             </div>
           )}
 
-          {hasCourts && !adding ? (
+          {hasCourts && !adding && !isEditing ? (
             <div>
               <Button type="button" variant="outline" size="lg" onClick={() => setAdding(true)}>
                 <Plus />
                 Agregar otra cancha
               </Button>
               <p className="text-muted-foreground mt-2 text-xs">
-                Los precios por franja horaria (pico, promo) se cargan después, desde
-                Configuración → Canchas.
+                Tocá el lápiz para editar una cancha. Los precios por franja horaria (pico,
+                promo) se cargan después, desde Configuración → Canchas.
               </p>
             </div>
           ) : (
@@ -381,8 +444,10 @@ export function CanchasStep({ clubName, nav }: StepProps) {
                     {busy ? (
                       <>
                         <Loader2 className="animate-spin" />
-                        Creando…
+                        {isEditing ? "Guardando…" : "Creando…"}
                       </>
+                    ) : isEditing ? (
+                      "Guardar cambios"
                     ) : (
                       "Agregar cancha"
                     )}
@@ -390,10 +455,7 @@ export function CanchasStep({ clubName, nav }: StepProps) {
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => {
-                      setAdding(false);
-                      setName("");
-                    }}
+                    onClick={resetForm}
                     disabled={busy}
                   >
                     Cancelar

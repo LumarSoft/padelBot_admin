@@ -65,6 +65,17 @@ export interface UpdateClubProfileRequest {
   locationInfo?: string;
 }
 
+/** One bot FAQ entry: a player question and the answer the bot should give. */
+export interface FaqEntry {
+  question: string;
+  answer: string;
+}
+
+/** Replaces the whole FAQ list (the "Bot" section edits it as a set). */
+export interface UpdateFaqRequest {
+  entries: FaqEntry[];
+}
+
 export interface MercadoPagoStatus {
   /** Whether the club connected its own MercadoPago account via OAuth. */
   connected: boolean;

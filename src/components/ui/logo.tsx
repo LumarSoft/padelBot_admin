@@ -5,7 +5,7 @@ interface LogoProps {
   showWordmark?: boolean;
 }
 
-/** PadelBot brand mark: a rounded brand tile with a "ball" + optional wordmark. */
+/** GTP brand mark: a rounded brand tile with a "ball" + optional wordmark. */
 export function Logo({ className, showWordmark = true }: LogoProps) {
   return (
     <span className={cn("flex items-center gap-2.5", className)}>

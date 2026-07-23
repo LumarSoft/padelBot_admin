@@ -2,7 +2,7 @@ import { ApiError, type FieldErrors } from "@/lib/api/api-error";
 
 /**
  * Browser-side HTTP client. Talks to this app's own internal route handlers
- * (the BFF under `/api/...`), never to padelbot_api directly — that keeps the
+ * (the BFF under `/api/...`), never to gtp_api directly — that keeps the
  * JWT in an HttpOnly cookie, out of reach of client JavaScript.
  */
 

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-const STORAGE_KEY = "padelbot:payment-sound";
+const STORAGE_KEY = "gtp:payment-sound";
 
 /**
  * Whether the payment-alert sound is muted. Persisted to localStorage so the preference

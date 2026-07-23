@@ -31,7 +31,7 @@ export function ProblemSolution() {
         <SectionHeading
           eyebrow="El problema"
           title="Gestionar las reservas a mano te quita tiempo y plata"
-          lead="Cada mensaje sin responder es un turno que se enfría. PadelBot se ocupa de todo eso por vos."
+          lead="Cada mensaje sin responder es un turno que se enfría. GTP se ocupa de todo eso por vos."
         />
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

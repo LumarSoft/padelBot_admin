@@ -19,6 +19,8 @@ export function useCreateUser() {
     mutationFn: (body: CreateUserRequest) => usersService.create(body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+      // Keep the setup wizard's equipo count in sync.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -31,6 +33,7 @@ export function useUpdateUser() {
       usersService.update(id, body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
     },
     onError: (error: Error) => toast.error(error.message),
   });

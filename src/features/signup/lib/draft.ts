@@ -9,7 +9,7 @@ import type { SignupAnswers } from "@/features/signup/lib/questions";
  * reload. The key is versioned so a change to the questions can't resurrect a draft whose
  * shape no longer matches.
  */
-const KEY = "padelbot.signup.draft.v1";
+const KEY = "gtp.signup.draft.v1";
 
 /**
  * Drafts go stale. Somebody who abandoned this two weeks ago should meet a clean form, not

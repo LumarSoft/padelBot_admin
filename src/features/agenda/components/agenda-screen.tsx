@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, List } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, List, Lock } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,12 +23,13 @@ import { CreateBookingDialog } from "@/features/reservas/components/create-booki
 import { AgendaGrid } from "@/features/agenda/components/agenda-grid";
 import { WeekStrip } from "@/features/agenda/components/week-strip";
 import { BookingsList } from "@/features/agenda/components/bookings-list";
-import { BulkBlockDialog } from "@/features/agenda/components/bulk-block-dialog";
 import { formatDayLabel, shiftDay, todayKey } from "@/features/agenda/lib/schedule";
 
 export function AgendaScreen({ initialDayKey }: { initialDayKey?: string } = {}) {
   const [dayKey, setDayKey] = useState(initialDayKey ?? todayKey());
   const [courtId, setCourtId] = useState("");
+  // Bulk block/unblock is done by ticking cells straight on the grid.
+  const [selectionMode, setSelectionMode] = useState(false);
 
   const courtsQuery = useCourts();
   const courts = courtsQuery.data ?? [];
@@ -41,7 +42,13 @@ export function AgendaScreen({ initialDayKey }: { initialDayKey?: string } = {})
         description="La grilla del día: reservá, cancelá, reprogramá o bloqueá turnos en un solo lugar."
         actions={
           <div className="flex items-center gap-2">
-            <BulkBlockDialog />
+            <Button
+              variant={selectionMode ? "secondary" : "outline"}
+              onClick={() => setSelectionMode((v) => !v)}
+            >
+              <Lock className="size-4" />
+              {selectionMode ? "Salir de selección" : "Bloquear turnos"}
+            </Button>
             <CreateBookingDialog />
           </div>
         }
@@ -116,7 +123,20 @@ export function AgendaScreen({ initialDayKey }: { initialDayKey?: string } = {})
 
           <WeekStrip dayKey={dayKey} courts={courts} onSelectDay={setDayKey} />
 
-          <AgendaGrid dayKey={dayKey} courtId={courtId} />
+          {selectionMode && (
+            <div className="border-brand/30 bg-brand/5 text-foreground flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+              <Lock className="text-brand size-4 shrink-0" />
+              Tocá los turnos que querés bloquear (o desbloquear) y confirmá abajo. Cambiá de
+              día para bloquear en otra fecha. Las reservas no se pueden seleccionar.
+            </div>
+          )}
+
+          <AgendaGrid
+            dayKey={dayKey}
+            courtId={courtId}
+            selectionMode={selectionMode}
+            onExitSelection={() => setSelectionMode(false)}
+          />
         </TabsPanel>
 
         <TabsPanel value="lista">

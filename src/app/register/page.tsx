@@ -4,7 +4,7 @@ import { getSession } from "@/lib/session";
 import { SignupFlowClient } from "@/features/signup/components/signup-flow-client";
 
 export const metadata: Metadata = {
-  title: "Pedí tu club · PadelBot",
+  title: "Pedí tu club · GTP",
   description:
     "Contanos de tu complejo en dos minutos y lo dejamos andando nosotros: canchas, cobros y el WhatsApp del bot.",
 };

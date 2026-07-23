@@ -6,7 +6,7 @@
 type LogMeta = Record<string, unknown>;
 
 function format(scope: string, message: string): string {
-  return `[padelbot:${scope}] ${message}`;
+  return `[gtp:${scope}] ${message}`;
 }
 
 export const logger = {

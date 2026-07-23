@@ -112,6 +112,7 @@ export interface BulkBlockSlotsRequest {
   fromDate: string; // "YYYY-MM-DD"
   toDate: string; // "YYYY-MM-DD"
   slotStarts?: string[]; // omit = whole day
+  daysOfWeek?: number[]; // 0 = Sunday … 6 = Saturday; omit = every day in the range
 }
 
 export interface BulkBlockResult {

@@ -4,7 +4,7 @@ import { getSession } from "@/lib/session";
 import { LoginForm } from "@/features/auth/components/login-form";
 
 export const metadata: Metadata = {
-  title: "Ingresar · PadelBot Admin",
+  title: "Ingresar · GTP Admin",
 };
 
 export default async function LoginPage() {

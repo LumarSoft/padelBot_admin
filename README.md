@@ -1,13 +1,13 @@
-# PadelBot Admin
+# GTP Admin
 
-Panel de administración (web) del SaaS **PadelBot**. Cada club de pádel entra acá para **gestionar sus turnos y dirigir las conversaciones de su bot**. Construido con **Next.js 16**, **React 19** y **Tailwind CSS v4** (App Router).
+Panel de administración (web) del SaaS **GTP**. Cada club de pádel entra acá para **gestionar sus turnos y dirigir las conversaciones de su bot**. Construido con **Next.js 16**, **React 19** y **Tailwind CSS v4** (App Router).
 
 Este repo es uno de los dos que componen el producto:
 
 | Repo | Rol |
 | ---- | --- |
-| **`padelbot_admin`** (este) | Panel web. Login multitenant + administración de turnos, reservas y conversaciones del bot. |
-| **`padelbot_api`** | API REST + bot multitenant (NestJS + Prisma). Expone los endpoints que consume este panel. |
+| **`gtp_admin`** (este) | Panel web. Login multitenant + administración de turnos, reservas y conversaciones del bot. |
+| **`gtp_api`** | API REST + bot multitenant (NestJS + Prisma). Expone los endpoints que consume este panel. |
 
 > ⚠️ **No es el Next.js de siempre.** Este proyecto usa **Next.js 16.2.9 + React 19 + Tailwind v4**, con breaking changes respecto a versiones más documentadas. Antes de escribir código de framework, leé la guía correspondiente en `node_modules/next/dist/docs/` en vez de fiarte de convenciones viejas. (Ver `AGENTS.md` / `CLAUDE.md`.)
 
@@ -15,7 +15,7 @@ Este repo es uno de los dos que componen el producto:
 
 ## 1. La idea (visión de producto)
 
-PadelBot es un **SaaS multitenant** que se vende a varios clubes de pádel. El bot (en `padelbot_api`) atiende a los jugadores por WhatsApp y resuelve reservas de turnos de forma **híbrida**: por menús/opciones en el camino feliz, y con un **LLM (OpenAI)** cuando el jugador escribe en lenguaje natural.
+GTP es un **SaaS multitenant** que se vende a varios clubes de pádel. El bot (en `gtp_api`) atiende a los jugadores por WhatsApp y resuelve reservas de turnos de forma **híbrida**: por menús/opciones en el camino feliz, y con un **LLM (OpenAI)** cuando el jugador escribe en lenguaje natural.
 
 Este panel es la **cara de administración** para el staff de cada club. Cada usuario pertenece a **un club (tenant)** y solo ve los datos de su club. Desde acá el club puede:
 
@@ -42,7 +42,7 @@ Este panel es la **cara de administración** para el staff de cada club. Cada us
 
 ## 3. Cómo se conecta con la API
 
-- El panel **no toca la base de datos**: todo pasa por la API REST de `padelbot_api`.
+- El panel **no toca la base de datos**: todo pasa por la API REST de `gtp_api`.
 - **Auth**: login contra la API, que devuelve un **JWT con el `clubId`** del usuario. El panel guarda el token y lo manda en cada request. El tenant lo determina el token, no la UI.
 - Configurar la URL base de la API por variable de entorno (p. ej. `NEXT_PUBLIC_API_URL`).
 - Seguir las reglas de data fetching del repo (`docs/rules/data-fetching.md`): preferir Server Components / fetch en el servidor cuando aplique, y mantener el token fuera del alcance del cliente donde sea posible.
@@ -86,7 +86,7 @@ Pantallas clave:
 6. **Handoff humano**: interrumpir, enviar mensaje manual y reanudar el bot desde el detalle de la conversación.
 7. **Configuración**: datos del club y conexión del canal.
 
-> El roadmap del panel sigue al de la API: cada pantalla depende de que existan sus endpoints en `padelbot_api`.
+> El roadmap del panel sigue al de la API: cada pantalla depende de que existan sus endpoints en `gtp_api`.
 
 ---
 
@@ -104,7 +104,7 @@ Abrí [http://localhost:3000](http://localhost:3000).
 ### Variables de entorno
 
 ```
-NEXT_PUBLIC_API_URL="http://localhost:3000"   # URL base de padelbot_api
+NEXT_PUBLIC_API_URL="http://localhost:3000"   # URL base de gtp_api
 ```
 
 ### Comandos

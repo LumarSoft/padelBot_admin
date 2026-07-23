@@ -9,6 +9,8 @@ import type {
   TransferConfig,
   UpdateClubProfileRequest,
   UpdateTransferConfigRequest,
+  FaqEntry,
+  UpdateFaqRequest,
 } from "@/types/api/clubs";
 import type { CreateWhatsAppLineRequest } from "@/types/api/onboarding";
 
@@ -30,6 +32,12 @@ export const clubsService = {
   },
   updateProfile(body: UpdateClubProfileRequest): Promise<ClubProfile> {
     return apiClient.patch<ClubProfile>("/api/clubs/profile", body);
+  },
+  getFaq(): Promise<FaqEntry[]> {
+    return apiClient.get<FaqEntry[]>("/api/clubs/faq");
+  },
+  updateFaq(body: UpdateFaqRequest): Promise<FaqEntry[]> {
+    return apiClient.patch<FaqEntry[]>("/api/clubs/faq", body);
   },
   getTransferConfig(): Promise<TransferConfig> {
     return apiClient.get<TransferConfig>("/api/clubs/transfer-config");

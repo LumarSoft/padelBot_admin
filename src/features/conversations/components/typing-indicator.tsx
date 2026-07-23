@@ -3,11 +3,11 @@
 import { Bot } from "lucide-react";
 
 /**
- * "PadelBot está escribiendo…" bubble. Shown while we're in AI mode and the player's message
+ * "GTP está escribiendo…" bubble. Shown while we're in AI mode and the player's message
  * is the latest one — i.e. the bot is about to answer. (WhatsApp doesn't expose the player's
  * own typing state, so we only show it for the bot, which we can infer.)
  */
-export function TypingIndicator({ label = "PadelBot está escribiendo" }: { label?: string }) {
+export function TypingIndicator({ label = "GTP está escribiendo" }: { label?: string }) {
   return (
     <div className="flex items-center gap-2">
       <span className="bg-muted mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full">

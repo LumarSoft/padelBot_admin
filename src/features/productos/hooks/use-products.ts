@@ -25,6 +25,8 @@ export function useCreateProduct() {
     mutationFn: (body) => productsService.create(body),
     onSuccess: (product) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      // Keep the setup wizard's kiosco count in sync.
+      queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
       toast.success(`Producto "${product.name}" creado`);
     },
     onError: (error) => toast.error(error.message),
@@ -51,6 +53,7 @@ export function useDeleteProduct() {
     mutationFn: (id) => productsService.remove(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
       toast.success("Producto eliminado");
     },
     onError: (error) => toast.error(error.message),

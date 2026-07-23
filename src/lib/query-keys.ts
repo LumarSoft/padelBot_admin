@@ -30,6 +30,7 @@ export const queryKeys = {
   },
   clubs: {
     profile: ["clubs", "profile"] as const,
+    faq: ["clubs", "faq"] as const,
     transferConfig: ["clubs", "transfer-config"] as const,
     mercadopago: ["clubs", "mercadopago"] as const,
     subscription: ["clubs", "subscription"] as const,

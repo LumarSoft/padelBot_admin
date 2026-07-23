@@ -47,7 +47,7 @@ export function LoginForm() {
         <Logo showWordmark={false} className="[&>span]:size-9" />
         <div className="space-y-1">
           <h1 className="text-xl font-semibold tracking-tight">
-            Ingresá a PadelBot
+            Ingresá a GTP
           </h1>
           <p className="text-muted-foreground text-sm">
             Panel de administración de tu club.

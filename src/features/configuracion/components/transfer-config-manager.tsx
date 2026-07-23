@@ -48,7 +48,9 @@ function TransferConfigForm({
   const [holder, setHolder] = useState(initialHolder);
   const [mode, setMode] = useState<DepositMode>(initialMode);
   const [percent, setPercent] = useState(String(initialPercent));
-  const [requireDni, setRequireDni] = useState(initialRequireDni);
+  // Only meaningful in RECEIPT mode; AUTO forces it on (see effectiveRequireDni). We keep
+  // the loaded value so switching AUTO→RECEIPT doesn't silently drop it.
+  const [requireDni] = useState(initialRequireDni);
   const [verificationMode, setVerificationMode] =
     useState<PaymentVerificationMode>(initialVerificationMode);
   const [cancellationHours, setCancellationHours] = useState(String(initialCancellationHours));
@@ -71,12 +73,16 @@ function TransferConfigForm({
     Number.isInteger(maxReschedulesNumber) && maxReschedulesNumber >= 0 && maxReschedulesNumber <= 10;
   const rescheduleValid = reschedule !== "SELF" || (cutoffValid && maxReschedulesValid);
 
+  // Auto-reconciliation matches a transfer to its reservation by the payer's DNI, so it
+  // can't confirm on its own without it. The requirement is forced on whenever AUTO.
+  const effectiveRequireDni = verificationMode === "AUTO" ? true : requireDni;
+
   const unchanged =
     trimmedAlias === initialAlias &&
     trimmedHolder === initialHolder &&
     mode === initialMode &&
     percentNumber === initialPercent &&
-    requireDni === initialRequireDni &&
+    effectiveRequireDni === initialRequireDni &&
     verificationMode === initialVerificationMode &&
     cancellationNumber === initialCancellationHours &&
     reschedule === initialReschedule &&
@@ -92,7 +98,7 @@ function TransferConfigForm({
       transferAlias: trimmedAlias,
       transferHolder: trimmedHolder,
       depositMode: mode,
-      requireDniMatch: requireDni,
+      requireDniMatch: effectiveRequireDni,
       paymentVerificationMode: verificationMode,
       playerReschedule: reschedule,
       ...(mode === "DEPOSIT" ? { depositPercent: percentNumber } : {}),
@@ -328,23 +334,25 @@ function TransferConfigForm({
 
       {verificationMode === "AUTO" && (
         <div className="flex flex-col gap-2 border-t pt-4">
-          <label className="flex cursor-pointer items-start gap-2 text-sm">
+          <div className="flex items-start gap-2 text-sm">
             <input
               type="checkbox"
-              checked={requireDni}
-              onChange={(e) => setRequireDni(e.target.checked)}
-              disabled={updateConfig.isPending}
+              checked
+              readOnly
+              disabled
+              aria-label="Exigir DNI del titular (obligatorio con cobro automático)"
               className="mt-0.5 accent-[var(--brand)]"
             />
             <span>
-              <span className="font-medium">Exigir DNI del titular</span>
+              <span className="font-medium">Exige DNI del titular</span>
               <span className="text-muted-foreground block text-xs">
-                El bot pide el DNI al reservar y solo confirma solo si quien transfiere es el mismo
-                titular. El importe pasa a ser redondo (sin centavos). Si no coincide, queda para
-                revisión manual.
+                Obligatorio con el cobro automático: el bot necesita el DNI para reconocer la
+                transferencia y confirmar solo. Lo pide al reservar y confirma cuando quien
+                transfiere es el mismo titular; el importe pasa a ser redondo (sin centavos). Si
+                no coincide, queda para revisión manual.
               </span>
             </span>
-          </label>
+          </div>
         </div>
       )}
 

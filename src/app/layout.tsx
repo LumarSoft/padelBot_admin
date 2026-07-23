@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PadelBot Admin",
+  title: "GTP — Gestiona tu padel",
   description: "Panel de administración de turnos, reservas y bot del club.",
 };
 
