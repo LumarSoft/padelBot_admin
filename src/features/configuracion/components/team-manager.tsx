@@ -25,7 +25,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmptyState } from "@/components/ui/empty-state";
+import {
+  SettingsEmpty,
+  SettingsSection,
+} from "@/features/configuracion/components/settings-section";
 import { useAuthStore } from "@/stores/auth-store";
 import {
   useCreateUser,
@@ -187,113 +190,107 @@ export function TeamManager() {
     });
   }
 
-  if (usersQuery.isLoading) {
-    return (
-      <div className="text-muted-foreground flex items-center gap-2 py-10 text-sm">
-        <Loader2 className="size-4 animate-spin" />
-        Cargando equipo…
-      </div>
-    );
-  }
+  const hasRows = !usersQuery.isLoading && users.length > 0;
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-base font-semibold">Equipo</h2>
-          <p className="text-muted-foreground text-sm">
-            Cada empleado entra con su propio usuario — nunca compartas tu contraseña.
-          </p>
-        </div>
-        <InviteUserDialog />
-      </div>
-
+    <SettingsSection
+      icon={Users}
+      title="Equipo"
+      description="Cada empleado entra con su propio usuario — nunca compartas tu contraseña."
+      actions={<InviteUserDialog />}
+      // The temp-password notice sits above the table, so the card can't go full-bleed
+      // while it's showing.
+      flush={hasRows && !resetResult}
+    >
       {resetResult && (
-        <TempPasswordNotice email={resetResult.email} password={resetResult.tempPassword} />
-      )}
-
-      {users.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title="Sin usuarios"
-          description="Agregá a tu equipo para que cada uno entre con su propio usuario."
-        />
-      ) : (
-        <div className="overflow-hidden rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Usuario</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="w-40" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => {
-                const isSelf = String(user.id) === currentUserId;
-                return (
-                  <TableRow key={user.id} className={user.isActive ? "" : "opacity-60"}>
-                    <TableCell>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-medium">
-                          {user.name}
-                          {isSelf && <span className="text-muted-foreground text-xs"> (vos)</span>}
-                        </span>
-                        <span className="text-muted-foreground text-xs">{user.email}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.role === "OWNER" ? "default" : "secondary"}>
-                        {user.role === "OWNER" ? "Dueño" : "Staff"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {user.isActive ? "Activo" : "Desactivado"}
-                      {user.mustChangePassword && user.isActive && (
-                        <span className="text-muted-foreground block text-xs">
-                          contraseña temporal
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {!isSelf && (
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={`Resetear contraseña de ${user.name}`}
-                            title="Resetear contraseña"
-                            onClick={() => void handleReset(user)}
-                            disabled={resetPassword.isPending}
-                            className="text-muted-foreground hover:text-foreground size-8"
-                          >
-                            <KeyRound className="size-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              updateUser.mutate({
-                                id: user.id,
-                                body: { isActive: !user.isActive },
-                              })
-                            }
-                            disabled={updateUser.isPending}
-                            className="text-muted-foreground hover:text-foreground h-8 px-2 text-xs"
-                          >
-                            {user.isActive ? "Desactivar" : "Activar"}
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+        <div className={hasRows ? "mb-4" : ""}>
+          <TempPasswordNotice email={resetResult.email} password={resetResult.tempPassword} />
         </div>
       )}
-    </section>
+
+      {usersQuery.isLoading ? (
+        <div className="text-muted-foreground flex items-center gap-2 py-6 text-sm">
+          <Loader2 className="size-4 animate-spin" />
+          Cargando equipo…
+        </div>
+      ) : users.length === 0 ? (
+        <SettingsEmpty>
+          Agregá a tu equipo para que cada uno entre con su propio usuario.
+        </SettingsEmpty>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Usuario</TableHead>
+              <TableHead>Rol</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead className="w-40" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users.map((user) => {
+              const isSelf = String(user.id) === currentUserId;
+              return (
+                <TableRow key={user.id} className={user.isActive ? "" : "opacity-60"}>
+                  <TableCell>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-medium">
+                        {user.name}
+                        {isSelf && <span className="text-muted-foreground text-xs"> (vos)</span>}
+                      </span>
+                      <span className="text-muted-foreground text-xs">{user.email}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={user.role === "OWNER" ? "default" : "secondary"}>
+                      {user.role === "OWNER" ? "Dueño" : "Staff"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {user.isActive ? "Activo" : "Desactivado"}
+                    {user.mustChangePassword && user.isActive && (
+                      <span className="text-muted-foreground block text-xs">
+                        contraseña temporal
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {!isSelf && (
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Resetear contraseña de ${user.name}`}
+                          title="Resetear contraseña"
+                          onClick={() => void handleReset(user)}
+                          disabled={resetPassword.isPending}
+                          className="text-muted-foreground hover:text-foreground size-8"
+                        >
+                          <KeyRound className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            updateUser.mutate({
+                              id: user.id,
+                              body: { isActive: !user.isActive },
+                            })
+                          }
+                          disabled={updateUser.isPending}
+                          className="text-muted-foreground hover:text-foreground h-8 px-2 text-xs"
+                        >
+                          {user.isActive ? "Desactivar" : "Activar"}
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      )}
+    </SettingsSection>
   );
 }

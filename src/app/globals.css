@@ -257,6 +257,24 @@
   }
 }
 
+/* The settings save bar floats over the very form it belongs to, so at card opacity the
+   inputs behind it read straight through the button. It's a floating layer, not a content
+   surface: near-solid + the deeper blur and lift of `glass-overlay`. Declared outside
+   `@layer` on purpose, so it beats the `glass-card` background `<Card>` always applies. */
+.save-bar {
+  background: color-mix(in oklch, var(--card) 96%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  backdrop-filter: blur(24px) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-highlight),
+    var(--glass-shadow-lg);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .save-bar {
+    background: var(--card);
+  }
+}
+
 /* Fixed ambient backdrop: soft brand glows the glass surfaces can refract.
    Pure gradients (no blur) so it costs nothing to composite. */
 @utility ambient-bg {

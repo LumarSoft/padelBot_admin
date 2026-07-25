@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Bot, Loader2, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { SaveBar } from "@/features/configuracion/components/save-bar";
+import { SettingsSection } from "@/features/configuracion/components/settings-section";
 import { useFaq, useUpdateFaq } from "@/features/configuracion/hooks/use-transfer-config";
 import type { FaqEntry } from "@/types/api/clubs";
 
@@ -87,98 +90,121 @@ function FaqEditor({ initial }: { initial: FaqEntry[] }) {
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-muted-foreground text-sm">
-        Cargá las preguntas que te suelen hacer y qué tiene que responder el bot. El bot usa
-        <strong> solo esto</strong> para las consultas del complejo: si algo no está cargado, dice
-        con sinceridad que no lo tiene — nunca lo inventa.
-      </p>
-
-      {remaining.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <span className="text-muted-foreground text-xs font-medium">Sugerencias (tocá para agregar):</span>
-          <div className="flex flex-wrap gap-2">
-            {remaining.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => addSuggestion(s)}
-                disabled={rows.length >= MAX_ENTRIES}
-                className="border-input hover:bg-accent text-foreground/80 rounded-full border px-3 py-1 text-xs transition-colors disabled:opacity-50"
-              >
-                + {s}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="flex flex-col gap-3">
-        {rows.length === 0 && (
-          <p className="text-muted-foreground rounded-xl border border-dashed p-4 text-center text-sm">
-            Todavía no cargaste preguntas. Agregá una desde las sugerencias o con el botón de abajo.
-          </p>
-        )}
-
-        {rows.map((row, index) => (
-          <div key={row.id} className="flex flex-col gap-2 rounded-xl border p-4">
-            <div className="flex items-start justify-between gap-2">
-              <Label htmlFor={`faq-q-${row.id}`} className="text-muted-foreground text-xs">
-                Pregunta {index + 1}
-              </Label>
-              <button
-                type="button"
-                onClick={() => removeRow(row.id)}
-                aria-label="Eliminar pregunta"
-                className="text-muted-foreground hover:text-destructive transition-colors"
-              >
-                <Trash2 className="size-4" />
-              </button>
+    <div className="flex flex-col gap-6">
+      <SettingsSection
+        icon={Bot}
+        title="Preguntas del bot"
+        description={
+          <>
+            Lo que el bot responde sobre el complejo: servicios, formas de pago, reglas, alquileres
+            y todo lo que te suelen preguntar. Usa{" "}
+            <span className="text-foreground font-medium">solo esto</span> — si algo no está
+            cargado, dice con sinceridad que no lo tiene, nunca lo inventa.
+          </>
+        }
+        actions={
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => addRow()}
+            disabled={rows.length >= MAX_ENTRIES || updateFaq.isPending}
+          >
+            <Plus className="size-4" />
+            Agregar pregunta
+          </Button>
+        }
+      >
+        <div className="flex flex-col gap-5">
+          {remaining.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-muted-foreground text-xs font-medium">
+                Sugerencias (tocá para agregar):
+              </span>
+              {remaining.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => addSuggestion(s)}
+                  disabled={rows.length >= MAX_ENTRIES}
+                  className="border-border/70 hover:border-brand/50 hover:bg-brand/[0.07] text-foreground/80 hover:text-foreground rounded-full border px-3 py-1 text-xs transition-colors duration-200 ease-fluid disabled:opacity-50"
+                >
+                  + {s}
+                </button>
+              ))}
             </div>
-            <Input
-              id={`faq-q-${row.id}`}
-              value={row.question}
-              onChange={(e) => updateRow(row.id, "question", e.target.value)}
-              maxLength={QUESTION_MAX}
-              placeholder="Ej: ¿Alquilan paletas?"
-              disabled={updateFaq.isPending}
-            />
-            <textarea
-              id={`faq-a-${row.id}`}
-              value={row.answer}
-              onChange={(e) => updateRow(row.id, "answer", e.target.value)}
-              rows={2}
-              maxLength={ANSWER_MAX}
-              placeholder="Respuesta del bot. Ej: Sí, alquilamos paletas a $2000 la hora en el mostrador."
-              className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-              disabled={updateFaq.isPending}
-            />
-          </div>
-        ))}
-      </div>
+          )}
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => addRow()}
-          disabled={rows.length >= MAX_ENTRIES || updateFaq.isPending}
-        >
-          <Plus className="size-4" />
-          Agregar pregunta
-        </Button>
-        <Button type="button" onClick={handleSave} disabled={unchanged || updateFaq.isPending}>
-          {updateFaq.isPending ? "Guardando…" : "Guardar cambios"}
-        </Button>
-        {hasHalfFilled && (
-          <span className="text-muted-foreground text-xs">
-            Las filas sin pregunta o sin respuesta no se guardan.
-          </span>
-        )}
-        {rows.length >= MAX_ENTRIES && (
-          <span className="text-muted-foreground text-xs">Llegaste al máximo de {MAX_ENTRIES} preguntas.</span>
-        )}
-      </div>
+          {rows.length === 0 ? (
+            <p className="text-muted-foreground border-border/70 rounded-xl border border-dashed p-6 text-center text-sm">
+              Todavía no cargaste preguntas. Agregá una desde las sugerencias o con “Agregar
+              pregunta”.
+            </p>
+          ) : (
+            // Question left, answer right: the answer is the long field, and stacking both
+            // full-width left a 72rem row holding a two-line textarea.
+            <div className="flex flex-col gap-3">
+              {rows.map((row, index) => (
+                <div
+                  key={row.id}
+                  className="border-border/70 hover:border-border grid gap-3 rounded-xl border p-3 transition-colors duration-200 ease-fluid md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)_auto]"
+                >
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor={`faq-q-${row.id}`} className="text-muted-foreground text-xs">
+                      Pregunta {index + 1}
+                    </Label>
+                    <Input
+                      id={`faq-q-${row.id}`}
+                      value={row.question}
+                      onChange={(e) => updateRow(row.id, "question", e.target.value)}
+                      maxLength={QUESTION_MAX}
+                      placeholder="Ej: ¿Alquilan paletas?"
+                      disabled={updateFaq.isPending}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor={`faq-a-${row.id}`} className="text-muted-foreground text-xs">
+                      Respuesta del bot
+                    </Label>
+                    <Textarea
+                      id={`faq-a-${row.id}`}
+                      value={row.answer}
+                      onChange={(e) => updateRow(row.id, "answer", e.target.value)}
+                      rows={2}
+                      maxLength={ANSWER_MAX}
+                      placeholder="Ej: Sí, alquilamos paletas a $2000 la hora en el mostrador."
+                      disabled={updateFaq.isPending}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeRow(row.id)}
+                    aria-label={`Eliminar la pregunta ${index + 1}`}
+                    className="text-muted-foreground hover:text-destructive size-8 self-start justify-self-end md:mt-6"
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {(hasHalfFilled || rows.length >= MAX_ENTRIES) && (
+            <p className="text-muted-foreground text-xs">
+              {hasHalfFilled && "Las filas sin pregunta o sin respuesta no se guardan. "}
+              {rows.length >= MAX_ENTRIES && `Llegaste al máximo de ${MAX_ENTRIES} preguntas.`}
+            </p>
+          )}
+        </div>
+      </SettingsSection>
+
+      <SaveBar
+        pending={updateFaq.isPending}
+        unchanged={unchanged}
+        onSave={handleSave}
+        note={`Tenés cambios sin guardar · ${cleaned.length} ${cleaned.length === 1 ? "pregunta" : "preguntas"} para guardar.`}
+      />
     </div>
   );
 }

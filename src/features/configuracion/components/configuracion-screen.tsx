@@ -12,11 +12,17 @@ import { TeamManager } from "@/features/configuracion/components/team-manager";
 import { SetupChecklist } from "@/features/onboarding/components/setup-checklist";
 import { HelpContactCard } from "@/features/onboarding/components/help-contact-card";
 
+/**
+ * Same order as the `/setup` wizard (`features/setup/lib/steps.ts`): complejo → canchas →
+ * cobros → bot → fijos → equipo. An owner who just finished the guided setup finds each
+ * setting where the wizard left it, and what the bot can't run without comes before the
+ * optional parts. The `value`s are part of the URL (`?tab=pagos`) — don't rename them.
+ */
 const TABS = [
   { value: "complejo", label: "Complejo", icon: Building2 },
-  { value: "bot", label: "Bot", icon: Bot },
-  { value: "pagos", label: "Pagos", icon: Wallet },
   { value: "canchas", label: "Canchas", icon: CalendarClock },
+  { value: "pagos", label: "Pagos", icon: Wallet },
+  { value: "bot", label: "Bot", icon: Bot },
   { value: "fijos", label: "Turnos fijos", icon: Repeat },
   { value: "equipo", label: "Equipo", icon: Users },
 ] as const;
@@ -42,55 +48,48 @@ export function ConfiguracionScreen({ clubName }: { clubName?: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <SetupChecklist clubName={clubName} />
 
-      <Tabs value={tab} onValueChange={handleChange}>
-        <TabsList>
-          <TabsIndicator />
-          {TABS.map(({ value, label, icon: Icon }) => (
-            <TabsTab key={value} value={value}>
-              <Icon />
-              {label}
-            </TabsTab>
-          ))}
-        </TabsList>
+      <Tabs value={tab} onValueChange={handleChange} className="gap-6">
+        {/* Six tabs don't fit on a phone. Let the rail scroll rather than wrap it — the
+            sliding indicator is absolutely positioned and needs them on one row. */}
+        <div className="-mx-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <TabsList>
+            <TabsIndicator />
+            {TABS.map(({ value, label, icon: Icon }) => (
+              <TabsTab key={value} value={value}>
+                <Icon />
+                {label}
+              </TabsTab>
+            ))}
+          </TabsList>
+        </div>
 
-        <TabsPanel value="complejo" className="flex flex-col gap-6 pt-2">
-          <div>
-            <h2 className="text-base font-semibold">Datos del complejo</h2>
-            <p className="text-muted-foreground text-sm">
-              Editá el nombre con el que el bot y el panel identifican tu complejo.
-            </p>
-          </div>
+        {/* Each manager owns its own titled section (SettingsSection), so the tab panels
+            stay a plain shell instead of half the headings living up here. */}
+        <TabsPanel value="complejo" className="flex flex-col gap-6">
           <ClubProfileManager />
           <HelpContactCard />
         </TabsPanel>
 
-        <TabsPanel value="bot" className="flex flex-col gap-6 pt-2">
-          <div>
-            <h2 className="text-base font-semibold">Preguntas del bot</h2>
-            <p className="text-muted-foreground text-sm">
-              Lo que el bot responde sobre el complejo: servicios, formas de pago, reglas,
-              alquileres, estacionamiento y todo lo que te suelen preguntar.
-            </p>
-          </div>
-          <FaqManager />
-        </TabsPanel>
-
-        <TabsPanel value="pagos" className="pt-2">
-          <TransferConfigManager />
-        </TabsPanel>
-
-        <TabsPanel value="canchas" className="pt-2">
+        <TabsPanel value="canchas">
           <CourtsManager />
         </TabsPanel>
 
-        <TabsPanel value="fijos" className="pt-2">
+        <TabsPanel value="pagos">
+          <TransferConfigManager />
+        </TabsPanel>
+
+        <TabsPanel value="bot">
+          <FaqManager />
+        </TabsPanel>
+
+        <TabsPanel value="fijos">
           <RecurringBookingsManager />
         </TabsPanel>
 
-        <TabsPanel value="equipo" className="pt-2">
+        <TabsPanel value="equipo">
           <TeamManager />
         </TabsPanel>
       </Tabs>

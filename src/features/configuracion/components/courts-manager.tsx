@@ -22,7 +22,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmptyState } from "@/components/ui/empty-state";
 import {
   Select,
   SelectContent,
@@ -34,6 +33,10 @@ import { formatPrice } from "@/lib/format";
 import { CreateCourtDialog } from "@/features/turnos/components/create-court-dialog";
 import { BulkPriceDialog } from "@/features/configuracion/components/bulk-price-dialog";
 import { PriceRulesDialog } from "@/features/configuracion/components/price-rules-dialog";
+import {
+  SettingsEmpty,
+  SettingsSection,
+} from "@/features/configuracion/components/settings-section";
 import { WeeklyHoursEditor } from "@/features/configuracion/components/weekly-hours-editor";
 import {
   useCourts,
@@ -241,115 +244,109 @@ export function CourtsManager() {
     if (ok) deleteCourt.mutate(court.id);
   }
 
-  if (courtsQuery.isLoading) {
-    return (
-      <div className="text-muted-foreground flex items-center gap-2 py-10 text-sm">
-        <Loader2 className="size-4 animate-spin" />
-        Cargando canchas…
-      </div>
-    );
-  }
+  const isEmpty = !courtsQuery.isLoading && courts.length === 0;
 
   return (
     <>
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-base font-semibold">Canchas</h2>
-          <p className="text-muted-foreground text-sm">
-            Administrá las canchas, precios y horarios del club.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <BulkPriceDialog />
-          <CreateCourtDialog />
-        </div>
-      </div>
-
-      {courts.length === 0 ? (
-        <EmptyState
-          icon={CalendarClock}
-          title="Sin canchas"
-          description="Creá la primera cancha para empezar a recibir reservas."
-        />
-      ) : (
-        <div className="overflow-hidden rounded-xl border">
+      <SettingsSection
+        icon={CalendarClock}
+        title="Canchas"
+        description="Administrá las canchas, precios y horarios del club."
+        actions={
+          <>
+            <BulkPriceDialog />
+            <CreateCourtDialog />
+          </>
+        }
+        flush={!isEmpty && !courtsQuery.isLoading}
+      >
+        {courtsQuery.isLoading ? (
+          <div className="text-muted-foreground flex items-center gap-2 py-6 text-sm">
+            <Loader2 className="size-4 animate-spin" />
+            Cargando canchas…
+          </div>
+        ) : isEmpty ? (
+          <SettingsEmpty>
+            Todavía no cargaste ninguna cancha. Creá la primera para empezar a recibir reservas.
+          </SettingsEmpty>
+        ) : (
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Precio</TableHead>
-                <TableHead>Horario</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Creada</TableHead>
-                <TableHead className="w-20" />
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nombre</TableHead>
+              <TableHead>Precio</TableHead>
+              <TableHead>Horario</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Creada</TableHead>
+              <TableHead className="w-20" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {courts.map((court) => (
+              <TableRow key={court.id}>
+                <TableCell className="font-medium">{court.name}</TableCell>
+                <TableCell className="text-sm">{formatPrice(court.priceCents)}</TableCell>
+                <TableCell className="text-sm tabular-nums">
+                  <div className="flex flex-col gap-0.5">
+                    <span>
+                      {court.openTime} – {court.closeTime}
+                    </span>
+                    <span className="text-muted-foreground text-xs">
+                      turnos de {durationLabel(court.slotDurationMinutes)}
+                      {court.weeklyHours &&
+                        Object.keys(court.weeklyHours).length > 0 &&
+                        " · horario especial por día"}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-sm">
+                  {court.courtType === "INDOOR" ? "Interior" : "Exterior"}
+                </TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {new Date(court.createdAt).toLocaleDateString("es-AR", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Precios por horario de ${court.name}`}
+                      onClick={() => setPricingCourt(court)}
+                      className="text-muted-foreground hover:text-foreground size-8"
+                    >
+                      <DollarSign className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Editar ${court.name}`}
+                      onClick={() => setEditingCourt(court)}
+                      className="text-muted-foreground hover:text-foreground size-8"
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Eliminar ${court.name}`}
+                      onClick={() => void handleDelete(court)}
+                      disabled={deleteCourt.isPending}
+                      className="text-muted-foreground hover:text-destructive size-8"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {courts.map((court) => (
-                <TableRow key={court.id}>
-                  <TableCell className="font-medium">{court.name}</TableCell>
-                  <TableCell className="text-sm">{formatPrice(court.priceCents)}</TableCell>
-                  <TableCell className="text-sm tabular-nums">
-                    <div className="flex flex-col gap-0.5">
-                      <span>
-                        {court.openTime} – {court.closeTime}
-                      </span>
-                      <span className="text-muted-foreground text-xs">
-                        turnos de {durationLabel(court.slotDurationMinutes)}
-                        {court.weeklyHours &&
-                          Object.keys(court.weeklyHours).length > 0 &&
-                          " · horario especial por día"}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {court.courtType === "INDOOR" ? "Interior" : "Exterior"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {new Date(court.createdAt).toLocaleDateString("es-AR", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Precios por horario de ${court.name}`}
-                        onClick={() => setPricingCourt(court)}
-                        className="text-muted-foreground hover:text-foreground size-8"
-                      >
-                        <DollarSign className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Editar ${court.name}`}
-                        onClick={() => setEditingCourt(court)}
-                        className="text-muted-foreground hover:text-foreground size-8"
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Eliminar ${court.name}`}
-                        onClick={() => void handleDelete(court)}
-                        disabled={deleteCourt.isPending}
-                        className="text-muted-foreground hover:text-destructive size-8"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+            ))}
+          </TableBody>
+        </Table>
+        )}
+      </SettingsSection>
 
       {editingCourt && (
         <EditCourtDialog

@@ -31,8 +31,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmptyState } from "@/components/ui/empty-state";
 import { formatPrice } from "@/lib/format";
+import {
+  SettingsEmpty,
+  SettingsSection,
+} from "@/features/configuracion/components/settings-section";
 import { useCourts } from "@/features/turnos/hooks/use-courts";
 import { bandsForWeekday, todayKey } from "@/features/agenda/lib/schedule";
 import {
@@ -300,126 +303,118 @@ export function RecurringBookingsManager() {
     if (ok) deleteRecurring.mutate(rb.id);
   }
 
-  return (
-    <section className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex flex-col gap-0.5">
-          <h2 className="text-base font-semibold">Turnos fijos</h2>
-          <p className="text-muted-foreground text-sm">
-            Reservas que se repiten cada semana para un jugador.
-          </p>
-        </div>
-        {courts.length > 0 && <CreateRecurringDialog courts={courts} />}
-      </div>
+  const hasRows = !recurringQuery.isLoading && recurring.length > 0;
 
+  return (
+    <SettingsSection
+      icon={Repeat}
+      title="Turnos fijos"
+      description="Reservas que se repiten cada semana para un jugador. Bloquean el horario solas, sin pedir seña."
+      actions={courts.length > 0 && <CreateRecurringDialog courts={courts} />}
+      flush={hasRows}
+    >
       {recurringQuery.isLoading ? (
-        <div className="text-muted-foreground flex items-center gap-2 py-10 text-sm">
+        <div className="text-muted-foreground flex items-center gap-2 py-6 text-sm">
           <Loader2 className="size-4 animate-spin" />
           Cargando turnos fijos…
         </div>
       ) : recurring.length === 0 ? (
-        <EmptyState
-          icon={Repeat}
-          title="Sin turnos fijos"
-          description={
-            courts.length === 0
-              ? "Creá una cancha primero para poder cargar turnos fijos."
-              : 'Creá un turno fijo con el botón "Nuevo turno fijo".'
-          }
-        />
+        <SettingsEmpty>
+          {courts.length === 0
+            ? "Creá una cancha primero para poder cargar turnos fijos."
+            : "Todavía no cargaste turnos fijos. Agregá el primero con “Nuevo turno fijo”."}
+        </SettingsEmpty>
       ) : (
-        <div className="overflow-hidden rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Día y horario</TableHead>
-                <TableHead>Cancha</TableHead>
-                <TableHead>Jugador</TableHead>
-                <TableHead className="hidden md:table-cell">Precio</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="w-28" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recurring.map((rb) => (
-                <TableRow key={rb.id} className={rb.isActive ? "" : "opacity-60"}>
-                  <TableCell>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="font-medium">{dayLabel(rb.dayOfWeek)}</span>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Día y horario</TableHead>
+              <TableHead>Cancha</TableHead>
+              <TableHead>Jugador</TableHead>
+              <TableHead className="hidden md:table-cell">Precio</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead className="w-28" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {recurring.map((rb) => (
+              <TableRow key={rb.id} className={rb.isActive ? "" : "opacity-60"}>
+                <TableCell>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-medium">{dayLabel(rb.dayOfWeek)}</span>
+                    <span className="text-muted-foreground text-xs">
+                      {rb.slotStart} – {rb.slotEnd}
+                    </span>
+                    {rb.untilDate && (
                       <span className="text-muted-foreground text-xs">
-                        {rb.slotStart} – {rb.slotEnd}
+                        hasta{" "}
+                        {new Date(rb.untilDate).toLocaleDateString("es-AR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                        })}
                       </span>
-                      {rb.untilDate && (
-                        <span className="text-muted-foreground text-xs">
-                          hasta{" "}
-                          {new Date(rb.untilDate).toLocaleDateString("es-AR", {
-                            day: "2-digit",
-                            month: "2-digit",
-                          })}
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>{rb.court.name}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="font-medium">{rb.playerName}</span>
-                      <span className="text-muted-foreground text-xs">{rb.playerPhone}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-sm">
-                    {formatPrice(rb.priceCents)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={rb.isActive ? "default" : "secondary"}>
-                      {rb.isActive ? "Activo" : "Pausado"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Aplicar a turnos disponibles"
-                        title="Aplicar a turnos disponibles"
-                        onClick={() => applyRecurring.mutate(rb.id)}
-                        disabled={applyRecurring.isPending || !rb.isActive}
-                        className="text-muted-foreground hover:text-foreground size-8"
-                      >
-                        <RefreshCw className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          updateRecurring.mutate({
-                            id: rb.id,
-                            body: { isActive: !rb.isActive },
-                          })
-                        }
-                        disabled={updateRecurring.isPending}
-                        className="text-muted-foreground hover:text-foreground h-8 px-2 text-xs"
-                      >
-                        {rb.isActive ? "Pausar" : "Activar"}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Eliminar turno fijo"
-                        onClick={() => void handleDelete(rb)}
-                        disabled={deleteRecurring.isPending}
-                        className="text-muted-foreground hover:text-destructive size-8"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>{rb.court.name}</TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-medium">{rb.playerName}</span>
+                    <span className="text-muted-foreground text-xs">{rb.playerPhone}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden md:table-cell text-sm">
+                  {formatPrice(rb.priceCents)}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={rb.isActive ? "default" : "secondary"}>
+                    {rb.isActive ? "Activo" : "Pausado"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Aplicar a turnos disponibles"
+                      title="Aplicar a turnos disponibles"
+                      onClick={() => applyRecurring.mutate(rb.id)}
+                      disabled={applyRecurring.isPending || !rb.isActive}
+                      className="text-muted-foreground hover:text-foreground size-8"
+                    >
+                      <RefreshCw className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        updateRecurring.mutate({
+                          id: rb.id,
+                          body: { isActive: !rb.isActive },
+                        })
+                      }
+                      disabled={updateRecurring.isPending}
+                      className="text-muted-foreground hover:text-foreground h-8 px-2 text-xs"
+                    >
+                      {rb.isActive ? "Pausar" : "Activar"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Eliminar turno fijo"
+                      onClick={() => void handleDelete(rb)}
+                      disabled={deleteRecurring.isPending}
+                      className="text-muted-foreground hover:text-destructive size-8"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
-    </section>
+    </SettingsSection>
   );
 }
