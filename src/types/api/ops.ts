@@ -1,4 +1,4 @@
-/** Types of the ops console API (`/ops/*`). Mirrors `padelBot_api/src/ops`. */
+/** Types of the ops console API (`/ops/*`). Mirrors `api/src/ops`. */
 
 export interface OpsAdmin {
   id: string;

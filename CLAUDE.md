@@ -19,7 +19,7 @@ No test runner is configured yet.
 
 ## Product
 
-This is the **GTP** owner panel + public landing for a multi-tenant padel-booking SaaS (see `../docs/BITACORA.md`). The backend is `../padelBot_api` (NestJS). The panel never talks to the DB and never holds the JWT in JS — see the BFF/proxy section below.
+This is the **GTP** owner panel + public landing for a multi-tenant padel-booking SaaS (see `../docs/BITACORA.md`). The backend is `../api` (NestJS). The panel never talks to the DB and never holds the JWT in JS — see the BFF/proxy section below.
 
 ## Architecture
 
@@ -28,7 +28,7 @@ App Router project. Code is split between routing (`src/app/`) and a feature-fir
 - `src/app/page.tsx` — the **public marketing landing** at `/` (no auth). Composed from `src/features/landing/components/*`. This is the product's front door; the panel lives under `/panel`.
 - `src/app/(dashboard)/` — the authenticated panel routes, all under `/panel`: `/panel` (Resumen/overview), `/panel/agenda`, `/panel/reservas`, `/panel/turnos`, `/panel/conversaciones`, `/panel/configuracion`. The layout calls `requireSession()`; login redirects here. Owner-only sections gate on `session.role === "owner"`.
 - `src/app/(auth)/login` — login (`/login`). Redirects to `/panel` when already signed in.
-- `src/app/api/**` — **the BFF layer**: internal Next route handlers that proxy to `padelBot_api`, attaching the JWT from the HttpOnly cookie. The browser calls these same-origin routes; the real API token never reaches client JS. `src/lib/api/proxy.ts` + `src/proxy.ts` centralize this.
+- `src/app/api/**` — **the BFF layer**: internal Next route handlers that proxy to `../api`, attaching the JWT from the HttpOnly cookie. The browser calls these same-origin routes; the real API token never reaches client JS. `src/lib/api/proxy.ts` + `src/proxy.ts` centralize this.
 - `src/features/<domain>/` — UI + hooks per domain (`landing`, `agenda`, `reservas`, `turnos`, `conversations`, `configuracion`, `auth`, `realtime`, `pagos`, `dashboard`, `onboarding`). Components colocate with their TanStack Query hooks. `landing` is presentational only (no data layer).
 - `src/services/*.service.ts` — typed clients that call the BFF routes. `src/types/api/*` — request/response types mirroring the API.
 - `src/lib/session.ts` — server-only session helpers (`getSession`, `requireSession`, cookie set/clear). The JWT is decoded for optimistic UI only; the API re-authorizes every request.
