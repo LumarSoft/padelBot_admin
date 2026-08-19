@@ -10,7 +10,9 @@ import { OPS_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME } from "@/lib/env";
 
 // Open to everyone, signed in or not: the marketing landing and the signup flow. `/register`
 // MUST be here — it's the landing's main CTA, and a prospect has no session by definition.
-const PUBLIC_ROUTES = ["/", "/register"];
+// The legal/support pages are public too: Apple requires public Privacy Policy + Support URLs,
+// and they must be reachable without a session.
+const PUBLIC_ROUTES = ["/", "/register", "/privacidad", "/soporte"];
 // Only for logged-out users; a signed-in visitor is bounced to the panel.
 const AUTH_ROUTES = ["/login"];
 

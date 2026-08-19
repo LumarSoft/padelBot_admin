@@ -81,7 +81,21 @@ export function LandingFooter() {
           <p>
             © {new Date().getFullYear()} GTP · un producto de Lumarsoft
           </p>
-          <p>Hecho en Argentina 🧉</p>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/privacidad"
+              className="hover:text-foreground transition-colors"
+            >
+              Privacidad
+            </Link>
+            <Link
+              href="/soporte"
+              className="hover:text-foreground transition-colors"
+            >
+              Soporte
+            </Link>
+            <span>Hecho en Argentina 🧉</span>
+          </div>
         </div>
       </Container>
     </footer>
