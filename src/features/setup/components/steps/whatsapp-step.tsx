@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { CheckCircle2, Loader2, Trash2 } from "lucide-react";
+import { CheckCircle2, Loader2, MessageCircle, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,18 +12,30 @@ import { lumarsoftWhatsApp } from "@/lib/contact";
 import { waLink } from "@/lib/whatsapp";
 import { StepLayout } from "@/features/setup/components/step-layout";
 import { StepFooter } from "@/features/setup/components/step-footer";
-import { BotPreview, type PreviewBubble } from "@/features/setup/components/bot-preview";
 import {
+  BotPreview,
+  type PreviewBubble,
+} from "@/features/setup/components/bot-preview";
+import {
+  useConnectEmbeddedSignup,
   useCreateWhatsAppLine,
   useDeleteWhatsAppLine,
+  useEmbeddedSignupConfig,
   useWhatsAppLines,
 } from "@/features/setup/hooks/use-setup";
+import {
+  EmbeddedSignupCancelled,
+  launchEmbeddedSignup,
+} from "@/lib/meta-embedded-signup";
 import type { StepProps } from "@/features/setup/components/setup-wizard";
 
 export function WhatsAppStep({ clubName, nav }: StepProps) {
   const linesQuery = useWhatsAppLines();
   const createLine = useCreateWhatsAppLine();
   const deleteLine = useDeleteWhatsAppLine();
+  const signupConfig = useEmbeddedSignupConfig();
+  const connectSignup = useConnectEmbeddedSignup();
+  const [launching, setLaunching] = useState(false);
 
   const [phoneNumberId, setPhoneNumberId] = useState("");
   const [displayPhone, setDisplayPhone] = useState("");
@@ -30,13 +43,17 @@ export function WhatsAppStep({ clubName, nav }: StepProps) {
   const lines = linesQuery.data ?? [];
   const activeLine = lines.find((line) => line.isActive);
 
-  const canSave = phoneNumberId.trim().length > 0 && displayPhone.trim().length > 0;
+  const canSave =
+    phoneNumberId.trim().length > 0 && displayPhone.trim().length > 0;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     if (!canSave) return;
     createLine.mutate(
-      { phoneNumberId: phoneNumberId.trim(), displayPhone: displayPhone.trim() },
+      {
+        phoneNumberId: phoneNumberId.trim(),
+        displayPhone: displayPhone.trim(),
+      },
       {
         onSuccess: () => {
           setPhoneNumberId("");
@@ -45,6 +62,29 @@ export function WhatsAppStep({ clubName, nav }: StepProps) {
       },
     );
   }
+
+  /** Opens Meta's popup; the club logs in and scans the QR with its WhatsApp Business app. */
+  async function handleMetaConnect(): Promise<void> {
+    if (!signupConfig.data) return;
+    setLaunching(true);
+    try {
+      const result = await launchEmbeddedSignup(signupConfig.data);
+      connectSignup.mutate(result);
+    } catch (error) {
+      if (!(error instanceof EmbeddedSignupCancelled)) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "No se pudo conectar WhatsApp",
+        );
+      }
+    } finally {
+      setLaunching(false);
+    }
+  }
+
+  const connecting = launching || connectSignup.isPending;
+  const canSelfConnect = signupConfig.data?.enabled === true;
 
   const bubbles: PreviewBubble[] = [
     { from: "player", text: "Hola" },
@@ -87,7 +127,9 @@ export function WhatsAppStep({ clubName, nav }: StepProps) {
                   Línea conectada · {activeLine.displayPhone}
                 </p>
                 <p className="text-muted-foreground text-xs">
-                  El bot ya atiende los mensajes que llegan a este número.
+                  {activeLine.coexistence
+                    ? "El bot atiende este número y vos seguís usando WhatsApp Business en el celular. Si contestás un chat a mano, el bot se corre de ese chat por unas horas."
+                    : "El bot ya atiende los mensajes que llegan a este número."}
                 </p>
               </div>
               <Button
@@ -109,8 +151,9 @@ export function WhatsAppStep({ clubName, nav }: StepProps) {
               <div>
                 <p className="text-sm font-medium">Probalo ahora</p>
                 <p className="text-muted-foreground mt-1 text-sm text-pretty">
-                  Mandale “hola” desde tu propio teléfono. Te va a contestar en segundos, y la
-                  conversación te aparece en el panel, en Conversaciones.
+                  Mandale “hola” desde tu propio teléfono. Te va a contestar en
+                  segundos, y la conversación te aparece en el panel, en
+                  Conversaciones.
                 </p>
               </div>
               <div>
@@ -126,18 +169,65 @@ export function WhatsAppStep({ clubName, nav }: StepProps) {
         </>
       ) : (
         <>
+          {canSelfConnect && (
+            <Card>
+              <CardContent className="flex flex-col gap-3">
+                <div>
+                  <p className="text-sm font-medium">
+                    Conectá el WhatsApp del complejo
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-sm text-pretty">
+                    Iniciá sesión con Facebook y elegí{" "}
+                    <em>conectar tu app de WhatsApp Business</em>. Vas a
+                    escanear un código QR desde el celular del complejo: el
+                    número sigue funcionando en la app como siempre, y el bot
+                    empieza a atender las reservas.
+                  </p>
+                </div>
+                <div>
+                  <Button
+                    type="button"
+                    variant="brand"
+                    onClick={handleMetaConnect}
+                    disabled={connecting}
+                  >
+                    {connecting ? (
+                      <>
+                        <Loader2 className="animate-spin" />
+                        Conectando…
+                      </>
+                    ) : (
+                      <>
+                        <MessageCircle />
+                        Conectar con WhatsApp
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardContent className="flex flex-col gap-3">
               <div>
-                <p className="text-sm font-medium">Esto lo conectamos nosotros</p>
+                <p className="text-sm font-medium">
+                  {canSelfConnect
+                    ? "¿Preferís que lo hagamos nosotros?"
+                    : "Esto lo conectamos nosotros"}
+                </p>
                 <p className="text-muted-foreground mt-1 text-sm text-pretty">
-                  El número vive en la cuenta de WhatsApp Business de Meta: no hace falta que
-                  el club se pelee con la verificación de Meta ni con las plantillas. Lo damos
-                  de alta nosotros y lo dejamos andando en el día.
+                  El número vive en la cuenta de WhatsApp Business de Meta: no
+                  hace falta que el club se pelee con la verificación de Meta ni
+                  con las plantillas. Lo damos de alta nosotros y lo dejamos
+                  andando en el día.
                 </p>
               </div>
               <div>
-                <WhatsAppLink href={lumarsoftWhatsApp("whatsapp-setup")} className="px-4 py-2">
+                <WhatsAppLink
+                  href={lumarsoftWhatsApp("whatsapp-setup")}
+                  className="px-4 py-2"
+                >
                   Pedir la conexión
                 </WhatsAppLink>
               </div>
@@ -146,10 +236,13 @@ export function WhatsAppStep({ clubName, nav }: StepProps) {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
-              <p className="text-sm font-medium">Ya tenés el número dado de alta</p>
+              <p className="text-sm font-medium">
+                Ya tenés el número dado de alta
+              </p>
               <p className="text-muted-foreground mt-1 text-sm text-pretty">
-                Pegá los datos que salen del panel de Meta. El <em>phone number ID</em> es el
-                identificador que Meta le da al número — no es el teléfono.
+                Pegá los datos que salen del panel de Meta. El{" "}
+                <em>phone number ID</em> es el identificador que Meta le da al
+                número — no es el teléfono.
               </p>
             </div>
 

@@ -35,6 +35,7 @@ export const queryKeys = {
     mercadopago: ["clubs", "mercadopago"] as const,
     subscription: ["clubs", "subscription"] as const,
     whatsappLines: ["clubs", "whatsapp-lines"] as const,
+    embeddedSignupConfig: ["clubs", "whatsapp-lines", "embedded-signup-config"] as const,
   },
   stats: {
     overview: ["stats", "overview"] as const,

@@ -12,7 +12,11 @@ import type {
   FaqEntry,
   UpdateFaqRequest,
 } from "@/types/api/clubs";
-import type { CreateWhatsAppLineRequest } from "@/types/api/onboarding";
+import type {
+  CreateWhatsAppLineRequest,
+  EmbeddedSignupConfig,
+  EmbeddedSignupRequest,
+} from "@/types/api/onboarding";
 
 export const clubsService = {
   getProfile(): Promise<ClubProfile> {
@@ -26,6 +30,17 @@ export const clubsService = {
   },
   createWhatsAppLine(body: CreateWhatsAppLineRequest): Promise<WhatsAppLine> {
     return apiClient.post<WhatsAppLine>("/api/whatsapp-lines", body);
+  },
+  getEmbeddedSignupConfig(): Promise<EmbeddedSignupConfig> {
+    return apiClient.get<EmbeddedSignupConfig>(
+      "/api/whatsapp-lines/embedded-signup/config",
+    );
+  },
+  connectEmbeddedSignup(body: EmbeddedSignupRequest): Promise<WhatsAppLine> {
+    return apiClient.post<WhatsAppLine>(
+      "/api/whatsapp-lines/embedded-signup",
+      body,
+    );
   },
   deleteWhatsAppLine(id: string): Promise<void> {
     return apiClient.del<void>(`/api/whatsapp-lines/${id}`);
@@ -42,16 +57,23 @@ export const clubsService = {
   getTransferConfig(): Promise<TransferConfig> {
     return apiClient.get<TransferConfig>("/api/clubs/transfer-config");
   },
-  updateTransferConfig(body: UpdateTransferConfigRequest): Promise<TransferConfig> {
+  updateTransferConfig(
+    body: UpdateTransferConfigRequest,
+  ): Promise<TransferConfig> {
     return apiClient.patch<TransferConfig>("/api/clubs/transfer-config", body);
   },
   getMercadoPagoStatus(): Promise<MercadoPagoStatus> {
     return apiClient.get<MercadoPagoStatus>("/api/clubs/mercadopago");
   },
-  connectMercadoPago(origin: MercadoPagoConnectOrigin): Promise<ConnectMercadoPagoResponse> {
-    return apiClient.post<ConnectMercadoPagoResponse>("/api/clubs/mercadopago/connect", {
-      origin,
-    });
+  connectMercadoPago(
+    origin: MercadoPagoConnectOrigin,
+  ): Promise<ConnectMercadoPagoResponse> {
+    return apiClient.post<ConnectMercadoPagoResponse>(
+      "/api/clubs/mercadopago/connect",
+      {
+        origin,
+      },
+    );
   },
   disconnectMercadoPago(): Promise<{ disconnected: true }> {
     return apiClient.del<{ disconnected: true }>("/api/clubs/mercadopago");

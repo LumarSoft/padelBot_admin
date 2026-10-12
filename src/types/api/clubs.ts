@@ -110,4 +110,6 @@ export interface WhatsAppLine {
   phoneNumberId: string;
   displayPhone: string;
   isActive: boolean;
+  /** The number also stays on the club's WhatsApp Business app (Meta "coexistence"). */
+  coexistence?: boolean;
 }

@@ -51,6 +51,23 @@ export interface SaveSetupProgressRequest {
   doneSteps?: SetupStepId[];
 }
 
+/** Public ids to open Meta's Embedded Signup popup; `enabled` is false until the API is set up. */
+export interface EmbeddedSignupConfig {
+  enabled: boolean;
+  appId: string | null;
+  configId: string | null;
+  apiVersion: string;
+}
+
+/** What the Embedded Signup popup hands back, forwarded to the API to finish the connection. */
+export interface EmbeddedSignupRequest {
+  code: string;
+  wabaId: string;
+  /** Absent on coexistence finishes (Meta only reports the WABA); the API looks it up. */
+  phoneNumberId?: string;
+  coexistence: boolean;
+}
+
 export interface CreateWhatsAppLineRequest {
   /** Meta's phone_number_id from the WhatsApp Business account. */
   phoneNumberId: string;
