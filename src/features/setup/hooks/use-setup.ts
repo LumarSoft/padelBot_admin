@@ -8,6 +8,8 @@ import { queryKeys } from "@/lib/query-keys";
 import { ApiError } from "@/lib/api/api-error";
 import type {
   CreateWhatsAppLineRequest,
+  EmbeddedSignupConfig,
+  EmbeddedSignupRequest,
   SaveSetupProgressRequest,
   SetupProgress,
   SetupStatus,
@@ -55,13 +57,39 @@ export function useWhatsAppLines() {
   });
 }
 
+export function useEmbeddedSignupConfig() {
+  return useQuery<EmbeddedSignupConfig>({
+    queryKey: queryKeys.clubs.embeddedSignupConfig,
+    queryFn: () => clubsService.getEmbeddedSignupConfig(),
+    staleTime: Infinity,
+  });
+}
+
+export function useConnectEmbeddedSignup() {
+  const queryClient = useQueryClient();
+
+  return useMutation<WhatsAppLine, ApiError, EmbeddedSignupRequest>({
+    mutationFn: (body) => clubsService.connectEmbeddedSignup(body),
+    onSuccess: (line) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.clubs.whatsappLines,
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
+      toast.success(`WhatsApp ${line.displayPhone} conectado`);
+    },
+    onError: (error) => toast.error(error.message),
+  });
+}
+
 export function useCreateWhatsAppLine() {
   const queryClient = useQueryClient();
 
   return useMutation<WhatsAppLine, ApiError, CreateWhatsAppLineRequest>({
     mutationFn: (body) => clubsService.createWhatsAppLine(body),
     onSuccess: (line) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clubs.whatsappLines });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.clubs.whatsappLines,
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
       toast.success(`Línea ${line.displayPhone} conectada`);
     },
@@ -75,7 +103,9 @@ export function useDeleteWhatsAppLine() {
   return useMutation<void, ApiError, string>({
     mutationFn: (id) => clubsService.deleteWhatsAppLine(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clubs.whatsappLines });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.clubs.whatsappLines,
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
       toast.success("Línea desconectada");
     },
