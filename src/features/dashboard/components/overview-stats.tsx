@@ -76,19 +76,22 @@ function BookingsChart({ series }: { series: StatsSeriesPoint[] }) {
             return (
               <div
                 key={point.date}
-                className="group/bar flex flex-1 flex-col items-center justify-end gap-1"
+                className="group/bar flex h-full flex-1 flex-col items-center justify-end gap-1"
                 title={`${shortDay(point.date)}: ${point.count}`}
               >
                 <span className="text-muted-foreground text-[10px] tabular-nums opacity-0 transition-opacity group-hover/bar:opacity-100">
                   {point.count}
                 </span>
-                <div
-                  className="bg-brand/80 group-hover/bar:bg-brand animate-bar-rise w-full origin-bottom rounded-t-sm transition-colors"
-                  style={{
-                    height: `${Math.max(heightPct, point.count > 0 ? 6 : 2)}%`,
-                    animationDelay: `${index * 35}ms`,
-                  }}
-                />
+                {/* The bar's % height needs a parent with a definite height: this flex-1 track. */}
+                <div className="flex min-h-0 w-full flex-1 items-end">
+                  <div
+                    className="bg-brand/80 group-hover/bar:bg-brand animate-bar-rise w-full origin-bottom rounded-t-sm transition-colors"
+                    style={{
+                      height: `${Math.max(heightPct, point.count > 0 ? 6 : 2)}%`,
+                      animationDelay: `${index * 35}ms`,
+                    }}
+                  />
+                </div>
                 <span className="text-muted-foreground text-[10px] tabular-nums">
                   {shortDay(point.date).slice(0, 2)}
                 </span>

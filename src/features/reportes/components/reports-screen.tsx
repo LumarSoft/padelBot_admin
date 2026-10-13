@@ -144,8 +144,12 @@ function friendlyDate(dateKey: string): string {
 }
 
 function computeTrend(
-  days: RevenueDay[],
+  allDays: RevenueDay[],
+  today: string,
 ): { direction: "up" | "down" | "flat"; pct: number } | null {
+  // Only days already closed: in the current month the days ahead hold just the señas of
+  // turnos not played yet, so including them made every month in progress read as a drop.
+  const days = allDays.filter((d) => d.dateKey < today);
   if (days.length < 6) return null;
   const mid = Math.floor(days.length / 2);
   const first = days.slice(0, mid).reduce((s, d) => s + dayTotal(d), 0);
@@ -361,7 +365,7 @@ function KpiCards({ revenue }: { revenue: RevenueReport }) {
       ? Math.round(grand / revenue.totalBookings)
       : 0;
 
-  const trend = computeTrend(revenue.days);
+  const trend = computeTrend(revenue.days, todayKey());
 
   const TrendIcon =
     trend?.direction === "up"
