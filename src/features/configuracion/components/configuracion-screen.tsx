@@ -1,14 +1,28 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Bot, Building2, CalendarClock, Repeat, Users, Wallet } from "lucide-react";
-import { Tabs, TabsList, TabsTab, TabsPanel, TabsIndicator } from "@/components/ui/tabs";
+import {
+  Bot,
+  Building2,
+  CalendarClock,
+  Repeat,
+  Users,
+  Wallet,
+} from "lucide-react";
+import {
+  Tabs,
+  TabsList,
+  TabsTab,
+  TabsPanel,
+  TabsIndicator,
+} from "@/components/ui/tabs";
 import { ClubProfileManager } from "@/features/configuracion/components/club-profile-manager";
 import { CourtsManager } from "@/features/configuracion/components/courts-manager";
 import { FaqManager } from "@/features/configuracion/components/faq-manager";
 import { RecurringBookingsManager } from "@/features/configuracion/components/recurring-bookings-manager";
 import { TransferConfigManager } from "@/features/configuracion/components/transfer-config-manager";
 import { TeamManager } from "@/features/configuracion/components/team-manager";
+import { WhatsAppManager } from "@/features/configuracion/components/whatsapp-manager";
 import { SetupChecklist } from "@/features/onboarding/components/setup-checklist";
 import { HelpContactCard } from "@/features/onboarding/components/help-contact-card";
 
@@ -81,7 +95,8 @@ export function ConfiguracionScreen({ clubName }: { clubName?: string }) {
           <TransferConfigManager />
         </TabsPanel>
 
-        <TabsPanel value="bot">
+        <TabsPanel value="bot" className="flex flex-col gap-6">
+          <WhatsAppManager />
           <FaqManager />
         </TabsPanel>
 
