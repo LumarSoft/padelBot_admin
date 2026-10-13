@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     "Cómo GTP (Lumarsoft) recopila, usa y protege los datos en la app de gestión y el bot de WhatsApp para clubes de pádel.",
 };
 
-const UPDATED_AT = "18 de agosto de 2026";
+const UPDATED_AT = "12 de octubre de 2026";
 
 export default function PrivacyPolicyPage() {
   return (
@@ -58,12 +58,15 @@ export default function PrivacyPolicyPage() {
           tu agenda, fotos, ubicación ni micrófono.
         </LegalP>
         <LegalP>
-          <strong>Datos de los jugadores (tratados por cuenta del club).</strong>{" "}
+          <strong>
+            Datos de los jugadores (tratados por cuenta del club).
+          </strong>{" "}
           Al gestionar reservas se procesan datos de los jugadores del club:
           nombre, número de teléfono, detalle de sus reservas y el comprobante
-          de la transferencia de la seña. Estos datos pertenecen al club, que
-          actúa como responsable; Lumarsoft los trata en su nombre para prestar
-          el servicio.
+          de la transferencia de la seña, y el contenido de los mensajes que le
+          escriben al asistente de WhatsApp (texto, audios e imágenes). Estos
+          datos pertenecen al club, que actúa como responsable; Lumarsoft los
+          trata en su nombre para prestar el servicio.
         </LegalP>
       </LegalSection>
 
@@ -97,6 +100,12 @@ export default function PrivacyPolicyPage() {
           <li>
             <strong>Meta (WhatsApp Business).</strong> Para que el bot converse
             con los jugadores por WhatsApp.
+          </li>
+          <li>
+            <strong>OpenAI.</strong> Para interpretar los mensajes de los
+            jugadores que el asistente no entiende por sí solo, transcribir los
+            audios y leer las imágenes que envían. OpenAI procesa ese contenido
+            para responder y no lo usa para entrenar sus modelos.
           </li>
           <li>
             <strong>MercadoPago.</strong> Para conciliar las transferencias de
@@ -150,7 +159,8 @@ export default function PrivacyPolicyPage() {
           </a>
           . Si sos un jugador y querés ejercer estos derechos, también podés
           contactar directamente a tu club. Como titular de datos en Argentina,
-          podés dirigirte a la Agencia de Acceso a la Información Pública (AAIP).
+          podés dirigirte a la Agencia de Acceso a la Información Pública
+          (AAIP).
         </LegalP>
       </LegalSection>
 

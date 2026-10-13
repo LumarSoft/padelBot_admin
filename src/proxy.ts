@@ -12,7 +12,14 @@ import { OPS_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME } from "@/lib/env";
 // MUST be here — it's the landing's main CTA, and a prospect has no session by definition.
 // The legal/support pages are public too: Apple requires public Privacy Policy + Support URLs,
 // and they must be reachable without a session.
-const PUBLIC_ROUTES = ["/", "/register", "/privacidad", "/soporte"];
+const PUBLIC_ROUTES = [
+  "/",
+  "/register",
+  "/privacidad",
+  "/terminos",
+  "/eliminar-datos",
+  "/soporte",
+];
 // Only for logged-out users; a signed-in visitor is bounced to the panel.
 const AUTH_ROUTES = ["/login"];
 
@@ -57,5 +64,7 @@ export function proxy(request: NextRequest): NextResponse {
 
 export const config = {
   // Run on everything except API routes, Next internals and static files.
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|apple-icon|.*\\.svg$).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|apple-icon|.*\\.svg$).*)",
+  ],
 };
