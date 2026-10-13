@@ -1,7 +1,7 @@
-import { Big_Shoulders, Caveat } from "next/font/google";
+import { Barlow_Condensed, Caveat } from "next/font/google";
 
 /** Condensed scoreboard face for the landing's headlines (`font-display`). */
-const display = Big_Shoulders({
+const display = Barlow_Condensed({
   variable: "--font-display",
   subsets: ["latin"],
   weight: ["700", "800", "900"],
