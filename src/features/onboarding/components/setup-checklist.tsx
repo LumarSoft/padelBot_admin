@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Check, CheckCircle2, CircleDashed, Loader2 } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  CircleDashed,
+  Loader2,
+} from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -39,7 +45,13 @@ export function SetupChecklist({
 
   const doneCount = status.steps.filter((step) => step.done).length;
   const allDone = doneCount === status.steps.length;
-  const complete = allDone || !!status.setupCompletedAt;
+  // Finishing the wizard with a step the bot can't run without still pending (e.g. WhatsApp
+  // skipped) is NOT a configured account — keep the checklist and the way back to it.
+  const complete = allDone || (!!status.setupCompletedAt && status.ready);
+  const firstPending = SETUP_STEPS.find(
+    (step) =>
+      !status.steps.find((s) => s.id === step.id)?.done && !step.optional,
+  );
 
   // Once the owner has finished the wizard, stop nagging them on the overview — the
   // remaining optional steps live in Configuración and don't need a permanent banner.
@@ -58,8 +70,8 @@ export function SetupChecklist({
               Cuenta configurada completamente de forma correcta
             </p>
             <p className="text-muted-foreground mt-0.5 text-sm text-pretty">
-              {clubName ?? "Tu complejo"} está listo: el bot toma reservas y cobra las señas.
-              Podés ajustar lo que quieras desde acá abajo.
+              {clubName ?? "Tu complejo"} está listo: el bot toma reservas y
+              cobra las señas. Podés ajustar lo que quieras desde acá abajo.
             </p>
           </div>
         </CardContent>
@@ -103,12 +115,17 @@ export function SetupChecklist({
                   <CircleDashed className="text-muted-foreground size-4 shrink-0" />
                 )}
                 <span
-                  className={cn("min-w-0 flex-1 truncate", isDone && "text-muted-foreground")}
+                  className={cn(
+                    "min-w-0 flex-1 truncate",
+                    isDone && "text-muted-foreground",
+                  )}
                 >
                   {step.title}
                 </span>
                 {step.optional && !isDone && (
-                  <span className="text-muted-foreground shrink-0 text-[10px]">opcional</span>
+                  <span className="text-muted-foreground shrink-0 text-[10px]">
+                    opcional
+                  </span>
                 )}
               </li>
             );
@@ -116,8 +133,13 @@ export function SetupChecklist({
         </ul>
 
         <div>
-          <Link href="/setup" className={buttonVariants({ variant: "brand", size: "lg" })}>
-            {doneCount === 0 ? "Empezar la puesta a punto" : "Continuar la puesta a punto"}
+          <Link
+            href={firstPending ? `/setup?step=${firstPending.id}` : "/setup"}
+            className={buttonVariants({ variant: "brand", size: "lg" })}
+          >
+            {doneCount === 0
+              ? "Empezar la puesta a punto"
+              : "Continuar la puesta a punto"}
             <ArrowRight />
           </Link>
         </div>
