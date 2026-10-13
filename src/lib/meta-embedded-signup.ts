@@ -198,6 +198,9 @@ export async function launchEmbeddedSignup(
           // Offers "connect your WhatsApp Business app" (coexistence) in the flow.
           featureType: "whatsapp_business_app_onboarding",
           sessionInfoVersion: "3",
+          // Without it Meta falls back to the legacy (v2) flow, which ignores featureType and
+          // only offers Cloud-API numbers — app numbers show "no cumple los requisitos".
+          version: "v4",
         },
       },
     );
