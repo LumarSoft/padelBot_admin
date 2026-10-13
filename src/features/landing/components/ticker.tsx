@@ -1,4 +1,4 @@
-import { PadelBall } from "./brand-wordmark";
+import { PadelBall } from "@/components/ui/padel-ball";
 
 const ITEMS = [
   "03:07 · Cancha 2 · Reservada por WhatsApp",
