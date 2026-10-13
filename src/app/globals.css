@@ -57,6 +57,22 @@
   --shadow-glass: var(--glass-shadow);
   --shadow-glass-lg: var(--glass-shadow-lg);
 
+  /* Public landing art direction — fixed, not theme-dependent: a night-blue
+     padel court, optic-yellow ball, chalk lines and a paper notebook. */
+  --color-ink: oklch(0.165 0.035 262);
+  --color-ink-raised: oklch(0.215 0.04 262);
+  --color-court: oklch(0.45 0.14 258);
+  --color-court-deep: oklch(0.36 0.125 260);
+  --color-ball: oklch(0.92 0.2 118);
+  --color-chalk: oklch(0.975 0.005 250);
+  --color-fog: oklch(0.76 0.03 260);
+  --color-paper: oklch(0.965 0.018 90);
+  --color-paper-line: oklch(0.83 0.04 245);
+  --color-marker: oklch(0.6 0.2 28);
+  --color-turf: oklch(0.72 0.17 150);
+  --font-display: var(--font-display);
+  --font-hand: var(--font-hand);
+
   --animate-fade-up: fade-up 0.55s var(--ease-fluid) both;
   --animate-scale-in: scale-in 0.3s var(--ease-fluid) both;
   --animate-bar-rise: bar-rise 0.7s var(--ease-fluid) both;
@@ -348,7 +364,7 @@
     background-size: 22px 22px;
   }
 
-  /* Landing: slow-drifting "aurora" glow behind the hero. */
+  /* Auth screens: slow-drifting "aurora" glow. */
   .animate-aurora {
     animation: aurora-drift 16s ease-in-out infinite;
   }
@@ -361,8 +377,50 @@
     animation-play-state: paused;
   }
 
+  /* Landing: split-flap departures board. Tiles size off the board's width
+     so the whole grid always fits, from a phone to the hero column. */
+  .flap-board {
+    container-type: inline-size;
+  }
+  .flap-tile {
+    font-size: clamp(8px, 2.75cqi, 17px);
+  }
+
+  /* Landing: a school notebook page — ruled lines plus the red margin. */
+  .notebook-paper {
+    background-color: oklch(0.99 0.008 95);
+    background-image:
+      linear-gradient(
+        90deg,
+        transparent 3.25rem,
+        color-mix(in oklch, var(--color-marker) 55%, transparent) 3.25rem
+          calc(3.25rem + 2px),
+        transparent calc(3.25rem + 2px)
+      ),
+      repeating-linear-gradient(
+        transparent 0 calc(2.25rem - 1px),
+        color-mix(in oklch, var(--color-paper-line) 70%, transparent)
+          calc(2.25rem - 1px) 2.25rem
+      );
+    background-position: 0 1.25rem;
+  }
+
+  /* Landing: faint dot field for the night sections. */
+  .bg-night-dots {
+    background-image: radial-gradient(
+      color-mix(in oklch, var(--color-chalk) 9%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: 26px 26px;
+  }
+
+  .animate-live-dot {
+    animation: live-dot 1.8s ease-in-out infinite;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-aurora,
+    .animate-live-dot,
     .animate-marquee,
     .animate-fade-up,
     .animate-scale-in,
@@ -436,6 +494,16 @@
   50% {
     transform: translate3d(4%, 3%, 0) scale(1.12);
     opacity: 1;
+  }
+}
+
+@keyframes live-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-ball) 60%, transparent);
+  }
+  60% {
+    box-shadow: 0 0 0 6px transparent;
   }
 }
 

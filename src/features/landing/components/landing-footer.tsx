@@ -6,70 +6,67 @@ import { BrandWordmark } from "./brand-wordmark";
 import { Container } from "./landing-ui";
 
 const PRODUCT_LINKS = [
-  { href: "#bot", label: "El bot" },
-  { href: "#panel", label: "Panel" },
-  { href: "#como-funciona", label: "Cómo funciona" },
-  { href: "#faq", label: "Preguntas" },
+  { href: "/#como-funciona", label: "Cómo funciona" },
+  { href: "/#cuaderno", label: "Antes y después" },
+  { href: "/#panel", label: "Panel" },
+  { href: "/#incluye", label: "Qué incluye" },
+  { href: "/#faq", label: "Preguntas" },
 ];
+
+const LINK_CLASS = "text-fog hover:text-chalk text-sm transition-colors";
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-border/60 py-14">
-      <Container className="flex flex-col gap-10">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="flex flex-col gap-3">
+    <footer className="bg-ink text-chalk relative overflow-hidden pt-16">
+      <Container className="flex flex-col gap-12">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div className="flex flex-col gap-4">
             <BrandWordmark />
-            <p className="text-muted-foreground max-w-xs text-sm text-pretty">
-              El asistente de WhatsApp que reserva canchas y cobra la seña por
-              vos. Hecho para complejos de pádel.
+            <p className="text-fog max-w-xs text-sm text-pretty">
+              El bot de WhatsApp que reserva canchas y cobra la seña por vos,
+              con un panel para ver todo. Hecho para complejos de pádel.
             </p>
           </div>
 
           <div className="flex flex-col gap-3">
-            <p className="text-sm font-semibold">Producto</p>
+            <p className="font-mono text-xs tracking-[0.18em] text-chalk/50 uppercase">
+              Producto
+            </p>
             {PRODUCT_LINKS.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-              >
+              <a key={link.href} href={link.href} className={LINK_CLASS}>
                 {link.label}
               </a>
             ))}
           </div>
 
           <div className="flex flex-col gap-3">
-            <p className="text-sm font-semibold">Acceso</p>
-            <Link
-              href="/login"
-              className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-            >
+            <p className="font-mono text-xs tracking-[0.18em] text-chalk/50 uppercase">
+              Acceso
+            </p>
+            <Link href="/register" className={LINK_CLASS}>
+              Probar gratis
+            </Link>
+            <Link href="/login" className={LINK_CLASS}>
               Entrar al panel
             </Link>
-            <a
-              href={lumarsoftWhatsApp("interested")}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-            >
-              Quiero GTP
-            </a>
           </div>
 
           <div className="flex flex-col gap-3">
-            <p className="text-sm font-semibold">Contacto</p>
+            <p className="font-mono text-xs tracking-[0.18em] text-chalk/50 uppercase">
+              Contacto
+            </p>
             <a
               href={lumarsoftWhatsApp("interested")}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm transition-colors"
+              className={`${LINK_CLASS} inline-flex items-center gap-2`}
             >
               <WhatsAppIcon className="size-4" />
               {LUMARSOFT.whatsappDisplay}
             </a>
             <a
               href={lumarsoftEmail("interested")}
-              className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm transition-colors"
+              className={`${LINK_CLASS} inline-flex items-center gap-2`}
             >
               <Mail className="size-4" />
               {LUMARSOFT.email}
@@ -77,27 +74,26 @@ export function LandingFooter() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-border/60 pt-6 text-sm text-muted-foreground sm:flex-row">
-          <p>
-            © {new Date().getFullYear()} GTP · un producto de Lumarsoft
-          </p>
+        <div className="border-chalk/10 text-fog flex flex-col items-start justify-between gap-3 border-t pt-6 text-sm sm:flex-row sm:items-center">
+          <p>© {new Date().getFullYear()} GTP · un producto de Lumarsoft</p>
           <div className="flex items-center gap-4">
-            <Link
-              href="/privacidad"
-              className="hover:text-foreground transition-colors"
-            >
+            <Link href="/privacidad" className="hover:text-chalk transition-colors">
               Privacidad
             </Link>
-            <Link
-              href="/soporte"
-              className="hover:text-foreground transition-colors"
-            >
+            <Link href="/soporte" className="hover:text-chalk transition-colors">
               Soporte
             </Link>
             <span>Hecho en Argentina 🧉</span>
           </div>
         </div>
       </Container>
+
+      <p
+        aria-hidden
+        className="font-display text-chalk/[0.05] mt-10 -mb-[0.3em] text-center text-[28vw] leading-[0.75] font-black select-none"
+      >
+        GTP
+      </p>
     </footer>
   );
 }

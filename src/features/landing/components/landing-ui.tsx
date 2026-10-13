@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ComponentProps, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -9,14 +9,18 @@ import { cn } from "@/lib/utils";
  */
 
 const CTA_BASE =
-  "inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all active:translate-y-px focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand/40 disabled:pointer-events-none disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-semibold transition-all active:translate-y-px focus-visible:outline-none focus-visible:ring-3 disabled:pointer-events-none disabled:opacity-50";
 
 const CTA_VARIANTS = {
-  primary:
-    "bg-brand text-brand-foreground shadow-lg shadow-brand/25 hover:brightness-110",
-  secondary:
-    "border border-border bg-background/60 text-foreground backdrop-blur hover:bg-muted",
-  ghost: "text-foreground hover:bg-muted",
+  /** Optic-yellow "ball" — the one primary action on any background. */
+  ball: "bg-ball text-ink shadow-[0_10px_30px_-12px_var(--color-ball)] hover:-translate-y-0.5 hover:brightness-105 focus-visible:ring-ball/50",
+  /** Outline for dark (ink/court) backgrounds. */
+  chalk:
+    "border border-chalk/25 text-chalk hover:border-chalk/60 hover:bg-chalk/5 focus-visible:ring-chalk/40",
+  /** Solid dark button for light (paper/ball) backgrounds. */
+  ink: "bg-ink text-chalk hover:-translate-y-0.5 hover:bg-ink-raised focus-visible:ring-ink/40",
+  /** Outline for light backgrounds. */
+  line: "border border-ink/20 text-ink hover:border-ink/50 hover:bg-ink/5 focus-visible:ring-ink/30",
 } as const;
 
 type CtaVariant = keyof typeof CTA_VARIANTS;
@@ -33,7 +37,7 @@ interface LandingButtonProps {
 export function LandingButton({
   href,
   children,
-  variant = "primary",
+  variant = "ball",
   external = false,
   className,
 }: LandingButtonProps) {
@@ -59,25 +63,6 @@ export function LandingButton({
   );
 }
 
-/** A subtle pill used for eyebrows and feature tags. */
-export function Pill({
-  children,
-  className,
-  ...props
-}: ComponentProps<"span">) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-border bg-card/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </span>
-  );
-}
-
 /** Centers section content and applies the shared horizontal padding. */
 export function Container({
   children,
@@ -87,37 +72,50 @@ export function Container({
   className?: string;
 }) {
   return (
-    <div className={cn("mx-auto w-full max-w-6xl px-5 sm:px-8", className)}>
+    <div className={cn("mx-auto w-full max-w-6xl px-4 sm:px-8", className)}>
       {children}
     </div>
   );
 }
 
-/** Section heading block: eyebrow + title + optional lead paragraph. */
-export function SectionHeading({
-  eyebrow,
-  title,
-  lead,
+/** Monospace scoreboard-style label above a section title. */
+export function Eyebrow({
+  children,
   className,
 }: {
-  eyebrow?: string;
-  title: ReactNode;
-  lead?: ReactNode;
+  children: ReactNode;
   className?: string;
 }) {
   return (
-    <div className={cn("reveal flex max-w-2xl flex-col gap-4", className)}>
-      {eyebrow && (
-        <span className="text-brand text-sm font-semibold tracking-wide uppercase">
-          {eyebrow}
-        </span>
+    <p
+      className={cn(
+        "font-mono text-xs font-medium tracking-[0.18em] uppercase",
+        className,
       )}
-      <h2 className="text-balance text-3xl font-semibold sm:text-4xl">
-        {title}
-      </h2>
-      {lead && (
-        <p className="text-muted-foreground text-lg text-pretty">{lead}</p>
+    >
+      {children}
+    </p>
+  );
+}
+
+/** Big condensed section headline. */
+export function DisplayTitle({
+  children,
+  className,
+  as: Tag = "h2",
+}: {
+  children: ReactNode;
+  className?: string;
+  as?: "h1" | "h2";
+}) {
+  return (
+    <Tag
+      className={cn(
+        "font-display text-[clamp(2.75rem,7vw,5.5rem)] leading-[0.88] font-extrabold tracking-[-0.01em] text-balance uppercase",
+        className,
       )}
-    </div>
+    >
+      {children}
+    </Tag>
   );
 }
