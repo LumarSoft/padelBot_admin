@@ -3,6 +3,7 @@ import { LandingHeader } from "./landing-header";
 import { LandingFooter } from "./landing-footer";
 import { Container } from "./landing-ui";
 import { cn } from "@/lib/utils";
+import { LANDING_FONT_VARIABLES } from "../lib/fonts";
 
 /**
  * Shared shell for the public legal / support pages (privacy policy, support).
@@ -22,7 +23,7 @@ export function LegalPage({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-svh flex-col">
+    <div className={cn(LANDING_FONT_VARIABLES, "flex min-h-svh flex-col")}>
       <LandingHeader />
       <main className="flex-1 py-16 sm:py-20">
         <Container className="max-w-3xl">
