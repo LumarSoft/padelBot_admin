@@ -76,11 +76,29 @@ export function LandingFooter() {
 
         <div className="border-chalk/10 text-fog flex flex-col items-start justify-between gap-3 border-t pt-6 text-sm sm:flex-row sm:items-center">
           <p>© {new Date().getFullYear()} GTP · un producto de Lumarsoft</p>
-          <div className="flex items-center gap-4">
-            <Link href="/privacidad" className="hover:text-chalk transition-colors">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Link
+              href="/privacidad"
+              className="hover:text-chalk transition-colors"
+            >
               Privacidad
             </Link>
-            <Link href="/soporte" className="hover:text-chalk transition-colors">
+            <Link
+              href="/terminos"
+              className="hover:text-chalk transition-colors"
+            >
+              Términos
+            </Link>
+            <Link
+              href="/eliminar-datos"
+              className="hover:text-chalk transition-colors"
+            >
+              Eliminación de datos
+            </Link>
+            <Link
+              href="/soporte"
+              className="hover:text-chalk transition-colors"
+            >
               Soporte
             </Link>
             <span>Hecho en Argentina 🧉</span>
