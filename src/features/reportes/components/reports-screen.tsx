@@ -55,7 +55,11 @@ const WEEKDAYS_ORDERED = [
   { value: 0, label: "Dom" },
 ];
 
-/** Revenue channels — consistent colors across the entire screen. */
+/**
+ * Collection channels — where the money comes in; they add up to the total collected.
+ * Consistent colors across the entire screen. The kiosk is not one of them: what it sells
+ * is paid at the desk, so it is already inside Efectivo/QR (see `productsCents`).
+ */
 const CHANNELS = [
   {
     key: "depositCents" as const,
@@ -65,15 +69,6 @@ const CHANNELS = [
     dotClass: "bg-brand",
     textClass: "text-brand",
     icon: Landmark,
-  },
-  {
-    key: "productsCents" as const,
-    totalKey: "totalProductsCents" as const,
-    label: "Kiosco",
-    barClass: "bg-violet-500/70",
-    dotClass: "bg-violet-500",
-    textClass: "text-violet-600 dark:text-violet-400",
-    icon: ShoppingBasket,
   },
   {
     key: "cashCents" as const,
@@ -125,8 +120,14 @@ function lastMonths(n: number) {
 
 // ── Pure helpers ──────────────────────────────────────────────────────────────
 
+/** Money collected that day: señas + efectivo + QR. The kiosk is already inside cash/QR. */
 function dayTotal(d: RevenueDay): number {
-  return d.depositCents + d.productsCents + d.cashCents + d.qrCents;
+  return d.depositCents + d.cashCents + d.qrCents;
+}
+
+/** Money collected in the range — same sum as {@link dayTotal}. */
+function rangeTotal(r: RevenueReport): number {
+  return r.totalDepositCents + r.totalCashCents + r.totalQrCents;
 }
 
 function formatShortDate(dateKey: string): string {
@@ -354,11 +355,7 @@ function DateRangePicker({
 // ── KPI cards ─────────────────────────────────────────────────────────────────
 
 function KpiCards({ revenue }: { revenue: RevenueReport }) {
-  const grand =
-    revenue.totalDepositCents +
-    revenue.totalProductsCents +
-    revenue.totalCashCents +
-    revenue.totalQrCents;
+  const grand = rangeTotal(revenue);
 
   const avgTicket =
     revenue.totalBookings > 0
@@ -414,7 +411,7 @@ function KpiCards({ revenue }: { revenue: RevenueReport }) {
     {
       label: "Kiosco",
       value: formatPrice(revenue.totalProductsCents),
-      sub: grand > 0 ? `${Math.round((revenue.totalProductsCents / grand) * 100)}% del total` : null,
+      sub: "Vendido · incluido en Mostrador al cobrarse",
       subClass: "text-violet-600 dark:text-violet-400",
       icon: ShoppingBasket,
       iconBg: "bg-violet-500/10",
@@ -537,6 +534,9 @@ function RevenueChart({ days }: { days: RevenueDay[] }) {
                   ...CHANNELS.filter((ch) => day[ch.key] > 0).map(
                     (ch) => `${ch.label}: ${formatPrice(day[ch.key])}`,
                   ),
+                  ...(day.productsCents > 0
+                    ? [`Kiosco (incluido): ${formatPrice(day.productsCents)}`]
+                    : []),
                 ].join("\n")}
               >
                 {/* Hover: total above bar */}
@@ -627,11 +627,7 @@ function RevenueChart({ days }: { days: RevenueDay[] }) {
 // ── Payment mix ───────────────────────────────────────────────────────────────
 
 function PaymentMix({ revenue }: { revenue: RevenueReport }) {
-  const grand =
-    revenue.totalDepositCents +
-    revenue.totalProductsCents +
-    revenue.totalCashCents +
-    revenue.totalQrCents;
+  const grand = rangeTotal(revenue);
 
   if (grand === 0) return null;
 
@@ -666,6 +662,15 @@ function PaymentMix({ revenue }: { revenue: RevenueReport }) {
           </span>
         </div>
       ))}
+      {revenue.totalProductsCents > 0 && (
+        <p className="text-muted-foreground flex items-center gap-2 border-t pt-3 text-xs">
+          <ShoppingBasket className="size-3.5 shrink-0 text-violet-600 dark:text-violet-400" />
+          <span>
+            Kiosco: {formatPrice(revenue.totalProductsCents)} vendidos. Lo cobrado ya está en
+            Efectivo y QR, no suma aparte.
+          </span>
+        </p>
+      )}
     </div>
   );
 }
@@ -837,10 +842,15 @@ function RevenueTable({ revenue }: { revenue: RevenueReport }) {
             <th className="px-3 py-2 text-left font-medium">Día</th>
             <th className="px-3 py-2 text-right font-medium">Turnos</th>
             <th className="px-3 py-2 text-right font-medium text-brand">Señas</th>
-            <th className="px-3 py-2 text-right font-medium text-violet-600 dark:text-violet-400">Kiosco</th>
             <th className="px-3 py-2 text-right font-medium text-emerald-600 dark:text-emerald-400">Efec.</th>
             <th className="px-3 py-2 text-right font-medium text-amber-600 dark:text-amber-400">QR</th>
             <th className="px-3 py-2 text-right font-medium">Total</th>
+            <th
+              className="border-l px-3 py-2 text-right font-medium text-violet-600 dark:text-violet-400"
+              title="Vendido en el kiosco (turnos y ventas sueltas). Lo cobrado ya está en Efec. y QR."
+            >
+              Kiosco
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -853,9 +863,6 @@ function RevenueTable({ revenue }: { revenue: RevenueReport }) {
                 <td className="text-brand px-3 py-1.5 text-right tabular-nums">
                   {day.depositCents > 0 ? formatPrice(day.depositCents) : "—"}
                 </td>
-                <td className="px-3 py-1.5 text-right tabular-nums text-violet-600 dark:text-violet-400">
-                  {day.productsCents > 0 ? formatPrice(day.productsCents) : "—"}
-                </td>
                 <td className="px-3 py-1.5 text-right tabular-nums text-emerald-600 dark:text-emerald-400">
                   {day.cashCents > 0 ? formatPrice(day.cashCents) : "—"}
                 </td>
@@ -864,6 +871,9 @@ function RevenueTable({ revenue }: { revenue: RevenueReport }) {
                 </td>
                 <td className="px-3 py-1.5 text-right font-semibold tabular-nums">
                   {t > 0 ? formatPrice(t) : "—"}
+                </td>
+                <td className="border-l px-3 py-1.5 text-right tabular-nums text-violet-600 dark:text-violet-400">
+                  {day.productsCents > 0 ? formatPrice(day.productsCents) : "—"}
                 </td>
               </tr>
             );
@@ -874,12 +884,10 @@ function RevenueTable({ revenue }: { revenue: RevenueReport }) {
             <td className="px-3 py-2 text-muted-foreground">TOTAL</td>
             <td className="px-3 py-2 text-right tabular-nums">{revenue.totalBookings}</td>
             <td className="text-brand px-3 py-2 text-right tabular-nums">{formatPrice(revenue.totalDepositCents)}</td>
-            <td className="px-3 py-2 text-right tabular-nums text-violet-600 dark:text-violet-400">{formatPrice(revenue.totalProductsCents)}</td>
             <td className="px-3 py-2 text-right tabular-nums text-emerald-600 dark:text-emerald-400">{formatPrice(revenue.totalCashCents)}</td>
             <td className="px-3 py-2 text-right tabular-nums text-amber-600 dark:text-amber-400">{formatPrice(revenue.totalQrCents)}</td>
-            <td className="px-3 py-2 text-right tabular-nums">
-              {formatPrice(revenue.totalDepositCents + revenue.totalProductsCents + revenue.totalCashCents + revenue.totalQrCents)}
-            </td>
+            <td className="px-3 py-2 text-right tabular-nums">{formatPrice(rangeTotal(revenue))}</td>
+            <td className="border-l px-3 py-2 text-right tabular-nums text-violet-600 dark:text-violet-400">{formatPrice(revenue.totalProductsCents)}</td>
           </tr>
         </tfoot>
       </table>
@@ -888,17 +896,19 @@ function RevenueTable({ revenue }: { revenue: RevenueReport }) {
 }
 
 function downloadRevenueCsv(revenue: RevenueReport) {
-  const header = "fecha,turnos,señas_ars,kiosco_ars,efectivo_ars,qr_ars,total_ars";
+  // total = señas + efectivo + QR. The kiosk goes after it: it's what was sold, and what
+  // was collected of it is already in efectivo/QR — a column that adds up the row must skip it.
+  const header = "fecha,turnos,señas_ars,efectivo_ars,qr_ars,total_ars,kiosco_vendido_ars";
   const rows = revenue.days.map((d) => {
     const t = dayTotal(d);
     return [
       d.dateKey,
       d.bookings,
       (d.depositCents / 100).toFixed(2),
-      (d.productsCents / 100).toFixed(2),
       (d.cashCents / 100).toFixed(2),
       (d.qrCents / 100).toFixed(2),
       (t / 100).toFixed(2),
+      (d.productsCents / 100).toFixed(2),
     ].join(",");
   });
   const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv;charset=utf-8" });
@@ -955,7 +965,7 @@ export function ReportsScreen() {
           <div>
             <h2 className="text-base font-semibold">Ingresos</h2>
             <p className="text-muted-foreground text-sm">
-              Señas, kiosco y mostrador por período.
+              Lo cobrado (señas y mostrador) y lo vendido en el kiosco, por período.
             </p>
           </div>
           <div className="flex items-center gap-2">
