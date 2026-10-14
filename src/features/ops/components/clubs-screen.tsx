@@ -11,6 +11,7 @@ import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { formatUsd, SUBSCRIPTION_LABELS, timeAgo } from "@/features/ops/lib/labels";
 import { useOpsClubs } from "@/features/ops/hooks/use-ops";
+import { isPlanKey, planName } from "@/lib/plans";
 import { SubscriptionDialog } from "@/features/ops/components/subscription-dialog";
 import { ClubPasswordDialog } from "@/features/ops/components/club-password-dialog";
 import { HelpSearchMisses } from "@/features/ops/components/help-search-misses";
@@ -90,6 +91,16 @@ function ClubRow({
               <h3 className="font-heading text-base font-semibold">
                 {club.name}
               </h3>
+              {/* An unknown key restricts nothing API-side — flag it so ops fixes it. */}
+              <Badge
+                variant={
+                  isPlanKey(subscription.plan) ? "outline" : "destructive"
+                }
+              >
+                {isPlanKey(subscription.plan)
+                  ? planName(subscription.plan)
+                  : `Plan “${subscription.plan}”`}
+              </Badge>
               <Badge
                 variant={
                   subscription.severity === "ok" ||

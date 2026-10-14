@@ -1,3 +1,5 @@
+import type { PlanKey } from "@/lib/plans";
+
 /** Types of the ops console API (`/ops/*`). Mirrors `api/src/ops`. */
 
 export interface OpsAdmin {
@@ -111,7 +113,7 @@ export interface UpdateSubscriptionPayload {
   status: SubscriptionStatus;
   months?: number;
   days?: number;
-  plan?: string;
+  plan?: PlanKey;
 }
 
 export type ClubUserRoleApi = "OWNER" | "STAFF";

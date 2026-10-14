@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUpdateSubscription } from "@/features/ops/hooks/use-ops";
 import { SUBSCRIPTION_LABELS } from "@/features/ops/lib/labels";
+import { PLAN_KEYS, PLAN_NAMES, isPlanKey, planName, type PlanKey } from "@/lib/plans";
 import type { OpsClub, SubscriptionStatus } from "@/types/api/ops";
 
 const STATUSES: SubscriptionStatus[] = [
@@ -42,7 +43,10 @@ export function SubscriptionDialog({
     club.subscription.subscriptionStatus,
   );
   const [months, setMonths] = useState(1);
-  const [days, setDays] = useState(14);
+  const [days, setDays] = useState(30);
+  const [plan, setPlan] = useState<PlanKey | null>(
+    isPlanKey(club.subscription.plan) ? club.subscription.plan : null,
+  );
   const update = useUpdateSubscription();
 
   function handleSave(): void {
@@ -51,6 +55,7 @@ export function SubscriptionDialog({
         id: club.id,
         payload: {
           status,
+          ...(plan && plan !== club.subscription.plan ? { plan } : {}),
           ...(status === "ACTIVE" ? { months } : {}),
           ...(status === "TRIAL" ? { days } : {}),
         },
@@ -71,6 +76,30 @@ export function SubscriptionDialog({
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <Label>Plan</Label>
+            <div className="flex flex-wrap gap-2">
+              {PLAN_KEYS.map((option) => (
+                <Button
+                  key={option}
+                  type="button"
+                  size="sm"
+                  variant={plan === option ? "default" : "outline"}
+                  onClick={() => setPlan(option)}
+                  disabled={update.isPending}
+                >
+                  {PLAN_NAMES[option]}
+                </Button>
+              ))}
+            </div>
+            {!plan && (
+              <p className="text-muted-foreground text-xs">
+                Plan guardado: “{planName(club.subscription.plan)}”, que no es
+                ninguno de los tres. Elegí uno.
+              </p>
+            )}
+          </div>
+
           <div className="flex flex-col gap-2">
             <Label>Estado</Label>
             <div className="flex flex-wrap gap-2">
