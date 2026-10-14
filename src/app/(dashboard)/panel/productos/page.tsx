@@ -11,7 +11,7 @@ export default async function ProductosPage() {
     <div className="stagger-children flex flex-col gap-8">
       <PageHeader
         title="Productos"
-        description="Pelotas, bebidas, snacks y accesorios que el complejo ofrece."
+        description="Pelotas, bebidas, snacks y accesorios: precios, stock y lo que hay que comprar."
       />
 
       {user.role !== "owner" ? (

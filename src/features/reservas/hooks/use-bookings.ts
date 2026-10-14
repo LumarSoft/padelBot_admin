@@ -120,6 +120,9 @@ export function useSetBookingProducts() {
     mutationFn: ({ bookingId, body }) => productsService.setBookingProducts(bookingId, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+      // Consumos move the kiosk stock.
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stock.all });
       toast.success("Consumos guardados");
     },
     onError: (error) => toast.error(error.message),

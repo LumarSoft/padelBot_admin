@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  Boxes,
   CalendarDays,
   MessagesSquare,
   Settings,
@@ -33,6 +34,11 @@ const MAIN_NAV: NavItem[] = [
     label: "Conversaciones",
     icon: MessagesSquare,
   },
+];
+
+/** Kiosk stock for the front desk. The owner manages it from Productos (catalog + stock). */
+const STAFF_NAV: NavItem[] = [
+  { href: "/panel/kiosco", label: "Kiosco", icon: Boxes },
 ];
 
 const ADMIN_NAV: NavItem[] = [
@@ -129,6 +135,10 @@ export function DashboardNav() {
           pulse={item.href === "/panel/pagos" && receiptsToReview > 0}
         />
       ))}
+      {role === "staff" &&
+        STAFF_NAV.map((item) => (
+          <NavLink key={item.href} item={item} pathname={pathname} />
+        ))}
 
       {role === "owner" && (
         <>

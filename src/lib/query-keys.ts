@@ -64,6 +64,12 @@ export const queryKeys = {
     all: ["products"] as const,
     list: ["products", "list"] as const,
   },
+  stock: {
+    all: ["stock"] as const,
+    shoppingList: ["stock", "shopping-list"] as const,
+    movements: (productId: string) => ["stock", "movements", productId] as const,
+    counterSales: (dateKey: string) => ["stock", "counter-sales", dateKey] as const,
+  },
   onboarding: {
     status: ["onboarding", "status"] as const,
   },

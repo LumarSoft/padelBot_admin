@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import {
+  BookOpen,
   Loader2,
   PackagePlus,
   Pencil,
@@ -41,6 +42,9 @@ import {
 } from "@/features/productos/hooks/use-products";
 import type { Product, ProductCategory } from "@/types/api/products";
 import { CATEGORY_LABELS } from "@/types/api/products";
+import { KioscoTabs } from "@/features/kiosco/components/kiosco-tabs";
+import { StockActions } from "@/features/kiosco/components/stock-actions";
+import { StockLevel } from "@/features/kiosco/components/stock-level";
 
 const CATEGORIES: ProductCategory[] = [
   "PELOTA",
@@ -50,6 +54,23 @@ const CATEGORIES: ProductCategory[] = [
   "OTRO",
 ];
 
+interface ProductFormValues {
+  name: string;
+  priceCents: number;
+  category: ProductCategory;
+  isActive: boolean;
+  /** Only sent when it changed: a number (re)sets the stock, null stops tracking it. */
+  stockQuantity?: number | null;
+  lowStockThreshold?: number | null;
+}
+
+/** "" → null, a whole number ≥ 0 → that number, anything else → undefined (invalid). */
+function parseWhole(value: string): number | null | undefined {
+  if (value.trim() === "") return null;
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 0 ? n : undefined;
+}
+
 function ProductForm({
   initial,
   isPending,
@@ -58,12 +79,7 @@ function ProductForm({
 }: {
   initial?: Partial<Product>;
   isPending: boolean;
-  onSubmit: (data: {
-    name: string;
-    priceCents: number;
-    category: ProductCategory;
-    isActive: boolean;
-  }) => void;
+  onSubmit: (data: ProductFormValues) => void;
   submitLabel: string;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
@@ -74,16 +90,39 @@ function ProductForm({
     initial?.category ?? "OTRO",
   );
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const wasTracked = initial?.stockQuantity != null;
+  const [trackStock, setTrackStock] = useState(wasTracked);
+  const [stock, setStock] = useState(
+    initial?.stockQuantity != null ? String(initial.stockQuantity) : "",
+  );
+  const [threshold, setThreshold] = useState(
+    initial?.lowStockThreshold != null ? String(initial.lowStockThreshold) : "",
+  );
 
   const trimmed = name.trim();
   const priceNumber = Number(price);
   const priceValid = Number.isFinite(priceNumber) && priceNumber >= 0;
   const priceCents = Math.round(priceNumber * 100);
+  const stockValue = parseWhole(stock);
+  const thresholdValue = parseWhole(threshold);
+  // Tracking needs today's quantity; the minimum is optional.
+  const stockValid =
+    !trackStock || (typeof stockValue === "number" && thresholdValue !== undefined);
+
+  function stockChanges(): Pick<ProductFormValues, "stockQuantity" | "lowStockThreshold"> {
+    if (!trackStock) return wasTracked ? { stockQuantity: null } : {};
+    return {
+      ...(stockValue !== (initial?.stockQuantity ?? null) ? { stockQuantity: stockValue } : {}),
+      ...(thresholdValue !== (initial?.lowStockThreshold ?? null)
+        ? { lowStockThreshold: thresholdValue }
+        : {}),
+    };
+  }
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!trimmed || !priceValid) return;
-    onSubmit({ name: trimmed, priceCents, category, isActive });
+    if (!trimmed || !priceValid || !stockValid) return;
+    onSubmit({ name: trimmed, priceCents, category, isActive, ...stockChanges() });
   }
 
   return (
@@ -137,6 +176,64 @@ function ProductForm({
         </div>
       </div>
 
+      <div className="flex flex-col gap-3 rounded-lg border p-3">
+        <button
+          type="button"
+          onClick={() => setTrackStock((v) => !v)}
+          disabled={isPending}
+          aria-pressed={trackStock}
+          className="text-muted-foreground hover:text-foreground flex items-center gap-2 text-sm transition-colors"
+        >
+          {trackStock ? (
+            <ToggleRight className="size-5 text-emerald-600" />
+          ) : (
+            <ToggleLeft className="size-5" />
+          )}
+          {trackStock ? "Controlo el stock" : "No controlo el stock"}
+        </button>
+        {trackStock ? (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="product-stock">Hay hoy</Label>
+              <Input
+                id="product-stock"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                placeholder="Ej: 24"
+                disabled={isPending}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="product-threshold">Avisar cuando queden</Label>
+              <Input
+                id="product-threshold"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                value={threshold}
+                onChange={(e) => setThreshold(e.target.value)}
+                placeholder="Ej: 6"
+                disabled={isPending}
+              />
+            </div>
+            <p className="text-muted-foreground col-span-2 text-xs">
+              Cada consumo y venta descuenta solo. Cuando llega al mínimo
+              aparece en «Para comprar» y te llega un aviso.
+            </p>
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-xs">
+            Si lo activás, cada venta descuenta del stock y te avisamos cuando
+            queda poco. También se activa solo al cargar mercadería o contarlo.
+          </p>
+        )}
+      </div>
+
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -155,7 +252,10 @@ function ProductForm({
       </div>
 
       <DialogFooter>
-        <Button type="submit" disabled={isPending || !trimmed || !priceValid}>
+        <Button
+          type="submit"
+          disabled={isPending || !trimmed || !priceValid || !stockValid}
+        >
           {isPending ? "Guardando…" : submitLabel}
         </Button>
       </DialogFooter>
@@ -185,7 +285,10 @@ function CreateProductDialog() {
           <ProductForm
             isPending={createProduct.isPending}
             onSubmit={(data) =>
-              createProduct.mutate(data, { onSuccess: () => setOpen(false) })
+              createProduct.mutate(
+                { ...data, stockQuantity: data.stockQuantity ?? undefined },
+                { onSuccess: () => setOpen(false) },
+              )
             }
             submitLabel="Crear producto"
           />
@@ -231,6 +334,119 @@ function EditProductDialog({
   );
 }
 
+function Catalog({
+  products,
+  onEdit,
+  onDelete,
+  deleting,
+  onShowHistory,
+}: {
+  products: Product[];
+  onEdit: (product: Product) => void;
+  onDelete: (product: Product) => void;
+  deleting: boolean;
+  onShowHistory: (productId: string) => void;
+}) {
+  if (products.length === 0) {
+    return (
+      <EmptyState
+        icon={ShoppingBasket}
+        title="Sin productos"
+        description="Creá el primer producto para poder registrar consumos en las reservas."
+      />
+    );
+  }
+
+  const byCategory = products.reduce<Record<string, Product[]>>((acc, p) => {
+    acc[p.category] = [...(acc[p.category] ?? []), p];
+    return acc;
+  }, {});
+
+  return (
+    <div className="flex flex-col gap-6">
+      {CATEGORIES.filter((cat) => byCategory[cat]?.length).map((cat) => (
+        <div key={cat} className="overflow-hidden rounded-xl border">
+          <div className="bg-muted/40 border-b px-4 py-2">
+            <p className="text-sm font-medium">{CATEGORY_LABELS[cat]}</p>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Precio</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead className="w-20" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {byCategory[cat].map((product) => (
+                <TableRow
+                  key={product.id}
+                  className={!product.isActive ? "opacity-50" : undefined}
+                >
+                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell className="text-sm tabular-nums">
+                    {formatPrice(product.priceCents)}
+                  </TableCell>
+                  <TableCell>
+                    <button
+                      type="button"
+                      onClick={() => onShowHistory(product.id)}
+                      title="Ver lo que entró y salió"
+                      className="hover:bg-muted/60 -mx-1.5 rounded-md px-1.5 py-0.5 transition-colors"
+                    >
+                      <StockLevel
+                        stockQuantity={product.stockQuantity}
+                        lowStockThreshold={product.lowStockThreshold}
+                      />
+                    </button>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={product.isActive ? "default" : "secondary"}
+                      className={
+                        product.isActive
+                          ? "border-transparent bg-emerald-600/10 text-emerald-700 dark:text-emerald-400"
+                          : ""
+                      }
+                    >
+                      {product.isActive ? "Activo" : "Inactivo"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Editar ${product.name}`}
+                        onClick={() => onEdit(product)}
+                        className="text-muted-foreground hover:text-foreground size-8"
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Eliminar ${product.name}`}
+                        onClick={() => onDelete(product)}
+                        disabled={deleting}
+                        className="text-muted-foreground hover:text-destructive size-8"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ProductsManager() {
   const productsQuery = useProducts();
   const deleteProduct = useDeleteProduct();
@@ -239,17 +455,11 @@ export function ProductsManager() {
 
   const products = productsQuery.data ?? [];
 
-  const byCategory = products.reduce<Record<string, Product[]>>((acc, p) => {
-    const key = p.category;
-    acc[key] = [...(acc[key] ?? []), p];
-    return acc;
-  }, {});
-
   async function handleDelete(product: Product) {
     const ok = await confirm({
       title: `¿Eliminar "${product.name}"?`,
       description:
-        "Sale del catálogo. Los consumos ya cargados en una cuenta no se tocan.",
+        "Sale del catálogo. Si ya se vendió alguna vez, desactivalo en lugar de borrarlo.",
       confirmLabel: "Eliminar",
       cancelLabel: "No, volver",
       tone: "destructive",
@@ -268,98 +478,27 @@ export function ProductsManager() {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-base font-semibold">Catálogo de productos</h2>
-          <p className="text-muted-foreground text-sm">
-            Pelotas, bebidas, snacks y accesorios que el complejo ofrece. Podés
-            registrar consumos al confirmar un pago.
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <StockActions />
         <CreateProductDialog />
       </div>
 
-      {products.length === 0 ? (
-        <EmptyState
-          icon={ShoppingBasket}
-          title="Sin productos"
-          description="Creá el primer producto para poder registrar consumos en las reservas."
-        />
-      ) : (
-        <div className="flex flex-col gap-6">
-          {(CATEGORIES as ProductCategory[])
-            .filter((cat) => byCategory[cat]?.length)
-            .map((cat) => (
-              <div key={cat} className="overflow-hidden rounded-xl border">
-                <div className="bg-muted/40 border-b px-4 py-2">
-                  <p className="text-sm font-medium">{CATEGORY_LABELS[cat]}</p>
-                </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nombre</TableHead>
-                      <TableHead>Precio</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className="w-20" />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {byCategory[cat].map((product) => (
-                      <TableRow
-                        key={product.id}
-                        className={
-                          !product.isActive ? "opacity-50" : undefined
-                        }
-                      >
-                        <TableCell className="font-medium">
-                          {product.name}
-                        </TableCell>
-                        <TableCell className="text-sm tabular-nums">
-                          {formatPrice(product.priceCents)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={product.isActive ? "default" : "secondary"}
-                            className={
-                              product.isActive
-                                ? "border-transparent bg-emerald-600/10 text-emerald-700 dark:text-emerald-400"
-                                : ""
-                            }
-                          >
-                            {product.isActive ? "Activo" : "Inactivo"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={`Editar ${product.name}`}
-                              onClick={() => setEditingProduct(product)}
-                              className="text-muted-foreground hover:text-foreground size-8"
-                            >
-                              <Pencil className="size-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={`Eliminar ${product.name}`}
-                              onClick={() => void handleDelete(product)}
-                              disabled={deleteProduct.isPending}
-                              className="text-muted-foreground hover:text-destructive size-8"
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ))}
-        </div>
-      )}
+      <KioscoTabs
+        first={{
+          value: "catalogo",
+          label: "Catálogo",
+          icon: BookOpen,
+          render: (onShowHistory) => (
+            <Catalog
+              products={products}
+              onEdit={setEditingProduct}
+              onDelete={(product) => void handleDelete(product)}
+              deleting={deleteProduct.isPending}
+              onShowHistory={onShowHistory}
+            />
+          ),
+        }}
+      />
 
       {editingProduct && (
         <EditProductDialog
