@@ -15,6 +15,8 @@ import { isPlanKey, planName } from "@/lib/plans";
 import { SubscriptionDialog } from "@/features/ops/components/subscription-dialog";
 import { ClubPasswordDialog } from "@/features/ops/components/club-password-dialog";
 import { HelpSearchMisses } from "@/features/ops/components/help-search-misses";
+import { formatCount } from "@/features/plan/lib/format";
+import type { PlanUsage } from "@/types/api/clubs";
 import type { OpsClub } from "@/types/api/ops";
 
 export function ClubsScreen() {
@@ -80,7 +82,8 @@ function ClubRow({
   onEdit: () => void;
   onManagePasswords: () => void;
 }) {
-  const { subscription, readiness, activity } = club;
+  const { subscription, readiness, activity, plan } = club;
+  const credits = plan.aiCredits;
 
   return (
     <Card size="sm">
@@ -125,7 +128,8 @@ function ClubRow({
             </div>
 
             <p className="text-muted-foreground text-xs">
-              {readiness.courts} cancha{readiness.courts === 1 ? "" : "s"} ·{" "}
+              {withLimit(plan.courts, "cancha")} ·{" "}
+              {withLimit(plan.users, "usuario")} ·{" "}
               {readiness.paymentsConfigured ? "cobros ok" : "sin cobros"} ·{" "}
               {readiness.mpConnected ? "MP conectado" : "sin MP"} ·{" "}
               {readiness.whatsappLines > 0 ? "WhatsApp ok" : "sin WhatsApp"}
@@ -142,7 +146,7 @@ function ClubRow({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           <Metric
             label="Reservas del bot"
             value={activity.bookingsBot}
@@ -152,6 +156,23 @@ function ClubRow({
             label="Señas cobradas"
             value={formatPrice(activity.depositsCents)}
             hint="últimos 30 días"
+          />
+          {/* Over 100% never cuts the bot: it's the cue to offer a bigger plan. */}
+          <Metric
+            label="Créditos de IA"
+            value={
+              credits.limit === null
+                ? formatCount(credits.used)
+                : `${formatCount(credits.used)} / ${formatCount(credits.limit)}`
+            }
+            hint={credits.percent === null ? "este mes" : `${credits.percent}% este mes`}
+            tone={
+              credits.percent === null || credits.percent < 80
+                ? "default"
+                : credits.percent >= 100
+                  ? "danger"
+                  : "warning"
+            }
           />
           <Metric
             label="Nos cuesta"
@@ -179,7 +200,7 @@ function Metric({
   label: string;
   value: string | number;
   hint?: string;
-  tone?: "default" | "warning";
+  tone?: "default" | "warning" | "danger";
 }) {
   return (
     <div className="space-y-0.5">
@@ -188,6 +209,7 @@ function Metric({
         className={cn(
           "text-sm font-semibold tabular-nums",
           tone === "warning" && "text-amber-600 dark:text-amber-400",
+          tone === "danger" && "text-red-600 dark:text-red-400",
         )}
       >
         {value}
@@ -195,4 +217,10 @@ function Metric({
       {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
     </div>
   );
+}
+
+/** "2/4 canchas" (a club over its limit reads "5/4"), or "3 canchas" when there's no limit. */
+function withLimit(usage: PlanUsage, noun: string): string {
+  if (usage.limit !== null) return `${usage.used}/${usage.limit} ${noun}s`;
+  return `${usage.used} ${noun}${usage.used === 1 ? "" : "s"}`;
 }

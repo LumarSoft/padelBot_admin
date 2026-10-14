@@ -1,4 +1,5 @@
 import type { PlanKey } from "@/lib/plans";
+import type { PlanUsage } from "@/types/api/clubs";
 
 /** Types of the ops console API (`/ops/*`). Mirrors `api/src/ops`. */
 
@@ -107,6 +108,15 @@ export interface OpsClub {
     dormant: boolean;
   };
   llmCostMicroUsd: number;
+  /** The plan's limits against what the club uses; no limits for an unknown key. */
+  plan: {
+    name: string;
+    known: boolean;
+    courts: PlanUsage;
+    users: PlanUsage;
+    /** This calendar month. Over 100% never cuts the bot: it's a sales call. */
+    aiCredits: PlanUsage & { percent: number | null };
+  };
 }
 
 export interface UpdateSubscriptionPayload {

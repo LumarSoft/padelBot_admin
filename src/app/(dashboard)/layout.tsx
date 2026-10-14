@@ -9,6 +9,7 @@ import { ChangePasswordDialog } from "@/features/auth/components/change-password
 import { ForcePasswordChangeDialog } from "@/features/auth/components/force-password-change-dialog";
 import { DashboardNav } from "@/features/dashboard/components/dashboard-nav";
 import { SubscriptionBanner } from "@/features/dashboard/components/subscription-banner";
+import { AiCreditsBanner } from "@/features/plan/components/ai-credits-banner";
 import { GlobalSearch } from "@/features/dashboard/components/global-search";
 import { HelpButton } from "@/features/help/components/help-button";
 import { TourOverlay } from "@/features/help/components/tour-overlay";
@@ -91,6 +92,7 @@ export default async function DashboardLayout({
         </header>
 
         <SubscriptionBanner />
+        {user.role === "owner" && <AiCreditsBanner />}
 
         <main className="mx-auto w-full max-w-6xl flex-1 p-4 md:p-8">
           {children}

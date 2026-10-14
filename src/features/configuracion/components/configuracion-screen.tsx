@@ -27,6 +27,7 @@ import { WhatsAppManager } from "@/features/configuracion/components/whatsapp-ma
 import { SetupChecklist } from "@/features/onboarding/components/setup-checklist";
 import { HelpContactCard } from "@/features/onboarding/components/help-contact-card";
 import { HouseRulesManager } from "@/features/help/components/house-rules-manager";
+import { PlanCard } from "@/features/plan/components/plan-card";
 
 /**
  * Same order as the `/setup` wizard (`features/setup/lib/steps.ts`): complejo → canchas →
@@ -86,6 +87,7 @@ export function ConfiguracionScreen({ clubName }: { clubName?: string }) {
             stay a plain shell instead of half the headings living up here. */}
         <TabsPanel value="complejo" className="flex flex-col gap-6">
           <ClubProfileManager />
+          <PlanCard />
           <HelpContactCard />
         </TabsPanel>
 

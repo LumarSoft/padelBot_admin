@@ -59,7 +59,7 @@ export function BotScreen() {
               ? formatUsd(cost.microUsdPerConfirmedBooking)
               : "—"
           }
-          hint={`${formatUsd(cost.totalMicroUsd)} en total · ${cost.calls} llamadas a OpenAI`}
+          hint={`${formatUsd(cost.totalMicroUsd)} en total · ${cost.calls} pasos de IA`}
         />
       </div>
 

@@ -125,6 +125,13 @@ export interface ClubPlanOverview {
   courts: PlanUsage;
   /** Active users, the owner included. */
   users: PlanUsage;
+  /** This calendar month's AI credits: one per AI step (message, audio, image or receipt). */
+  aiCredits: PlanUsage & {
+    /** "2026-10" (club-local). */
+    month: string;
+    /** Whole percentage used (can pass 100); null without an allowance. */
+    percent: number | null;
+  };
 }
 
 export interface WhatsAppLine {
