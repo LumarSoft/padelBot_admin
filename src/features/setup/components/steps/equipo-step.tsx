@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { StepLayout } from "@/features/setup/components/step-layout";
 import { StepFooter } from "@/features/setup/components/step-footer";
 import { useCreateUser, useUsers } from "@/features/configuracion/hooks/use-users";
+import { PlanLimitNotice } from "@/features/plan/components/plan-limit-notice";
+import { hasRoom, usePlan } from "@/features/plan/hooks/use-plan";
 import type { StepProps } from "@/features/setup/components/setup-wizard";
 import type { CreateUserResponse } from "@/types/api/users";
 
@@ -67,8 +69,12 @@ export function EquipoStep({ nav }: StepProps) {
   const [created, setCreated] = useState<CreateUserResponse | null>(null);
 
   const users = usersQuery.data ?? [];
+  const roomForMore = hasRoom(usePlan().data?.users);
   const canAdd =
-    name.trim().length > 0 && email.trim().includes("@") && !createUser.isPending;
+    roomForMore &&
+    name.trim().length > 0 &&
+    email.trim().includes("@") &&
+    !createUser.isPending;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -126,6 +132,8 @@ export function EquipoStep({ nav }: StepProps) {
       )}
 
       {created && <TempPasswordCard created={created} />}
+
+      <PlanLimitNotice resource="users" />
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

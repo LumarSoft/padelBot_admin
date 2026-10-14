@@ -38,6 +38,9 @@ import {
 } from "@/features/configuracion/hooks/use-users";
 import { useTeamFirstDay } from "@/features/help/hooks/use-help";
 import { FIRST_DAY_TASKS } from "@/features/help/content/first-day";
+import { cn } from "@/lib/utils";
+import { PlanLimitNotice } from "@/features/plan/components/plan-limit-notice";
+import { hasRoom, usePlan } from "@/features/plan/hooks/use-plan";
 import type { ClubUser } from "@/types/api/users";
 import type { TeamMemberFirstDay } from "@/types/api/help";
 
@@ -76,6 +79,7 @@ function InviteUserDialog() {
   const [name, setName] = useState("");
   const [created, setCreated] = useState<{ email: string; tempPassword: string } | null>(null);
   const createUser = useCreateUser();
+  const roomForMore = hasRoom(usePlan().data?.users);
 
   const canSubmit = email.includes("@") && !!name.trim() && !createUser.isPending;
 
@@ -106,7 +110,11 @@ function InviteUserDialog() {
         }
       }}
     >
-      <DialogTrigger render={<Button variant="outline" data-help="equipo-agregar" />}>
+      <DialogTrigger
+        render={
+          <Button variant="outline" data-help="equipo-agregar" disabled={!roomForMore} />
+        }
+      >
         <Plus className="size-4" />
         Agregar usuario
       </DialogTrigger>
@@ -335,6 +343,10 @@ export function TeamManager() {
           </TableBody>
         </Table>
       )}
+      {/* Off the card's edge when the table runs full-bleed. */}
+      <div className={cn("pt-3 empty:hidden", hasRows && !resetResult && "px-(--card-spacing)")}>
+        <PlanLimitNotice resource="users" />
+      </div>
     </SettingsSection>
   );
 }

@@ -35,6 +35,7 @@ export const queryKeys = {
     fixedConfirmation: ["clubs", "fixed-confirmation"] as const,
     mercadopago: ["clubs", "mercadopago"] as const,
     subscription: ["clubs", "subscription"] as const,
+    plan: ["clubs", "plan"] as const,
     whatsappLines: ["clubs", "whatsapp-lines"] as const,
     embeddedSignupConfig: ["clubs", "whatsapp-lines", "embedded-signup-config"] as const,
   },

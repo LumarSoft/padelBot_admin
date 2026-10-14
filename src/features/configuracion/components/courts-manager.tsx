@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatPrice } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { CreateCourtDialog } from "@/features/turnos/components/create-court-dialog";
 import { BulkPriceDialog } from "@/features/configuracion/components/bulk-price-dialog";
 import { PriceRulesDialog } from "@/features/configuracion/components/price-rules-dialog";
@@ -38,6 +39,7 @@ import {
   SettingsSection,
 } from "@/features/configuracion/components/settings-section";
 import { WeeklyHoursEditor } from "@/features/configuracion/components/weekly-hours-editor";
+import { PlanLimitNotice } from "@/features/plan/components/plan-limit-notice";
 import {
   useCourts,
   useUpdateCourt,
@@ -348,6 +350,10 @@ export function CourtsManager() {
           </TableBody>
         </Table>
         )}
+        {/* Off the card's edge when the table runs full-bleed. */}
+        <div className={cn("pt-3 empty:hidden", !isEmpty && "px-(--card-spacing)")}>
+          <PlanLimitNotice resource="courts" />
+        </div>
       </SettingsSection>
 
       {editingCourt && (

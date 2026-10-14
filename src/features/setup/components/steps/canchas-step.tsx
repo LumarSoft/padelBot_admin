@@ -20,6 +20,8 @@ import { StepLayout } from "@/features/setup/components/step-layout";
 import { StepFooter } from "@/features/setup/components/step-footer";
 import { BotPreview, type PreviewBubble } from "@/features/setup/components/bot-preview";
 import { WeeklyHoursEditor } from "@/features/configuracion/components/weekly-hours-editor";
+import { PlanLimitNotice } from "@/features/plan/components/plan-limit-notice";
+import { hasRoom, usePlan } from "@/features/plan/hooks/use-plan";
 import {
   useCourts,
   useCreateCourt,
@@ -173,9 +175,12 @@ export function CanchasStep({ clubName, nav }: StepProps) {
   const createCourt = useCreateCourt();
   const updateCourt = useUpdateCourt();
   const deleteCourt = useDeleteCourt();
+  const plan = usePlan();
 
   const courts = courtsQuery.data ?? [];
   const hasCourts = courts.length > 0;
+  const courtLimit = plan.data?.courts.limit ?? null;
+  const roomForMore = hasRoom(plan.data?.courts);
 
   // Most complexes have N identical courts, so the empty state asks "how many?" and
   // creates them in one shot instead of making the owner fill the same form four times.
@@ -190,7 +195,9 @@ export function CanchasStep({ clubName, nav }: StepProps) {
   const priceValid = Number.isFinite(priceNumber) && priceNumber >= 0;
   const priceCents = Math.round(priceNumber * 100);
   const countNumber = Number(count);
-  const countValid = Number.isInteger(countNumber) && countNumber >= 1 && countNumber <= 20;
+  // The bulk create can't go past the plan: the API would refuse the court that doesn't fit.
+  const maxCount = Math.min(20, courtLimit ?? 20);
+  const countValid = Number.isInteger(countNumber) && countNumber >= 1 && countNumber <= maxCount;
 
   const isEditing = editingId !== null;
   const isBulk = !hasCourts && !adding && !isEditing;
@@ -385,15 +392,24 @@ export function CanchasStep({ clubName, nav }: StepProps) {
           )}
 
           {hasCourts && !adding && !isEditing ? (
-            <div>
-              <Button type="button" variant="outline" size="lg" onClick={() => setAdding(true)}>
-                <Plus />
-                Agregar otra cancha
-              </Button>
-              <p className="text-muted-foreground mt-2 text-xs">
-                Tocá el lápiz para editar una cancha. Los precios por franja horaria (pico,
-                promo) se cargan después, desde Configuración → Canchas.
-              </p>
+            <div className="flex flex-col gap-3">
+              <PlanLimitNotice resource="courts" />
+              <div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setAdding(true)}
+                  disabled={!roomForMore}
+                >
+                  <Plus />
+                  Agregar otra cancha
+                </Button>
+                <p className="text-muted-foreground mt-2 text-xs">
+                  Tocá el lápiz para editar una cancha. Los precios por franja horaria (pico,
+                  promo) se cargan después, desde Configuración → Canchas.
+                </p>
+              </div>
             </div>
           ) : (
             <form id="setup-canchas" onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -405,7 +421,7 @@ export function CanchasStep({ clubName, nav }: StepProps) {
                     type="number"
                     inputMode="numeric"
                     min={1}
-                    max={20}
+                    max={maxCount}
                     value={count}
                     onChange={(e) => setCount(e.target.value)}
                     disabled={busy}
@@ -415,6 +431,8 @@ export function CanchasStep({ clubName, nav }: StepProps) {
                   <p className="text-muted-foreground text-xs">
                     Las creamos como “Cancha 1”, “Cancha 2”… con estos mismos datos. Después
                     las renombrás o les cambiás el precio una por una.
+                    {courtLimit !== null &&
+                      ` Tu plan ${plan.data?.plan.name} incluye hasta ${courtLimit} cancha${courtLimit === 1 ? "" : "s"}.`}
                   </p>
                 </div>
               ) : (

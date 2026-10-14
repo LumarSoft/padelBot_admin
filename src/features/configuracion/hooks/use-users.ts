@@ -21,6 +21,7 @@ export function useCreateUser() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
       // Keep the setup wizard's equipo count in sync.
       void queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.clubs.plan });
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -34,6 +35,7 @@ export function useUpdateUser() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
       void queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.clubs.plan });
     },
     onError: (error: Error) => toast.error(error.message),
   });

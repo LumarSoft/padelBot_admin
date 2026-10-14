@@ -16,13 +16,20 @@ export const LUMARSOFT = {
 } as const;
 
 /** Why an owner is reaching out — shapes the pre-filled WhatsApp message. */
-export type ContactIntent = "help" | "demo" | "interested" | "hire" | "whatsapp-setup";
+export type ContactIntent =
+  | "help"
+  | "demo"
+  | "interested"
+  | "hire"
+  | "upgrade"
+  | "whatsapp-setup";
 
 const INTENT_MESSAGE: Record<ContactIntent, string> = {
   help: "Hola Lumarsoft, necesito ayuda configurando mi complejo en GTP.",
   demo: "Hola Lumarsoft, quiero una demo de GTP para mi complejo de pádel.",
   interested: "Hola Lumarsoft, estoy interesado en GTP para mi complejo de pádel.",
   hire: "Hola Lumarsoft, quiero contratar GTP para mi complejo.",
+  upgrade: "Hola Lumarsoft, quiero cambiar el plan de mi club en GTP.",
   "whatsapp-setup":
     "Hola Lumarsoft, quiero conectar mi línea de WhatsApp a GTP.",
 };

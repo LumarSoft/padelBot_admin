@@ -108,6 +108,25 @@ export interface SubscriptionState {
   daysLeft: number | null;
 }
 
+/** Something counted against a plan limit; `limit` null = no limit. */
+export interface PlanUsage {
+  used: number;
+  limit: number | null;
+}
+
+/** The club's plan, its limits and how much of them is used (`GET /clubs/me/plan`). */
+export interface ClubPlanOverview {
+  plan: {
+    key: string;
+    name: string;
+    /** False when the stored key is none of the three plans: nothing is restricted. */
+    known: boolean;
+  };
+  courts: PlanUsage;
+  /** Active users, the owner included. */
+  users: PlanUsage;
+}
+
 export interface WhatsAppLine {
   id: string;
   phoneNumberId: string;

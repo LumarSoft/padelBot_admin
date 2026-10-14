@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCreateCourt } from "@/features/turnos/hooks/use-courts";
+import { hasRoom, usePlan } from "@/features/plan/hooks/use-plan";
 
 const DURATION_OPTIONS = [60, 90, 120] as const;
 
@@ -38,6 +39,8 @@ export function CreateCourtDialog() {
   const [duration, setDuration] = useState("90");
   const [courtType, setCourtType] = useState<"INDOOR" | "OUTDOOR">("INDOOR");
   const createCourt = useCreateCourt();
+  // A full plan explains itself next to the list (PlanLimitNotice); the button just stops.
+  const roomForMore = hasRoom(usePlan().data?.courts);
 
   const priceNumber = Number(price);
   const priceValid = Number.isFinite(priceNumber) && priceNumber >= 0;
@@ -71,7 +74,7 @@ export function CreateCourtDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" />}>
+      <DialogTrigger render={<Button variant="outline" disabled={!roomForMore} />}>
         <Plus className="size-4" />
         Nueva cancha
       </DialogTrigger>

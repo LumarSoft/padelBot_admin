@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api/client";
 import type {
+  ClubPlanOverview,
   ClubProfile,
   SubscriptionState,
   WhatsAppLine,
@@ -26,6 +27,9 @@ export const clubsService = {
   },
   getSubscription(): Promise<SubscriptionState> {
     return apiClient.get<SubscriptionState>("/api/clubs/subscription");
+  },
+  getPlan(): Promise<ClubPlanOverview> {
+    return apiClient.get<ClubPlanOverview>("/api/clubs/plan");
   },
   getWhatsAppLines(): Promise<WhatsAppLine[]> {
     return apiClient.get<WhatsAppLine[]>("/api/whatsapp-lines");
