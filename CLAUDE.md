@@ -37,6 +37,8 @@ App Router project. Code is split between routing (`src/app/`) and a feature-fir
 - `src/app/layout.tsx` — root layout (Geist / Geist Mono fonts → `--font-geist-sans` / `--font-geist-mono`). `src/app/providers.tsx` wires TanStack Query + theme + toaster.
 - `src/app/globals.css` — Tailwind v4 entry. Uses `@import "tailwindcss"` + `@theme inline` (no `tailwind.config.js`); design tokens (incl. the `--brand` color) live here.
 
+**Plans:** `src/lib/plans.ts` holds the plan keys (`saque` / `bandeja` / `smash`); prices and copy are sold in `features/landing/lib/plans.ts`. What the club's plan allows comes from the API (`GET /clubs/me/plan` → `features/plan`: `usePlan`, `useFeature`, `PlanLimitNotice`, `PlanUpsell`, the "Tu plan" card and the AI-credits banner). The API enforces it; the panel only explains it before the refusal, and `useFeature` reads as enabled while loading so nothing hides on a guess.
+
 State/data conventions: **TanStack Query** for server state (keys in `src/lib/query-keys.ts`), **sonner** for toasts, real-time panel updates via **SSE** (`src/features/realtime`). Currency is stored in cents; format with `src/lib/format.ts`. Build WhatsApp deep links with `src/lib/whatsapp.ts`.
 
 Path alias: `@/*` maps to `src/` (e.g. `@/features/...`, `@/lib/...`). Static assets go in `public/`.
