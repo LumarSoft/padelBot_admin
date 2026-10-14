@@ -46,6 +46,7 @@ export function AgendaScreen({ initialDayKey }: { initialDayKey?: string } = {})
             <Button
               variant={selectionMode ? "secondary" : "outline"}
               onClick={() => setSelectionMode((v) => !v)}
+              data-help="agenda-bloquear"
             >
               <Lock className="size-4" />
               {selectionMode ? "Salir de selección" : "Bloquear turnos"}
@@ -62,7 +63,7 @@ export function AgendaScreen({ initialDayKey }: { initialDayKey?: string } = {})
             <CalendarDays />
             Calendario
           </TabsTab>
-          <TabsTab value="lista">
+          <TabsTab value="lista" data-help="agenda-lista">
             <List />
             Lista
           </TabsTab>
@@ -83,6 +84,7 @@ export function AgendaScreen({ initialDayKey }: { initialDayKey?: string } = {})
                 variant={isToday ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => setDayKey(todayKey())}
+                data-help="agenda-hoy"
               >
                 Hoy
               </Button>
@@ -133,12 +135,14 @@ export function AgendaScreen({ initialDayKey }: { initialDayKey?: string } = {})
             </div>
           )}
 
-          <AgendaGrid
-            dayKey={dayKey}
-            courtId={courtId}
-            selectionMode={selectionMode}
-            onExitSelection={() => setSelectionMode(false)}
-          />
+          <div data-help="agenda-grilla">
+            <AgendaGrid
+              dayKey={dayKey}
+              courtId={courtId}
+              selectionMode={selectionMode}
+              onExitSelection={() => setSelectionMode(false)}
+            />
+          </div>
         </TabsPanel>
 
         <TabsPanel value="lista">

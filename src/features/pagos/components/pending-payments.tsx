@@ -231,6 +231,7 @@ function PaymentCard({
                 variant="success"
                 size="sm"
                 onClick={() => onConfirm(booking.id)}
+                data-help="pago-confirmar"
                 disabled={anyBusy || !canConfirm}
                 title={
                   canConfirm
@@ -304,7 +305,7 @@ export function PendingPayments({ alwaysShow = false }: { alwaysShow?: boolean }
 
   if (pending.length === 0) {
     return (
-      <Card>
+      <Card data-help="pagos-pendientes">
         <CardHeader className="flex-row items-center gap-2 space-y-0">
           <Wallet className="text-brand size-5" />
           <CardTitle>Pagos por confirmar</CardTitle>
@@ -328,7 +329,10 @@ export function PendingPayments({ alwaysShow = false }: { alwaysShow?: boolean }
       : undefined;
 
   return (
-    <Card className={cn(toReview > 0 && "ring-1 ring-emerald-500/30")}>
+    <Card
+      className={cn(toReview > 0 && "ring-1 ring-emerald-500/30")}
+      data-help="pagos-pendientes"
+    >
       <CardHeader className="border-b">
         <div className="flex flex-wrap items-center gap-2">
           <Wallet className="text-brand size-5" />

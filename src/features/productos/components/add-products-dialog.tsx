@@ -379,7 +379,7 @@ export function AddProductsDialog({
               value={picker}
               onValueChange={(value) => value && addLine(value)}
             >
-              <SelectTrigger className="w-full" disabled={isLoading}>
+              <SelectTrigger className="w-full" disabled={isLoading} data-help="cuenta-consumo">
                 <SelectValue
                   placeholder={
                     isLoading
@@ -515,7 +515,7 @@ export function AddProductsDialog({
           >
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={setProducts.isPending}>
+          <Button onClick={handleSave} disabled={setProducts.isPending} data-help="cuenta-guardar">
             {setProducts.isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
@@ -631,7 +631,7 @@ function SettlementSection({
   const settled = totalRemaining === 0 && totalPaid > 0;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" data-help={settled ? undefined : "cuenta-cobros"}>
       {ALL_PLAYERS.map((slot) => {
         const owes = draftOwes[slot - 1];
         const paid = paidBySlot[slot - 1];
@@ -734,6 +734,7 @@ function SettlementSection({
                     type="button"
                     variant="outline"
                     size="sm"
+                    data-help="cuenta-cobrar"
                     className={cn("h-7 px-2 text-xs transition-colors", btnClass)}
                     disabled={busy}
                     title={`Registrar ${formatPrice(remaining)} en ${label.toLowerCase()}`}

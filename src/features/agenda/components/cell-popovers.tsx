@@ -256,7 +256,7 @@ export function ReserveCellForm({
   const reserving = creatingSlot || createBooking.isPending;
 
   return (
-    <form onSubmit={handleSubmit} className="stagger-children flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="stagger-children flex flex-col gap-3" data-help="reserva-form">
       <CardHeader
         tone={freed ? "emerald" : "brand"}
         disc={freed ? <RotateCcw className="size-4" /> : <CalendarClock className="size-4" />}
@@ -341,6 +341,7 @@ export function ReserveCellForm({
         variant="brand"
         disabled={busy || !playerName.trim()}
         className="w-full"
+        data-help="reserva-confirmar"
       >
         {reserving ? (
           <>
@@ -484,6 +485,7 @@ export function BookingActions({
           variant="outline"
           size="sm"
           onClick={() => setAccountOpen(true)}
+          data-help="turno-cuenta"
           className={cn(
             "w-full justify-start gap-2",
             isSettled &&
@@ -499,7 +501,14 @@ export function BookingActions({
         </Button>
 
         <div className="flex gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={onReschedule} className="flex-1">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onReschedule}
+            className="flex-1"
+            data-help="turno-reprogramar"
+          >
             Reprogramar
           </Button>
           <Button
@@ -508,6 +517,7 @@ export function BookingActions({
             size="sm"
             onClick={handleCancel}
             disabled={cancelBooking.isPending}
+            data-help="turno-cancelar"
             className="text-muted-foreground hover:text-destructive flex-1"
           >
             {cancelBooking.isPending ? "Cancelando…" : "Cancelar"}
@@ -635,6 +645,7 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
         size="sm"
         onClick={() => setAccountOpen(true)}
         className="w-full justify-start gap-2"
+        data-help="turno-cuenta"
       >
         <ShoppingBasket className="size-3.5" />
         {totalItems > 0 ? `Cuenta del turno (${totalItems})` : "Cuenta del turno"}

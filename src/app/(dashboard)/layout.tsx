@@ -10,6 +10,8 @@ import { ForcePasswordChangeDialog } from "@/features/auth/components/force-pass
 import { DashboardNav } from "@/features/dashboard/components/dashboard-nav";
 import { SubscriptionBanner } from "@/features/dashboard/components/subscription-banner";
 import { GlobalSearch } from "@/features/dashboard/components/global-search";
+import { HelpButton } from "@/features/help/components/help-button";
+import { TourOverlay } from "@/features/help/components/tour-overlay";
 
 function initials(name: string): string {
   return name
@@ -33,6 +35,8 @@ export default async function DashboardLayout({
     <div className="grid min-h-svh grid-cols-1 md:grid-cols-[16rem_1fr]">
       <SessionSync user={user} />
       <RealtimeSync />
+      {/* "Mostrame" guides — only ever started by a tap in the checklist or the "?" help. */}
+      <TourOverlay />
 
       {/* Temporary-password gate: blocks the panel until the user picks their own. */}
       {user.mustChangePassword && <ForcePasswordChangeDialog />}
@@ -79,6 +83,7 @@ export default async function DashboardLayout({
           </div>
           <div className="flex items-center gap-2">
             <GlobalSearch />
+            <HelpButton />
             <ThemeToggle />
             <ChangePasswordDialog />
             <LogoutButton />

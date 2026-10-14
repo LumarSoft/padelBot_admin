@@ -68,7 +68,7 @@ export function RescheduleBookingDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4" data-help="reprogramar-turno">
           <p className="text-muted-foreground text-sm">
             Elegí el nuevo turno al que querés mover esta reserva.
           </p>
@@ -86,6 +86,7 @@ export function RescheduleBookingDialog({
         <DialogFooter>
           <Button
             onClick={handleSubmit}
+            data-help="reprogramar-confirmar"
             disabled={!newSlotId || reschedule.isPending}
           >
             {reschedule.isPending ? "Reprogramando…" : "Reprogramar"}

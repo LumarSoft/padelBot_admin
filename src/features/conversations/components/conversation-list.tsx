@@ -51,6 +51,7 @@ export function ConversationList({ conversations, selectedId, onSelect }: Props)
           <li key={conv.id}>
             <button
               onClick={() => onSelect(conv.id)}
+              data-help="chats-item"
               className={cn(
                 "hover:bg-accent w-full cursor-pointer px-4 py-3 text-left transition-colors",
                 isSelected && "bg-accent",

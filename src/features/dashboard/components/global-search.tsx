@@ -160,6 +160,7 @@ export function GlobalSearch() {
 
       <input
         ref={inputRef}
+        data-help="buscar-jugador"
         type="text"
         value={term}
         onChange={(e) => {

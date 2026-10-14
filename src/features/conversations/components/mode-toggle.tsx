@@ -21,6 +21,7 @@ export function ModeToggle({ mode, onChange, isPending }: Props) {
     <div
       role="radiogroup"
       aria-label="Quién responde la conversación"
+      data-help="chat-modo"
       className="bg-muted relative grid w-44 grid-cols-2 rounded-full p-0.5 text-xs font-medium"
     >
       {/* Sliding highlight — half the track, slides to the active side */}

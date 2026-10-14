@@ -10,6 +10,7 @@ import { getSession } from "@/lib/session";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { SetupChecklist } from "@/features/onboarding/components/setup-checklist";
+import { FirstDayCard } from "@/features/help/components/first-day-card";
 import { OverviewStats } from "@/features/dashboard/components/overview-stats";
 
 const SHORTCUTS = [
@@ -52,6 +53,8 @@ export default async function OverviewPage() {
       {session?.role === "owner" && (
         <SetupChecklist clubName={session?.clubName} hideWhenComplete />
       )}
+
+      {session?.role === "staff" && <FirstDayCard />}
 
       <OverviewStats />
 

@@ -79,6 +79,20 @@ export function AgendaCell({
     setOpen(false);
   }
 
+  // Anchors for the "Mostrame" guides (features/help/content/tours.ts): a turno with its bill
+  // still open is what you charge or load a drink to; one still to be played is what you move
+  // or cancel.
+  const helpAnchor = isDisabled
+    ? undefined
+    : kind === "booked"
+      ? [!isSettled && "agenda-por-cobrar", !isPast && "agenda-reservado"].filter(Boolean).join(" ") ||
+        undefined
+      : kind === "pending"
+        ? "agenda-pendiente"
+        : kind === "blocked"
+          ? undefined
+          : "agenda-libre";
+
   // The colored surface, shared by the popover trigger and the selection checkbox.
   const cellClass = cn(
     "ease-fluid flex h-14 w-full flex-col items-start justify-center gap-0.5 rounded-lg border px-2 text-left text-xs transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-[0.97]",
@@ -223,6 +237,7 @@ export function AgendaCell({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           disabled={isDisabled}
+          data-help={helpAnchor}
           style={
             isPast && kind !== "pending" && !isSettled
               ? { opacity: 0.45, filter: "grayscale(1)" }

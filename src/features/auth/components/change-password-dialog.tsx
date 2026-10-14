@@ -81,7 +81,13 @@ export function ChangePasswordDialog() {
     >
       <DialogTrigger
         render={
-          <Button variant="ghost" size="icon" aria-label="Cambiar contraseña" title="Cambiar contraseña" />
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Cambiar contraseña"
+            title="Cambiar contraseña"
+            data-help="cambiar-clave"
+          />
         }
       >
         <KeyRound className="size-4" />

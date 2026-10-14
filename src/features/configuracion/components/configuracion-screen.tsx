@@ -26,6 +26,7 @@ import { TeamManager } from "@/features/configuracion/components/team-manager";
 import { WhatsAppManager } from "@/features/configuracion/components/whatsapp-manager";
 import { SetupChecklist } from "@/features/onboarding/components/setup-checklist";
 import { HelpContactCard } from "@/features/onboarding/components/help-contact-card";
+import { HouseRulesManager } from "@/features/help/components/house-rules-manager";
 
 /**
  * Same order as the `/setup` wizard (`features/setup/lib/steps.ts`): complejo → canchas →
@@ -106,8 +107,9 @@ export function ConfiguracionScreen({ clubName }: { clubName?: string }) {
           <RecurringBookingsManager />
         </TabsPanel>
 
-        <TabsPanel value="equipo">
+        <TabsPanel value="equipo" className="flex flex-col gap-6">
           <TeamManager />
+          <HouseRulesManager />
         </TabsPanel>
       </Tabs>
     </div>

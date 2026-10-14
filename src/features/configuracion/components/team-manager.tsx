@@ -36,7 +36,10 @@ import {
   useUpdateUser,
   useUsers,
 } from "@/features/configuracion/hooks/use-users";
+import { useTeamFirstDay } from "@/features/help/hooks/use-help";
+import { FIRST_DAY_TASKS } from "@/features/help/content/first-day";
 import type { ClubUser } from "@/types/api/users";
+import type { TeamMemberFirstDay } from "@/types/api/help";
 
 /** One-time temp password reveal with a copy button (it is never shown again). */
 function TempPasswordNotice({ email, password }: { email: string; password: string }) {
@@ -160,8 +163,37 @@ function InviteUserDialog() {
   );
 }
 
+/**
+ * How far an employee got in "Tu primer día" ("4 de 5"), from what they really did in the
+ * panel. The tooltip lists what's still pending, so the owner knows what to show them.
+ */
+function FirstDayProgressCell({ progress }: { progress?: TeamMemberFirstDay }) {
+  if (!progress) return <span className="text-muted-foreground">—</span>;
+  const pending = FIRST_DAY_TASKS.filter((task) => !progress.done.includes(task.id));
+  const complete = pending.length === 0;
+  return (
+    <div
+      className="flex flex-col gap-1"
+      title={complete ? "Ya hizo las cinco tareas del primer día" : `Le falta: ${pending.map((t) => t.title.toLowerCase()).join(" · ")}`}
+    >
+      <span className={complete ? "font-medium text-emerald-600 dark:text-emerald-500" : "tabular-nums"}>
+        {complete ? "Completo ✓" : `${progress.doneCount} de ${progress.total}`}
+      </span>
+      {!complete && (
+        <span className="bg-foreground/[0.06] block h-1 w-16 overflow-hidden rounded-full dark:bg-white/[0.07]">
+          <span
+            className="bg-brand block h-full rounded-full"
+            style={{ width: `${(progress.doneCount / progress.total) * 100}%` }}
+          />
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function TeamManager() {
   const usersQuery = useUsers();
+  const firstDayQuery = useTeamFirstDay();
   const updateUser = useUpdateUser();
   const resetPassword = useResetUserPassword();
   const confirm = useConfirm();
@@ -224,6 +256,7 @@ export function TeamManager() {
               <TableHead>Usuario</TableHead>
               <TableHead>Rol</TableHead>
               <TableHead>Estado</TableHead>
+              <TableHead>Primer día</TableHead>
               <TableHead className="w-40" />
             </TableRow>
           </TableHeader>
@@ -252,6 +285,15 @@ export function TeamManager() {
                       <span className="text-muted-foreground block text-xs">
                         contraseña temporal
                       </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {user.role === "STAFF" ? (
+                      <FirstDayProgressCell
+                        progress={firstDayQuery.data?.find((p) => p.userId === user.id)}
+                      />
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
                   <TableCell>
