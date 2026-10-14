@@ -103,6 +103,7 @@ function ClubRow({
                 {isPlanKey(subscription.plan)
                   ? planName(subscription.plan)
                   : `Plan “${subscription.plan}”`}
+                {plan.grandfatheredFeatures && " · todas las funciones"}
               </Badge>
               <Badge
                 variant={

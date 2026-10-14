@@ -1,12 +1,21 @@
 "use client";
 
-import { Gauge } from "lucide-react";
+import { Check, Gauge, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { lumarsoftWhatsApp } from "@/lib/contact";
 import { SettingsSection } from "@/features/configuracion/components/settings-section";
 import { usePlan } from "@/features/plan/hooks/use-plan";
 import { formatCount, monthName } from "@/features/plan/lib/format";
-import type { PlanUsage } from "@/types/api/clubs";
+import type { PlanFeature, PlanUsage } from "@/types/api/clubs";
+
+/** The landing's names for the modules not every plan includes, in its order. */
+const FEATURES: { key: PlanFeature; label: string }[] = [
+  { key: "fixedConfirmation", label: "Confirmación de fijos por WhatsApp" },
+  { key: "waitlist", label: "Lista de espera" },
+  { key: "splitPayment", label: "Cobro dividido entre jugadores" },
+  { key: "kioscoStock", label: "Kiosco con control de stock" },
+  { key: "scheduledPriceAdjustments", label: "Aumentos de precio programados" },
+];
 
 /**
  * "Tu plan": what it includes and how much of it is used — the same three numbers the landing
@@ -42,6 +51,25 @@ export function PlanCard() {
           hint="Los usa el bot cada vez que entiende un mensaje, escucha un audio o lee un comprobante. Se renuevan el 1° de cada mes."
         />
       </div>
+
+      <ul className="border-border/60 mt-5 grid gap-x-6 gap-y-1.5 border-t pt-4 text-sm sm:grid-cols-2">
+        {FEATURES.map(({ key, label }) => {
+          const feature = data.features[key];
+          return (
+            <li key={key} className="flex items-center gap-2">
+              {feature.enabled ? (
+                <Check className="size-4 shrink-0 text-emerald-600" />
+              ) : (
+                <Lock className="text-muted-foreground size-4 shrink-0" />
+              )}
+              <span className={cn(!feature.enabled && "text-muted-foreground")}>
+                {label}
+                {!feature.enabled && ` · viene con ${feature.plan}`}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </SettingsSection>
   );
 }

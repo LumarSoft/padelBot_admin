@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { clubsService } from "@/services/clubs.service";
-import type { ClubPlanOverview, PlanUsage } from "@/types/api/clubs";
+import type { ClubPlanOverview, PlanFeature, PlanUsage } from "@/types/api/clubs";
 
 /** The club's plan, its limits and usage. Refreshed when something it counts is created. */
 export function usePlan() {
@@ -17,4 +17,13 @@ export function usePlan() {
 /** Whether the plan has room for one more (true while loading: the API has the last word). */
 export function hasRoom(usage: PlanUsage | undefined): boolean {
   return !usage || usage.limit === null || usage.used < usage.limit;
+}
+
+/**
+ * Whether the club's plan includes a module. Enabled while loading (and on any error): the API
+ * refuses what the plan doesn't include, so the panel never hides a feature on a guess.
+ */
+export function useFeature(feature: PlanFeature): { enabled: boolean; plan: string } {
+  const { data } = usePlan();
+  return data?.features[feature] ?? { enabled: true, plan: "" };
 }

@@ -40,6 +40,8 @@ import {
   useUpdateProduct,
   useDeleteProduct,
 } from "@/features/productos/hooks/use-products";
+import { PlanUpsell } from "@/features/plan/components/plan-upsell";
+import { useFeature } from "@/features/plan/hooks/use-plan";
 import type { Product, ProductCategory } from "@/types/api/products";
 import { CATEGORY_LABELS } from "@/types/api/products";
 import { KioscoTabs } from "@/features/kiosco/components/kiosco-tabs";
@@ -92,6 +94,8 @@ function ProductForm({
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
   const wasTracked = initial?.stockQuantity != null;
   const [trackStock, setTrackStock] = useState(wasTracked);
+  // Starting to track depends on the plan; a product already tracked keeps it either way.
+  const canTrack = useFeature("kioscoStock").enabled || wasTracked;
   const [stock, setStock] = useState(
     initial?.stockQuantity != null ? String(initial.stockQuantity) : "",
   );
@@ -180,7 +184,7 @@ function ProductForm({
         <button
           type="button"
           onClick={() => setTrackStock((v) => !v)}
-          disabled={isPending}
+          disabled={isPending || (!canTrack && !trackStock)}
           aria-pressed={trackStock}
           className="text-muted-foreground hover:text-foreground flex items-center gap-2 text-sm transition-colors"
         >
@@ -226,11 +230,15 @@ function ProductForm({
               aparece en «Para comprar» y te llega un aviso.
             </p>
           </div>
-        ) : (
+        ) : canTrack ? (
           <p className="text-muted-foreground text-xs">
             Si lo activás, cada venta descuenta del stock y te avisamos cuando
             queda poco. También se activa solo al cargar mercadería o contarlo.
           </p>
+        ) : (
+          <PlanUpsell feature="kioscoStock">
+            Controlar el stock: cada venta descuenta sola y te avisamos cuando queda poco.
+          </PlanUpsell>
         )}
       </div>
 

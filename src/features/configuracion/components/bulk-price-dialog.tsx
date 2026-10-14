@@ -21,6 +21,8 @@ import { queryKeys } from "@/lib/query-keys";
 import { courtsService } from "@/services/courts.service";
 import type { BulkPriceAdjustResult } from "@/types/api/turnos";
 import { todayKey } from "@/features/agenda/lib/schedule";
+import { PlanUpsell } from "@/features/plan/components/plan-upsell";
+import { useFeature } from "@/features/plan/hooks/use-plan";
 
 /**
  * "Subí todo 10%": adjusts every court price + price rule in one shot, with a
@@ -31,6 +33,8 @@ export function BulkPriceDialog() {
   const [open, setOpen] = useState(false);
   const [percent, setPercent] = useState("10");
   const [effectiveDate, setEffectiveDate] = useState("");
+  // Raising prices today is open to every plan; scheduling it is the plan's module.
+  const canSchedule = useFeature("scheduledPriceAdjustments").enabled;
   const [preview, setPreview] = useState<BulkPriceAdjustResult | null>(null);
   const queryClient = useQueryClient();
 
@@ -144,13 +148,19 @@ export function BulkPriceDialog() {
             value={effectiveDate}
             onChange={(e) => setEffectiveDate(e.target.value)}
             className="w-44"
-            disabled={adjust.isPending}
+            disabled={adjust.isPending || !canSchedule}
           />
-          <p className="text-muted-foreground text-xs">
-            {isScheduling
-              ? `Los precios cambian solos el ${effectiveDate} a la madrugada.`
-              : "Vacío = se aplica ahora mismo."}
-          </p>
+          {canSchedule ? (
+            <p className="text-muted-foreground text-xs">
+              {isScheduling
+                ? `Los precios cambian solos el ${effectiveDate} a la madrugada.`
+                : "Vacío = se aplica ahora mismo."}
+            </p>
+          ) : (
+            <PlanUpsell feature="scheduledPriceAdjustments">
+              Dejar programado un aumento para otro día.
+            </PlanUpsell>
+          )}
         </div>
 
         {(scheduledQuery.data ?? []).length > 0 && (

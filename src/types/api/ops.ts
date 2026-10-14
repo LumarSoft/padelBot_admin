@@ -116,6 +116,8 @@ export interface OpsClub {
     users: PlanUsage;
     /** This calendar month. Over 100% never cuts the bot: it's a sales call. */
     aiCredits: PlanUsage & { percent: number | null };
+    /** Predates the plans: keeps every module whatever its plan, until ops clears it. */
+    grandfatheredFeatures: boolean;
   };
 }
 
@@ -124,6 +126,7 @@ export interface UpdateSubscriptionPayload {
   months?: number;
   days?: number;
   plan?: PlanKey;
+  grandfatheredFeatures?: boolean;
 }
 
 export type ClubUserRoleApi = "OWNER" | "STAFF";

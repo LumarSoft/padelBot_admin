@@ -13,6 +13,8 @@ import {
 import { OptionCard } from "@/features/configuracion/components/option-card";
 import { SaveBar } from "@/features/configuracion/components/save-bar";
 import { SettingsSection } from "@/features/configuracion/components/settings-section";
+import { PlanUpsell } from "@/features/plan/components/plan-upsell";
+import { useFeature } from "@/features/plan/hooks/use-plan";
 import {
   useFixedConfirmation,
   useUpdateFixedConfirmation,
@@ -76,6 +78,8 @@ function FixedConfirmationForm({
   initialLeadHours: number;
 }) {
   const update = useUpdateFixedConfirmation();
+  // Only turning it ON depends on the plan: a club that already has it running keeps it.
+  const locked = !useFeature("fixedConfirmation").enabled && !initialEnabled;
   const [enabled, setEnabled] = useState(initialEnabled);
   const [leadHours, setLeadHours] = useState(initialLeadHours);
   const unchanged = enabled === initialEnabled && leadHours === initialLeadHours;
@@ -94,6 +98,7 @@ function FixedConfirmationForm({
       >
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
           <div className="flex min-w-0 flex-col gap-5" data-help="fijos-pregunta">
+            {locked && <PlanUpsell feature="fixedConfirmation" />}
             <fieldset className="flex flex-col gap-2">
               <legend className="mb-2 text-sm font-medium">¿Activamos la pregunta automática?</legend>
               {STATUS_OPTIONS.map((option) => (
@@ -105,6 +110,7 @@ function FixedConfirmationForm({
                   onSelect={() => setEnabled(option.value === "on")}
                   label={option.label}
                   hint={option.hint}
+                  disabled={locked && option.value === "on"}
                 />
               ))}
             </fieldset>

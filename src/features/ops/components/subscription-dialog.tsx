@@ -47,6 +47,9 @@ export function SubscriptionDialog({
   const [plan, setPlan] = useState<PlanKey | null>(
     isPlanKey(club.subscription.plan) ? club.subscription.plan : null,
   );
+  const [grandfathered, setGrandfathered] = useState(
+    club.plan.grandfatheredFeatures,
+  );
   const update = useUpdateSubscription();
 
   function handleSave(): void {
@@ -56,6 +59,9 @@ export function SubscriptionDialog({
         payload: {
           status,
           ...(plan && plan !== club.subscription.plan ? { plan } : {}),
+          ...(grandfathered !== club.plan.grandfatheredFeatures
+            ? { grandfatheredFeatures: grandfathered }
+            : {}),
           ...(status === "ACTIVE" ? { months } : {}),
           ...(status === "TRIAL" ? { days } : {}),
         },
@@ -98,6 +104,23 @@ export function SubscriptionDialog({
                 ninguno de los tres. Elegí uno.
               </p>
             )}
+            <label className="mt-1 flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={grandfathered}
+                onChange={(event) => setGrandfathered(event.target.checked)}
+                disabled={update.isPending}
+                className="accent-brand mt-0.5 size-4 shrink-0"
+              />
+              <span>
+                Conserva todas las funciones
+                <span className="text-muted-foreground block text-xs">
+                  Cliente de antes de los planes: confirmación de fijos, stock,
+                  lista de espera, cobro dividido y aumentos programados aunque
+                  su plan no los incluya. Sacalo cuando acuerden el plan.
+                </span>
+              </span>
+            </label>
           </div>
 
           <div className="flex flex-col gap-2">

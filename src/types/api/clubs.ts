@@ -108,6 +108,14 @@ export interface SubscriptionState {
   daysLeft: number | null;
 }
 
+/** Modules that not every plan includes (mirrors the API's PLAN_FEATURES). */
+export type PlanFeature =
+  | "fixedConfirmation"
+  | "kioscoStock"
+  | "waitlist"
+  | "splitPayment"
+  | "scheduledPriceAdjustments";
+
 /** Something counted against a plan limit; `limit` null = no limit. */
 export interface PlanUsage {
   used: number;
@@ -132,6 +140,10 @@ export interface ClubPlanOverview {
     /** Whole percentage used (can pass 100); null without an allowance. */
     percent: number | null;
   };
+  /** Whether the club may use (turn on) each module, and the cheapest plan that includes it. */
+  features: Record<PlanFeature, { enabled: boolean; plan: string }>;
+  /** The club predates the plans and keeps every module. */
+  grandfatheredFeatures: boolean;
 }
 
 export interface WhatsAppLine {

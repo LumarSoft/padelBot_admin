@@ -42,6 +42,8 @@ import { useSetBookingProducts } from "@/features/reservas/hooks/use-bookings";
 import { bookingsService } from "@/services/bookings.service";
 import { stockWarning } from "@/features/kiosco/lib/stock-warning";
 import { isLowStock } from "@/types/api/stock";
+import { PlanUpsell } from "@/features/plan/components/plan-upsell";
+import { useFeature } from "@/features/plan/hooks/use-plan";
 import { queryKeys } from "@/lib/query-keys";
 import { CATEGORY_LABELS, type ProductCategory } from "@/types/api/products";
 import type {
@@ -236,6 +238,8 @@ export function AddProductsDialog({
   const serverAccount = accountQuery.data ?? null;
 
   const [payingSlot, setPayingSlot] = useState<number | null>(null);
+  // Without split payment the desk charges the turno in one payment (the API refuses a share).
+  const canSplit = useFeature("splitPayment").enabled;
   const registerPayment = useMutation({
     mutationFn: async (input: {
       playerSlot: number;
@@ -467,12 +471,14 @@ export function AddProductsDialog({
                           {warning}
                         </p>
                       )}
-                      <PlayerToggles
-                        players={line.players}
-                        lineTotalCents={lineTotalCents}
-                        onChange={(players) => updateLine(line.key, { players })}
-                        disabled={setProducts.isPending}
-                      />
+                      {canSplit && (
+                        <PlayerToggles
+                          players={line.players}
+                          lineTotalCents={lineTotalCents}
+                          onChange={(players) => updateLine(line.key, { players })}
+                          disabled={setProducts.isPending}
+                        />
+                      )}
                     </div>
                   );
                 })}
@@ -488,6 +494,7 @@ export function AddProductsDialog({
 
           {/* ── Columna derecha: quién paga ── */}
           <SettlementSection
+            canSplit={canSplit}
             draftOwes={account.perPlayerCents}
             draftTotalCents={account.totalCents}
             playerName={playerName}
@@ -591,6 +598,7 @@ const METHOD_META = Object.fromEntries(
  * buttons for the remainder, undo, and the "turno finalizado" state.
  */
 function SettlementSection({
+  canSplit,
   draftOwes,
   draftTotalCents,
   playerName,
@@ -601,6 +609,8 @@ function SettlementSection({
   onPay,
   onUndo,
 }: {
+  /** False on a plan without split payment: one payment for the whole bill. */
+  canSplit: boolean;
   draftOwes: [number, number, number, number];
   draftTotalCents: number;
   playerName: string;
@@ -632,7 +642,17 @@ function SettlementSection({
 
   return (
     <div className="flex flex-col gap-2" data-help={settled ? undefined : "cuenta-cobros"}>
-      {ALL_PLAYERS.map((slot) => {
+      {!canSplit && (
+        <WholeBillPayment
+          payments={serverAccount.payments}
+          remainingCents={totalRemaining}
+          paying={payingSlot !== null && busy}
+          busy={busy}
+          onPay={(amountCents, method) => onPay(1, amountCents, method)}
+          onUndo={onUndo}
+        />
+      )}
+      {canSplit && ALL_PLAYERS.map((slot) => {
         const owes = draftOwes[slot - 1];
         const paid = paidBySlot[slot - 1];
         const remaining = Math.max(0, owes - paid);
@@ -778,6 +798,70 @@ function SettlementSection({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * The bill on a plan without split payment: every payment registered so far and one set of
+ * buttons that charges the whole remainder — the turno paid in one go, whoever pays it.
+ */
+function WholeBillPayment({
+  payments,
+  remainingCents,
+  paying,
+  busy,
+  onPay,
+  onUndo,
+}: {
+  payments: BookingAccountView["payments"];
+  remainingCents: number;
+  paying: boolean;
+  busy: boolean;
+  onPay: (amountCents: number, method: PlayerPaymentMethod) => void;
+  onUndo: (paymentId: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border px-3 py-2">
+      {payments.map((payment) => (
+        <div key={payment.id} className="flex items-center gap-2 text-xs">
+          <span className="font-semibold tabular-nums">{formatPrice(payment.amountCents)}</span>
+          <span className="text-muted-foreground">{METHOD_LABELS[payment.method]}</span>
+          <button
+            type="button"
+            onClick={() => onUndo(payment.id)}
+            disabled={busy}
+            title="Deshacer este pago"
+            className="text-muted-foreground hover:text-destructive ml-auto shrink-0 transition-colors"
+          >
+            <X className="size-3" />
+          </button>
+        </div>
+      ))}
+      {remainingCents > 0 && (
+        <div className="flex flex-wrap items-center gap-1">
+          <span className="mr-1 text-sm font-medium">
+            Cobrar {formatPrice(remainingCents)}
+          </span>
+          {METHODS.map(({ value, label, icon: Icon, btnClass }) => (
+            <Button
+              key={value}
+              type="button"
+              variant="outline"
+              size="sm"
+              data-help="cuenta-cobrar"
+              className={cn("h-7 px-2 text-xs transition-colors", btnClass)}
+              disabled={busy}
+              title={`Registrar ${formatPrice(remainingCents)} en ${label.toLowerCase()}`}
+              onClick={() => onPay(remainingCents, value)}
+            >
+              {paying ? <Loader2 className="size-3 animate-spin" /> : <Icon className="size-3" />}
+              {label}
+            </Button>
+          ))}
+        </div>
+      )}
+      <PlanUpsell feature="splitPayment">Cobrarle a cada jugador su parte.</PlanUpsell>
     </div>
   );
 }
