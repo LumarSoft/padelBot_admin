@@ -10,6 +10,7 @@ const PRODUCT_LINKS = [
   { href: "/#cuaderno", label: "Antes y después" },
   { href: "/#panel", label: "Panel" },
   { href: "/#incluye", label: "Qué incluye" },
+  { href: "/#precios", label: "Precios" },
   { href: "/#faq", label: "Preguntas" },
 ];
 

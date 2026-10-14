@@ -8,7 +8,7 @@ const FAQS = [
   },
   {
     q: "¿Mis jugadores tienen que descargar algo?",
-    a: "No. Escriben por WhatsApp, como hoy. No hay app, ni registro, ni link raro.",
+    a: "No. Escriben por WhatsApp, como hoy: sin app, sin registro, sin link raro. La app de GTP es para vos y tu equipo, no para ellos.",
   },
   {
     q: "¿Cómo cobra la seña?",
@@ -25,6 +25,14 @@ const FAQS = [
   {
     q: "¿Sirve si tengo varias canchas y precios distintos?",
     a: "Sí. Cargás todas tus canchas con sus horarios, y precios por día y franja horaria. El bot conoce la disponibilidad real de cada una y cotiza siempre el valor correcto.",
+  },
+  {
+    q: "¿Cobran comisión por cada reserva?",
+    a: "No. Pagás el plan por mes y listo. Las señas van directo a tu MercadoPago: nunca pasan por nosotros.",
+  },
+  {
+    q: "¿Qué pasa cuando termina el mes gratis?",
+    a: "Te avisamos antes de que termine. Si seguís, elegís el plan que te quede mejor; si no, no pagás nada, porque para empezar no te pedimos tarjeta.",
   },
   {
     q: "¿Cuánto tarda la puesta en marcha?",

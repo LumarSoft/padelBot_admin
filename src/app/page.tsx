@@ -8,6 +8,7 @@ import { Notebook } from "@/features/landing/components/notebook";
 import { PanelShowcase } from "@/features/landing/components/panel-showcase";
 import { CourtFeatures } from "@/features/landing/components/court-features";
 import { SetupSteps } from "@/features/landing/components/setup-steps";
+import { Pricing } from "@/features/landing/components/pricing";
 import { Faq } from "@/features/landing/components/faq";
 import { FinalCta } from "@/features/landing/components/final-cta";
 import { LandingFooter } from "@/features/landing/components/landing-footer";
@@ -42,6 +43,9 @@ export default function LandingPage() {
         <CourtFeatures />
         <Reveal>
           <SetupSteps />
+        </Reveal>
+        <Reveal>
+          <Pricing />
         </Reveal>
         <Reveal>
           <Faq />
