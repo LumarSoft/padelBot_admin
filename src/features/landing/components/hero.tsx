@@ -33,7 +33,7 @@ export function Hero() {
 
           <div className="flex w-full flex-col items-stretch gap-4 sm:w-auto sm:flex-row sm:items-center sm:gap-6">
             <LandingButton href="/register" className="py-4 text-base">
-              Probar gratis 14 días
+              Probar 1 mes gratis
               <ArrowRight className="size-4.5" />
             </LandingButton>
             <a

@@ -161,7 +161,7 @@ export function LoginForm({
             href="/register"
             className="text-ball py-1 font-semibold underline-offset-4 hover:underline"
           >
-            Probá GTP gratis 14 días
+            Probá GTP un mes gratis
           </Link>
         </p>
         <Link
