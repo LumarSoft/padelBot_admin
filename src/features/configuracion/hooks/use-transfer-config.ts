@@ -70,6 +70,8 @@ export function useUpdateTransferConfig() {
     mutationFn: (body) => clubsService.updateTransferConfig(body),
     onSuccess: (config) => {
       queryClient.setQueryData(queryKeys.clubs.transferConfig, config);
+      // The "cobros" setup step is derived from this config (alias, or no seña at all).
+      queryClient.invalidateQueries({ queryKey: queryKeys.onboarding.status });
       toast.success("Datos de cobro actualizados");
     },
     onError: (error) => toast.error(error.message),
