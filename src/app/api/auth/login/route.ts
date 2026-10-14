@@ -8,6 +8,7 @@ import {
   setSessionCookie,
 } from "@/lib/session";
 import { logger } from "@/lib/logger";
+import { withLoginFormPost } from "@/lib/api/login-form-post";
 import type {
   ApiLoginResponse,
   LoginResponse,
@@ -33,9 +34,12 @@ function buildMockSession(email: string): { token: string; user: SessionUser } {
   return { token: createMockSessionToken(user), user };
 }
 
-export async function POST(request: Request): Promise<NextResponse> {
-  const json = await request.json().catch(() => null);
-  const parsed = loginSchema.safeParse(json);
+export function POST(request: Request): Promise<NextResponse> {
+  return withLoginFormPost(request, { home: "/panel", login: "/login" }, login);
+}
+
+async function login(body: unknown): Promise<NextResponse> {
+  const parsed = loginSchema.safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(

@@ -22,9 +22,20 @@ const PUBLIC_ROUTES = [
 ];
 // Only for logged-out users; a signed-in visitor is bounced to the panel.
 const AUTH_ROUTES = ["/login"];
+// A login form submitted before React hydrated used to fall back to a native GET and land as
+// `?email=…&password=…`. The forms post now (see lib/api/login-form-post), but should one
+// still arrive that way — a stale cached page, a hand-typed URL — it is bounced to the same
+// URL without them, so the password doesn't linger in the address bar, history or a Referer.
+const CREDENTIAL_PARAMS = ["email", "password"];
 
 export function proxy(request: NextRequest): NextResponse {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
+
+  if (CREDENTIAL_PARAMS.some((name) => searchParams.has(name))) {
+    const url = request.nextUrl.clone();
+    CREDENTIAL_PARAMS.forEach((name) => url.searchParams.delete(name));
+    return NextResponse.redirect(url);
+  }
 
   // The Lumarsoft ops console is a world of its own: its own cookie, its own login, its
   // own redirect target. A club session grants nothing here (and vice versa), so it is

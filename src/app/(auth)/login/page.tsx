@@ -7,12 +7,17 @@ export const metadata: Metadata = {
   title: "Ingresar · GTP Admin",
 };
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   // Already signed in → straight to the dashboard.
   const session = await getSession();
   if (session) {
     redirect("/panel");
   }
 
-  return <LoginForm />;
+  const { error } = await searchParams;
+  return <LoginForm failed={error === "login"} />;
 }

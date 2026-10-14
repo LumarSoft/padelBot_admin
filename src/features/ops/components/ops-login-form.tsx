@@ -16,14 +16,17 @@ const loginSchema = z.object({
 
 type FieldErrors = Partial<Record<"email" | "password", string>>;
 
-export function OpsLoginForm() {
+/** `failed` comes from `/ops/login?error=login` — see `LoginForm`. */
+export function OpsLoginForm({ failed = false }: { failed?: boolean }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [showFailed, setShowFailed] = useState(failed);
   const login = useOpsLogin();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
+    setShowFailed(false);
     const result = loginSchema.safeParse({ email, password });
 
     if (!result.success) {
@@ -52,7 +55,10 @@ export function OpsLoginForm() {
 
       <Card className="shadow-sm">
         <CardContent className="pt-6">
+          {/* Never a GET before hydration — see LoginForm. */}
           <form
+            method="post"
+            action="/api/ops/auth/login"
             onSubmit={handleSubmit}
             className="flex flex-col gap-4"
             noValidate
@@ -90,6 +96,12 @@ export function OpsLoginForm() {
                 <p className="text-destructive text-sm">{errors.password}</p>
               )}
             </div>
+
+            {showFailed && (
+              <p role="alert" className="text-destructive text-sm">
+                No pudimos iniciar sesión. Revisá el email y la contraseña.
+              </p>
+            )}
 
             <Button type="submit" className="mt-2" disabled={login.isPending}>
               {login.isPending ? "Ingresando…" : "Ingresar"}

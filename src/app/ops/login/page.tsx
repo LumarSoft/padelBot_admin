@@ -9,14 +9,19 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function OpsLoginPage() {
+export default async function OpsLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   const admin = await getOpsSession();
   if (admin) redirect("/ops");
+  const { error } = await searchParams;
 
   return (
     <div className="relative flex min-h-svh items-center justify-center p-4">
       <div aria-hidden className="ambient-bg" />
-      <OpsLoginForm />
+      <OpsLoginForm failed={error === "login"} />
     </div>
   );
 }

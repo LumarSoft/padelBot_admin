@@ -29,14 +29,20 @@ const PAPER_TOKENS =
 const FIELD_CLASS =
   "h-12 rounded-xl border-ink/15 bg-white px-4 text-base shadow-none md:text-base dark:bg-white dark:focus-visible:bg-white";
 
-export function LoginForm() {
+/**
+ * `failed` comes from `/login?error=login`: a native submit (one made before React hydrated)
+ * that the BFF bounced back. See `withLoginFormPost`.
+ */
+export function LoginForm({ failed = false }: { failed?: boolean }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [showFailed, setShowFailed] = useState(failed);
   const login = useLogin();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
+    setShowFailed(false);
     const result = loginSchema.safeParse({ email, password });
 
     if (!result.success) {
@@ -64,7 +70,11 @@ export function LoginForm() {
         </p>
       </div>
 
+      {/* method + action keep a submit made before hydration a POST to the BFF: never a GET
+          that would put the email and password in the URL. */}
       <form
+        method="post"
+        action="/api/auth/login"
         onSubmit={handleSubmit}
         noValidate
         className={`${PAPER_TOKENS} bg-paper text-ink flex flex-col gap-5 rounded-3xl p-5 shadow-[0_30px_60px_-30px_rgb(0_0_0/0.8)] sm:p-7`}
@@ -111,6 +121,12 @@ export function LoginForm() {
             <p className="text-destructive text-sm">{errors.password}</p>
           )}
         </div>
+
+        {showFailed && (
+          <p role="alert" className="text-destructive text-sm">
+            No pudimos iniciar sesión. Revisá el email y la contraseña.
+          </p>
+        )}
 
         <Button
           type="submit"

@@ -4,6 +4,7 @@ import { apiServerFetch } from "@/lib/api/server-client";
 import { ApiError } from "@/lib/api/api-error";
 import { setOpsSessionCookie } from "@/lib/ops-session";
 import { logger } from "@/lib/logger";
+import { withLoginFormPost } from "@/lib/api/login-form-post";
 import type { OpsAdmin } from "@/types/api/ops";
 
 const loginSchema = z.object({
@@ -20,9 +21,12 @@ interface ApiOpsLoginResponse {
  * Ops login. No API_MOCK path here, unlike the club login: a mock that hands out a
  * cross-tenant console session is not a convenience, it's a footgun.
  */
-export async function POST(request: Request): Promise<NextResponse> {
-  const json = await request.json().catch(() => null);
-  const parsed = loginSchema.safeParse(json);
+export function POST(request: Request): Promise<NextResponse> {
+  return withLoginFormPost(request, { home: "/ops", login: "/ops/login" }, login);
+}
+
+async function login(body: unknown): Promise<NextResponse> {
+  const parsed = loginSchema.safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(

@@ -68,7 +68,12 @@ export function ForcePasswordChangeDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* POST, never GET: a native submit must not put a password in the URL. */}
+        <form
+          method="post"
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4"
+        >
           <div className="flex flex-col gap-2">
             <Label htmlFor="fpw-next">Nueva contraseña</Label>
             <Input
