@@ -15,10 +15,11 @@ import type {
   UpdateSlotRequest,
 } from "@/types/api/turnos";
 
-export function useSlots(filters: SlotFilters = {}) {
+export function useSlots(filters: SlotFilters = {}, { enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<Slot[]>({
     queryKey: queryKeys.slots.list(filters),
     queryFn: () => slotsService.list(filters),
+    enabled,
   });
 }
 

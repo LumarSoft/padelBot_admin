@@ -16,35 +16,35 @@ import {
 } from "@/components/ui/dialog";
 import { SlotPicker } from "./slot-picker";
 import { useCreateBooking } from "@/features/reservas/hooks/use-bookings";
-
-function todayStr(): string {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60 * 1000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
-}
+import { useEnsureSlot } from "@/features/reservas/hooks/use-ensure-slot";
+import type { SlotOption } from "@/features/reservas/lib/slot-options";
+import { todayKey } from "@/features/agenda/lib/schedule";
 
 export function CreateBookingDialog() {
   const [open, setOpen] = useState(false);
-  const [date, setDate] = useState(todayStr);
+  const [date, setDate] = useState(todayKey);
   const [courtId, setCourtId] = useState("");
-  const [slotId, setSlotId] = useState("");
+  const [target, setTarget] = useState<SlotOption | null>(null);
   const [playerName, setPlayerName] = useState("");
   const [playerPhone, setPlayerPhone] = useState("");
   const [notes, setNotes] = useState("");
+  const ensureSlot = useEnsureSlot();
   const createBooking = useCreateBooking();
 
   function reset() {
-    setDate(todayStr());
+    setDate(todayKey());
     setCourtId("");
-    setSlotId("");
+    setTarget(null);
     setPlayerName("");
     setPlayerPhone("");
     setNotes("");
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>): void {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
-    if (!slotId || !playerName.trim()) return;
+    if (!target || !playerName.trim()) return;
+    const slotId = await ensureSlot.mutateAsync(target).catch(() => null);
+    if (!slotId) return;
     createBooking.mutate(
       {
         slotId,
@@ -61,7 +61,8 @@ export function CreateBookingDialog() {
     );
   }
 
-  const canSubmit = !!slotId && !!playerName.trim() && !createBooking.isPending;
+  const pending = ensureSlot.isPending || createBooking.isPending;
+  const canSubmit = !!target && !!playerName.trim() && !pending;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
@@ -80,10 +81,10 @@ export function CreateBookingDialog() {
           <SlotPicker
             date={date}
             courtId={courtId}
-            slotId={slotId}
+            value={target}
             onDateChange={setDate}
             onCourtChange={setCourtId}
-            onSlotChange={setSlotId}
+            onChange={setTarget}
           />
 
           <div className="border-t pt-4 flex flex-col gap-4">
@@ -132,7 +133,7 @@ export function CreateBookingDialog() {
 
           <DialogFooter>
             <Button type="submit" disabled={!canSubmit}>
-              {createBooking.isPending ? "Reservando…" : "Crear reserva"}
+              {pending ? "Reservando…" : "Crear reserva"}
             </Button>
           </DialogFooter>
         </form>

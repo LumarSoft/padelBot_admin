@@ -12,6 +12,9 @@ import {
 } from "@/components/ui/dialog";
 import { SlotPicker } from "./slot-picker";
 import { useRescheduleBooking } from "@/features/reservas/hooks/use-bookings";
+import { useEnsureSlot } from "@/features/reservas/hooks/use-ensure-slot";
+import type { SlotOption } from "@/features/reservas/lib/slot-options";
+import { dateToKey, todayKey } from "@/features/agenda/lib/schedule";
 import { formatDay, formatTimeRange } from "@/lib/format";
 import type { Booking } from "@/types/api/bookings";
 
@@ -21,10 +24,11 @@ interface RescheduleBookingDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-function todayStr(): string {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60 * 1000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+/** Opens on the booking's own day (most moves are to another hour that day), or today if it passed. */
+function initialDate(booking: Booking): string {
+  const bookingDay = dateToKey(new Date(booking.slot.startsAt));
+  const today = todayKey();
+  return bookingDay > today ? bookingDay : today;
 }
 
 export function RescheduleBookingDialog({
@@ -32,27 +36,33 @@ export function RescheduleBookingDialog({
   open,
   onOpenChange,
 }: RescheduleBookingDialogProps) {
-  const [date, setDate] = useState(todayStr);
+  const [date, setDate] = useState(() => initialDate(booking));
   const [courtId, setCourtId] = useState("");
-  const [newSlotId, setNewSlotId] = useState("");
+  const [target, setTarget] = useState<SlotOption | null>(null);
+  const ensureSlot = useEnsureSlot();
   const reschedule = useRescheduleBooking();
 
   function handleClose(v: boolean) {
     if (!v) {
-      setDate(todayStr());
+      setDate(initialDate(booking));
       setCourtId("");
-      setNewSlotId("");
+      setTarget(null);
     }
     onOpenChange(v);
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
+    if (!target) return;
+    // A band nobody used yet has no Slot row: create it first, like the Agenda does to book one.
+    const newSlotId = await ensureSlot.mutateAsync(target).catch(() => null);
     if (!newSlotId) return;
     reschedule.mutate(
       { id: booking.id, body: { newSlotId } },
       { onSuccess: () => handleClose(false) },
     );
   }
+
+  const pending = ensureSlot.isPending || reschedule.isPending;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -75,10 +85,10 @@ export function RescheduleBookingDialog({
           <SlotPicker
             date={date}
             courtId={courtId}
-            slotId={newSlotId}
+            value={target}
             onDateChange={setDate}
             onCourtChange={setCourtId}
-            onSlotChange={setNewSlotId}
+            onChange={setTarget}
             excludeSlotId={booking.slotId}
           />
         </div>
@@ -87,9 +97,9 @@ export function RescheduleBookingDialog({
           <Button
             onClick={handleSubmit}
             data-help="reprogramar-confirmar"
-            disabled={!newSlotId || reschedule.isPending}
+            disabled={!target || pending}
           >
-            {reschedule.isPending ? "Reprogramando…" : "Reprogramar"}
+            {pending ? "Reprogramando…" : "Reprogramar"}
           </Button>
         </DialogFooter>
       </DialogContent>

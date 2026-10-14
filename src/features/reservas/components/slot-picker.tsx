@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -12,51 +13,47 @@ import {
 } from "@/components/ui/select";
 import { useCourts } from "@/features/turnos/hooks/use-courts";
 import { useSlots } from "@/features/turnos/hooks/use-slots";
+import { dayRangeForCourts, todayKey } from "@/features/agenda/lib/schedule";
+import { freeSlotOptions, type SlotOption } from "@/features/reservas/lib/slot-options";
 import { formatPrice, formatTimeRange } from "@/lib/format";
-import type { Slot } from "@/types/api/turnos";
 
 interface SlotPickerProps {
+  /** Club-local "YYYY-MM-DD". */
   date: string;
   courtId: string;
-  slotId: string;
+  value: SlotOption | null;
   onDateChange: (date: string) => void;
   onCourtChange: (courtId: string) => void;
-  onSlotChange: (slotId: string) => void;
+  onChange: (option: SlotOption | null) => void;
   excludeSlotId?: string;
 }
 
-function localDayBounds(dateStr: string): { from: string; to: string } {
-  const from = new Date(`${dateStr}T00:00`);
-  const to = new Date(`${dateStr}T23:59`);
-  return { from: from.toISOString(), to: to.toISOString() };
-}
-
+/**
+ * Day + court + turno picker over the same free bands the Agenda shows, including bands whose
+ * Slot was never created. Resolve the picked option with `useEnsureSlot` before using its id.
+ */
 export function SlotPicker({
   date,
   courtId,
-  slotId,
+  value,
   onDateChange,
   onCourtChange,
-  onSlotChange,
+  onChange,
   excludeSlotId,
 }: SlotPickerProps) {
   const courtsQuery = useCourts();
-  const courts = courtsQuery.data ?? [];
+  const courts = useMemo(() => courtsQuery.data ?? [], [courtsQuery.data]);
 
-  const bounds = date ? localDayBounds(date) : undefined;
-  const slotsQuery = useSlots(
-    bounds
-      ? {
-          status: "AVAILABLE",
-          courtId: courtId || undefined,
-          from: bounds.from,
-          to: bounds.to,
-        }
-      : {},
-  );
-  const availableSlots: Slot[] = (slotsQuery.data ?? []).filter(
-    (s) => s.id !== excludeSlotId,
-  );
+  // Every status and every court: a BOOKED/BLOCKED slot is what hides a band, and one query per
+  // day serves any court filter. The range runs past midnight for late-closing schedules.
+  const range = date && courts.length ? dayRangeForCourts(date, courts) : null;
+  const slotsQuery = useSlots(range ?? {}, { enabled: !!range });
+
+  const options = useMemo(() => {
+    if (!date || !slotsQuery.data) return [];
+    const scoped = courtId ? courts.filter((c) => c.id === courtId) : courts;
+    return freeSlotOptions(scoped, slotsQuery.data, date).filter((o) => !o.slotId || o.slotId !== excludeSlotId);
+  }, [courts, courtId, date, slotsQuery.data, excludeSlotId]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -67,9 +64,10 @@ export function SlotPicker({
             id="sp-date"
             type="date"
             value={date}
+            min={todayKey()}
             onChange={(e) => {
               onDateChange(e.target.value);
-              onSlotChange("");
+              onChange(null);
             }}
           />
         </div>
@@ -79,7 +77,7 @@ export function SlotPicker({
             value={courtId}
             onValueChange={(v) => {
               onCourtChange(v ?? "");
-              onSlotChange("");
+              onChange(null);
             }}
           >
             <SelectTrigger>
@@ -109,34 +107,37 @@ export function SlotPicker({
           <p className="text-muted-foreground text-sm">
             Elegí una fecha para ver los turnos disponibles.
           </p>
-        ) : slotsQuery.isLoading ? (
+        ) : courtsQuery.isLoading || slotsQuery.isLoading ? (
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
             <Loader2 className="size-3.5 animate-spin" />
             Buscando turnos…
           </div>
-        ) : availableSlots.length === 0 ? (
+        ) : options.length === 0 ? (
           <p className="text-muted-foreground text-sm">
             No hay turnos disponibles para esa fecha.
           </p>
         ) : (
-          <Select value={slotId} onValueChange={(v) => onSlotChange(v ?? "")}>
-            <SelectTrigger>
+          <Select
+            value={value?.key ?? ""}
+            onValueChange={(v) => onChange(options.find((o) => o.key === v) ?? null)}
+          >
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Elegí un turno">
                 {(v) => {
-                  const s = availableSlots.find((slot) => slot.id === v);
-                  return s
-                    ? `${s.court.name} · ${formatTimeRange(s.startsAt, s.endsAt)} · ${formatPrice(s.priceCents)}`
-                    : "";
+                  const o = options.find((option) => option.key === v);
+                  return o
+                    ? `${o.courtName} · ${formatTimeRange(o.startsAt, o.endsAt)} · ${formatPrice(o.priceCents)}`
+                    : `Elegí un turno (${options.length} libres)`;
                 }}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {availableSlots.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
-                  <span className="font-medium">{s.court.name}</span>
+              {options.map((o) => (
+                <SelectItem key={o.key} value={o.key}>
+                  <span className="font-medium">{o.courtName}</span>
                   <span className="text-muted-foreground ml-1.5">
-                    {formatTimeRange(s.startsAt, s.endsAt)} ·{" "}
-                    {formatPrice(s.priceCents)}
+                    {formatTimeRange(o.startsAt, o.endsAt)} ·{" "}
+                    {formatPrice(o.priceCents)}
                   </span>
                 </SelectItem>
               ))}
