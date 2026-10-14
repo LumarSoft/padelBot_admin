@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, NotebookPen } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -173,6 +173,10 @@ function PagosForm({
     );
   }
 
+  // Without a seña there is nothing to transfer: no MercadoPago, no alias, no verification.
+  // The bot takes the booking down and confirms it on the spot.
+  const noDeposit = mode === "NONE";
+
   // Preview the deposit on a REAL court price, so the owner sees the exact number their
   // players will be asked to transfer — the whole point of configuring this with them.
   const courtPrice = courtsQuery.data?.[0]?.priceCents ?? 2000000;
@@ -194,7 +198,9 @@ function PagosForm({
     { from: "player", text: "Dale, reservame las 21:00" },
     {
       from: "bot",
-      text: `Listo, te reservo las 21:00.\n\n${aliasLine}\n\n${confirmLine}`,
+      text: noDeposit
+        ? `¡Listo, reserva confirmada! 🎾\n\nTe anoté a las 21:00. El turno (${formatPrice(courtPrice)}) se abona en el club.`
+        : `Listo, te reservo las 21:00.\n\n${aliasLine}\n\n${confirmLine}`,
     },
   ];
 
@@ -206,9 +212,11 @@ function PagosForm({
           clubName={clubName}
           bubbles={bubbles}
           caption={
-            mode === "FULL"
-              ? "El bot cobra la cancha completa por adelantado."
-              : `El bot pide el ${percentValid ? percentNumber : 25}% del precio real de tu cancha.`
+            noDeposit
+              ? "El bot reserva y confirma directo, sin pedir seña."
+              : mode === "FULL"
+                ? "El bot cobra la cancha completa por adelantado."
+                : `El bot pide el ${percentValid ? percentNumber : 25}% del precio real de tu cancha.`
           }
         />
       }
@@ -236,44 +244,19 @@ function PagosForm({
         />
       }
     >
-      <MercadoPagoCard />
-
       <form id="setup-pagos" onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="setup-alias">Alias o CVU</Label>
-            <Input
-              id="setup-alias"
-              value={alias}
-              onChange={(e) => setAlias(e.target.value)}
-              placeholder="padel.centro.mp"
-              maxLength={120}
-              disabled={updateConfig.isPending}
-            />
-            <p className="text-muted-foreground text-xs">
-              Es lo que el bot le dicta al jugador para que transfiera.
-            </p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="setup-holder">Titular de la cuenta</Label>
-            <Input
-              id="setup-holder"
-              value={holder}
-              onChange={(e) => setHolder(e.target.value)}
-              placeholder="Pádel Center S.R.L."
-              maxLength={120}
-              disabled={updateConfig.isPending}
-            />
-          </div>
-        </div>
-
         <div className="flex flex-col gap-2">
           <Label>¿Qué cobra el bot para confirmar?</Label>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {(
               [
                 { value: "DEPOSIT", label: "Una seña", hint: "Parte del precio del turno." },
                 { value: "FULL", label: "La cancha completa", hint: "El 100% por adelantado." },
+                {
+                  value: "NONE",
+                  label: "Sin seña",
+                  hint: "El bot reserva y confirma directo. Se cobra en el club.",
+                },
               ] as const
             ).map((option) => (
               <button
@@ -295,108 +278,151 @@ function PagosForm({
           </div>
         </div>
 
-        {mode === "DEPOSIT" && (
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="setup-percent">Seña (% del precio)</Label>
-            <Input
-              id="setup-percent"
-              type="number"
-              inputMode="numeric"
-              min={1}
-              max={100}
-              value={percent}
-              onChange={(e) => setPercent(e.target.value)}
-              disabled={updateConfig.isPending}
-              className="max-w-24"
-            />
-            <p className="text-muted-foreground text-xs">
-              25% es lo habitual: la parte de 1 de los 4 jugadores. Sobre tu cancha de{" "}
-              {formatPrice(courtPrice)} son {formatPrice(depositCents)}.
+        {noDeposit ? (
+          <div className="border-border/70 flex items-start gap-3 rounded-xl border border-dashed p-4">
+            <NotebookPen className="text-brand mt-0.5 size-4 shrink-0" />
+            <p className="text-muted-foreground text-sm text-pretty">
+              <span className="text-foreground font-medium">No hace falta MercadoPago ni alias.</span>{" "}
+              El bot anota nombre, día y hora y deja el turno confirmado al instante; ustedes cobran
+              en el club. Si más adelante quieren pedir seña, lo cambian desde Configuración → Pagos.
             </p>
           </div>
-        )}
+        ) : (
+          <>
+            <MercadoPagoCard />
 
-        <div className="flex flex-col gap-2 border-t pt-5">
-          <Label>¿Cómo se confirma el pago?</Label>
-          <div className="flex flex-col gap-2">
-            {(
-              [
-                {
-                  value: "AUTO",
-                  label: "Automático con MercadoPago",
-                  hint: "El bot detecta la transferencia y confirma solo, sin que nadie haga nada. Necesita la cuenta conectada.",
-                },
-                {
-                  value: "RECEIPT",
-                  label: "El jugador manda el comprobante y ustedes confirman",
-                  hint: "El bot pide una foto. Les llega al panel y confirman a mano. Sirve si no quieren conectar MercadoPago.",
-                },
-              ] as const
-            ).map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setVerification(option.value)}
-                disabled={updateConfig.isPending}
-                className={cn(
-                  "ease-fluid rounded-xl border px-3 py-2.5 text-left transition-all duration-200",
-                  verification === option.value
-                    ? "border-brand bg-brand/10"
-                    : "border-border hover:bg-card",
-                )}
-              >
-                <span className="block text-sm font-medium">{option.label}</span>
-                <span className="text-muted-foreground block text-xs text-pretty">
-                  {option.hint}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="setup-alias">Alias o CVU</Label>
+                <Input
+                  id="setup-alias"
+                  value={alias}
+                  onChange={(e) => setAlias(e.target.value)}
+                  placeholder="padel.centro.mp"
+                  maxLength={120}
+                  disabled={updateConfig.isPending}
+                />
+                <p className="text-muted-foreground text-xs">
+                  Es lo que el bot le dicta al jugador para que transfiera.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="setup-holder">Titular de la cuenta</Label>
+                <Input
+                  id="setup-holder"
+                  value={holder}
+                  onChange={(e) => setHolder(e.target.value)}
+                  placeholder="Pádel Center S.R.L."
+                  maxLength={120}
+                  disabled={updateConfig.isPending}
+                />
+              </div>
+            </div>
+
+            {mode === "DEPOSIT" && (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="setup-percent">Seña (% del precio)</Label>
+                <Input
+                  id="setup-percent"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={100}
+                  value={percent}
+                  onChange={(e) => setPercent(e.target.value)}
+                  disabled={updateConfig.isPending}
+                  className="max-w-24"
+                />
+                <p className="text-muted-foreground text-xs">
+                  25% es lo habitual: la parte de 1 de los 4 jugadores. Sobre tu cancha de{" "}
+                  {formatPrice(courtPrice)} son {formatPrice(depositCents)}.
+                </p>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2 border-t pt-5">
+              <Label>¿Cómo se confirma el pago?</Label>
+              <div className="flex flex-col gap-2">
+                {(
+                  [
+                    {
+                      value: "AUTO",
+                      label: "Automático con MercadoPago",
+                      hint: "El bot detecta la transferencia y confirma solo, sin que nadie haga nada. Necesita la cuenta conectada.",
+                    },
+                    {
+                      value: "RECEIPT",
+                      label: "El jugador manda el comprobante y ustedes confirman",
+                      hint: "El bot pide una foto. Les llega al panel y confirman a mano. Sirve si no quieren conectar MercadoPago.",
+                    },
+                  ] as const
+                ).map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setVerification(option.value)}
+                    disabled={updateConfig.isPending}
+                    className={cn(
+                      "ease-fluid rounded-xl border px-3 py-2.5 text-left transition-all duration-200",
+                      verification === option.value
+                        ? "border-brand bg-brand/10"
+                        : "border-border hover:bg-card",
+                    )}
+                  >
+                    <span className="block text-sm font-medium">{option.label}</span>
+                    <span className="text-muted-foreground block text-xs text-pretty">
+                      {option.hint}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {verification === "AUTO" && (
+              <div className="flex items-start gap-2.5 text-sm">
+                <input
+                  type="checkbox"
+                  checked
+                  readOnly
+                  disabled
+                  aria-label="Exigir el DNI del que transfiere (obligatorio con cobro automático)"
+                  className="mt-0.5 accent-[var(--brand)]"
+                />
+                <span>
+                  <span className="font-medium">Exige el DNI del que transfiere</span>
+                  <span className="text-muted-foreground block text-xs text-pretty">
+                    Obligatorio con el cobro automático: el bot necesita el DNI para reconocer la
+                    transferencia y confirmar solo. Lo pide al reservar y confirma cuando quien
+                    transfirió es esa misma persona; si no coincide, va a revisión manual.
+                  </span>
                 </span>
-              </button>
-            ))}
-          </div>
-        </div>
+              </div>
+            )}
 
-        {verification === "AUTO" && (
-          <div className="flex items-start gap-2.5 text-sm">
-            <input
-              type="checkbox"
-              checked
-              readOnly
-              disabled
-              aria-label="Exigir el DNI del que transfiere (obligatorio con cobro automático)"
-              className="mt-0.5 accent-[var(--brand)]"
-            />
-            <span>
-              <span className="font-medium">Exige el DNI del que transfiere</span>
-              <span className="text-muted-foreground block text-xs text-pretty">
-                Obligatorio con el cobro automático: el bot necesita el DNI para reconocer la
-                transferencia y confirmar solo. Lo pide al reservar y confirma cuando quien
-                transfirió es esa misma persona; si no coincide, va a revisión manual.
-              </span>
-            </span>
-          </div>
+            <div className="flex flex-col gap-2 border-t pt-5">
+              <Label htmlFor="setup-cancellation">Política de cancelación</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="setup-cancellation"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={168}
+                  value={cancellationHours}
+                  onChange={(e) => setCancellationHours(e.target.value)}
+                  disabled={updateConfig.isPending}
+                  className="max-w-24"
+                />
+                <span className="text-muted-foreground text-sm">horas de aviso</span>
+              </div>
+              <p className="text-muted-foreground text-xs text-pretty">
+                Si cancelan con {cancellationValid ? cancellationNumber : "N"} h o más de
+                anticipación, la seña les queda como crédito para la próxima reserva. Con menos
+                aviso, se pierde. 0 = siempre queda a favor.
+              </p>
+            </div>
+          </>
         )}
-
-        <div className="flex flex-col gap-2 border-t pt-5">
-          <Label htmlFor="setup-cancellation">Política de cancelación</Label>
-          <div className="flex items-center gap-2">
-            <Input
-              id="setup-cancellation"
-              type="number"
-              inputMode="numeric"
-              min={0}
-              max={168}
-              value={cancellationHours}
-              onChange={(e) => setCancellationHours(e.target.value)}
-              disabled={updateConfig.isPending}
-              className="max-w-24"
-            />
-            <span className="text-muted-foreground text-sm">horas de aviso</span>
-          </div>
-          <p className="text-muted-foreground text-xs text-pretty">
-            Si cancelan con {cancellationValid ? cancellationNumber : "N"} h o más de
-            anticipación, la seña les queda como crédito para la próxima reserva. Con menos
-            aviso, se pierde. 0 = siempre queda a favor.
-          </p>
-        </div>
       </form>
     </StepLayout>
   );

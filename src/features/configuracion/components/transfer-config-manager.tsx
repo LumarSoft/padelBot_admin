@@ -43,6 +43,11 @@ const DEPOSIT_MODES = [
     label: "La cancha completa",
     hint: "El jugador paga el turno entero por adelantado.",
   },
+  {
+    value: "NONE",
+    label: "Sin seña: el bot reserva y confirma directo",
+    hint: "No pide plata ni alias: anota nombre, día y hora y el turno queda confirmado al toque. Se cobra todo en el club.",
+  },
 ] as const;
 
 const RESCHEDULE_MODES = [
@@ -146,6 +151,9 @@ function TransferConfigForm({
     maxReschedulesNumber === initialMaxReschedules;
 
   const invalid = (mode === "DEPOSIT" && !percentValid) || !cancellationValid || !rescheduleValid;
+  // Without a seña the bot never asks for money, so the transfer, verification and cancellation
+  // settings don't apply. They stay saved (and editable) for the day the club goes back to one.
+  const noDeposit = mode === "NONE";
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -178,7 +186,11 @@ function TransferConfigForm({
         <SettingsSection
           icon={Landmark}
           title="Datos de la transferencia"
-          description="Lo que el bot le muestra al jugador para que transfiera. Sin alias, el bot no puede tomar pagos."
+          description={
+            noDeposit
+              ? "Sin seña, el bot no pide transferencias y no necesita alias. Si lo cargás, queda guardado por si volvés a cobrar seña."
+              : "Lo que el bot le muestra al jugador para que transfiera. Sin alias, el bot no puede tomar pagos."
+          }
         >
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
@@ -251,7 +263,11 @@ function TransferConfigForm({
         <SettingsSection
           icon={ShieldCheck}
           title="Cómo se confirma el pago"
-          description="Quién da por buena la transferencia: el bot solo, o vos desde el panel."
+          description={
+            noDeposit
+              ? "No aplica sin seña: las reservas del bot quedan confirmadas al instante."
+              : "Quién da por buena la transferencia: el bot solo, o vos desde el panel."
+          }
         >
           <div className="flex flex-col gap-3">
             {VERIFICATION_MODES.map((option) => (
@@ -263,11 +279,11 @@ function TransferConfigForm({
                 onSelect={() => setVerificationMode(option.value)}
                 label={option.label}
                 hint={option.hint}
-                disabled={pending}
+                disabled={pending || noDeposit}
               />
             ))}
 
-            {verificationMode === "AUTO" && (
+            {verificationMode === "AUTO" && !noDeposit && (
               <div className="border-border/70 flex items-start gap-3 rounded-xl border border-dashed p-3">
                 <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-500" />
                 <p className="text-muted-foreground text-xs text-pretty">
@@ -285,7 +301,11 @@ function TransferConfigForm({
         <SettingsSection
           icon={CalendarX2}
           title="Política de cancelación"
-          description="Qué pasa con la seña cuando cancelás un turno desde la agenda."
+          description={
+            noDeposit
+              ? "No aplica sin seña: no hay plata que devolver. Cancelás el turno desde la agenda y la cancha se libera."
+              : "Qué pasa con la seña cuando cancelás un turno desde la agenda."
+          }
         >
           <div className="flex flex-col gap-2">
             <Label htmlFor="cancellation-hours">Horas de aviso</Label>
@@ -297,7 +317,7 @@ function TransferConfigForm({
               max={168}
               value={cancellationHours}
               onChange={(e) => setCancellationHours(e.target.value)}
-              disabled={pending}
+              disabled={pending || noDeposit}
               className="max-w-28"
             />
             <p className="text-muted-foreground text-xs text-pretty">
@@ -316,9 +336,10 @@ function TransferConfigForm({
           description={
             <>
               El bot <span className="text-foreground font-medium">nunca cancela</span>: le ofrece{" "}
-              <em>mover</em> el turno a otro horario. La seña sigue aplicada (no devolvés plata), la
-              cancha que libera se le ofrece sola a la lista de espera, y el jugador no pierde nada.
-              Cancelar de verdad lo seguís decidiendo vos, desde la agenda.
+              <em>mover</em> el turno a otro horario.{" "}
+              {noDeposit ? "La" : "La seña sigue aplicada (no devolvés plata), la"} cancha que libera
+              se le ofrece sola a la lista de espera, y el jugador no pierde nada. Cancelar de verdad
+              lo seguís decidiendo vos, desde la agenda.
             </>
           }
         >
@@ -388,7 +409,7 @@ function TransferConfigForm({
   );
 }
 
-function MercadoPagoConnect() {
+function MercadoPagoConnect({ noDeposit }: { noDeposit: boolean }) {
   const statusQuery = useMercadoPagoStatus();
   const connect = useConnectMercadoPago();
   const disconnect = useDisconnectMercadoPago();
@@ -420,8 +441,9 @@ function MercadoPagoConnect() {
         <div className="min-w-0">
           <p className="font-medium">Cuenta de MercadoPago</p>
           <p className="text-muted-foreground mt-1 text-sm text-pretty">
-            Conectá la cuenta del club para que la seña se acredite en tu cuenta y el bot confirme
-            las reservas automáticamente al recibir la transferencia.
+            {noDeposit
+              ? "Sin seña no hace falta: el bot no cobra nada. Conectala solo si vas a volver a pedir seña."
+              : "Conectá la cuenta del club para que la seña se acredite en tu cuenta y el bot confirme las reservas automáticamente al recibir la transferencia."}
           </p>
         </div>
 
@@ -473,7 +495,7 @@ export function TransferConfigManager() {
 
   return (
     <section className="flex flex-col gap-6">
-      <MercadoPagoConnect />
+      <MercadoPagoConnect noDeposit={mode === "NONE"} />
 
       {configQuery.isLoading ? (
         <div className="text-muted-foreground flex items-center gap-2 py-6 text-sm">

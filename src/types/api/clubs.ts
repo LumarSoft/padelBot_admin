@@ -1,5 +1,8 @@
-/** DEPOSIT = charge a seña (a % of the price); FULL = charge the whole court. */
-export type DepositMode = "DEPOSIT" | "FULL";
+/**
+ * DEPOSIT = charge a seña (a % of the price); FULL = charge the whole court; NONE = charge
+ * nothing — the bot books and confirms on the spot (no alias, no transfer).
+ */
+export type DepositMode = "DEPOSIT" | "FULL" | "NONE";
 
 /** AUTO = reconcile via MercadoPago; RECEIPT = player sends a receipt photo verified by hand. */
 export type PaymentVerificationMode = "AUTO" | "RECEIPT";
@@ -18,7 +21,7 @@ export interface TransferConfig {
   transferAlias: string | null;
   /** Account holder ("titular") shown to players alongside the alias. */
   transferHolder: string | null;
-  /** Whether the bot charges a partial deposit (seña) or the full court price. */
+  /** Whether the bot charges a partial deposit (seña), the full court price, or nothing. */
   depositMode: DepositMode;
   /** Seña as a percentage of the court price (1–100). Used when depositMode = DEPOSIT. */
   depositPercent: number;

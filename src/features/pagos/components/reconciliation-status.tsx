@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { queryKeys } from "@/lib/query-keys";
 import { paymentsService } from "@/services/payments.service";
+import { useTransferConfig } from "@/features/configuracion/hooks/use-transfer-config";
 
 function minutesAgo(iso: string | null): number | null {
   if (!iso) return null;
@@ -21,8 +22,10 @@ export function ReconciliationStatus() {
     queryFn: paymentsService.getHealth,
     refetchInterval: 60_000,
   });
+  // A club without seña has no transfers to reconcile — a red "inactiva" there is pure noise.
+  const noDeposit = useTransferConfig().data?.depositMode === "NONE";
 
-  if (!data) return null;
+  if (!data || noDeposit) return null;
 
   const clubBroken = data.clubConsecutiveFailures > 0;
   const ok = data.reconciliationActive && !clubBroken;

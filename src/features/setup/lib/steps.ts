@@ -34,7 +34,8 @@ export interface SetupStepMeta {
  * The guided path, in order. Every step can be skipped and every one stays editable from
  * Configuración afterwards — this is a guided route over the panel's existing endpoints,
  * not a gate. The three non-optional steps are the ones the bot literally cannot run
- * without: courts to book, a place to receive the deposit, and a WhatsApp line to answer on.
+ * without: courts to book, a payment policy (where the deposit lands, or no deposit at all), and
+ * a WhatsApp line to answer on.
  */
 export const SETUP_STEPS: SetupStepMeta[] = [
   {
@@ -60,7 +61,7 @@ export const SETUP_STEPS: SetupStepMeta[] = [
     label: "Cobros",
     title: "Configurá los cobros",
     description:
-      "Cuánto pide el bot para confirmar una reserva y a dónde entra esa plata.",
+      "Cuánto pide el bot para confirmar una reserva y a dónde entra esa plata — o si reserva sin seña.",
     icon: Wallet,
     optional: false,
   },

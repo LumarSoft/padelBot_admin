@@ -9,6 +9,7 @@ import { waLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 import { stepMeta } from "@/features/setup/lib/steps";
 import { useCompleteSetup, useWhatsAppLines } from "@/features/setup/hooks/use-setup";
+import { useTransferConfig } from "@/features/configuracion/hooks/use-transfer-config";
 import type { SetupStatus, SetupStepId } from "@/types/api/onboarding";
 
 /**
@@ -28,6 +29,9 @@ export function FinishScreen({
   const router = useRouter();
   const completeSetup = useCompleteSetup();
   const linesQuery = useWhatsAppLines();
+  // A club without seña isn't "cobrando" anything — promising that would be the lie this
+  // screen exists to avoid.
+  const noDeposit = useTransferConfig().data?.depositMode === "NONE";
 
   const activeLine = (linesQuery.data ?? []).find((line) => line.isActive);
   const pending = status.steps.filter((step) => !step.done);
@@ -65,7 +69,9 @@ export function FinishScreen({
           </h1>
           <p className="text-muted-foreground text-lg text-pretty">
             {status.ready
-              ? "El bot ya puede atender jugadores, reservar canchas y cobrar la seña solo."
+              ? noDeposit
+                ? "El bot ya puede atender jugadores y reservar canchas solo: confirma cada turno al instante."
+                : "El bot ya puede atender jugadores, reservar canchas y cobrar la seña solo."
               : "El bot todavía no puede tomar una reserva de punta a punta. Te falta esto:"}
           </p>
         </div>
