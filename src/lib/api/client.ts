@@ -1,4 +1,8 @@
 import { ApiError, type FieldErrors } from "@/lib/api/api-error";
+import {
+  SESSION_ENDED_HEADER,
+  SESSION_ENDED_LOGIN_PATH,
+} from "@/lib/api/session-ended";
 
 /**
  * Browser-side HTTP client. Talks to this app's own internal route handlers
@@ -22,6 +26,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     credentials: "include",
   });
 
+  if (response.status === 401 && response.headers.has(SESSION_ENDED_HEADER)) {
+    endSession();
+  }
+
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as ErrorBody;
     throw new ApiError(
@@ -36,6 +44,20 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   return (await response.json()) as T;
+}
+
+let endingSession = false;
+
+/**
+ * The BFF said the session is over (and already dropped the cookie): an expired token, or the
+ * owner deactivated this user. A full navigation, not a router push, so nothing of the old
+ * session survives in memory — cached queries, the auth store. Several requests usually fail
+ * together; the first one navigates.
+ */
+function endSession(): void {
+  if (endingSession || typeof window === "undefined") return;
+  endingSession = true;
+  window.location.assign(SESSION_ENDED_LOGIN_PATH);
 }
 
 export const apiClient = {

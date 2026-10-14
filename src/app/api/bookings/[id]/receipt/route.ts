@@ -2,7 +2,7 @@ import "server-only";
 
 import type { NextRequest } from "next/server";
 import { API_URL } from "@/lib/env";
-import { getSessionToken } from "@/lib/session";
+import { clearSessionCookie, getSessionToken } from "@/lib/session";
 import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +34,11 @@ export async function GET(_request: NextRequest, { params }: Context): Promise<R
     return new Response("No se pudo obtener el comprobante.", { status: 502 });
   }
 
+  // Session over: an <img> can't act on it, so drop the cookie and let the panel's next data
+  // request send the user to /login (see endSessionResponse).
+  if (upstream.status === 401) {
+    await clearSessionCookie();
+  }
   if (!upstream.ok || !upstream.body) {
     return new Response("Comprobante no disponible.", { status: upstream.status || 502 });
   }

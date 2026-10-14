@@ -1,9 +1,10 @@
 import "server-only";
 
 import { NextResponse } from "next/server";
-import { getSessionToken } from "@/lib/session";
+import { clearSessionCookie, getSessionToken } from "@/lib/session";
 import { apiServerFetch } from "@/lib/api/server-client";
 import { ApiError } from "@/lib/api/api-error";
+import { SESSION_ENDED_HEADER } from "@/lib/api/session-ended";
 import { logger } from "@/lib/logger";
 
 interface ProxyOptions {
@@ -21,7 +22,7 @@ export async function proxyToApi(
 ): Promise<NextResponse> {
   const token = await getSessionToken();
   if (!token) {
-    return NextResponse.json({ message: "No autorizado." }, { status: 401 });
+    return endSessionResponse("No autorizado.");
   }
   return forward(apiPath, options, token);
 }
@@ -56,6 +57,13 @@ async function forward(
     }
     return NextResponse.json(data);
   } catch (error) {
+    // On an authenticated call the API answers 401 only when the session itself is no longer
+    // valid: the token expired, or its user was deactivated or moved to another club (the API
+    // checks that on every request). Drop the cookie, so the panel doesn't sit there with a
+    // session whose every request fails, and tell the browser client to go to /login.
+    if (token && error instanceof ApiError && error.status === 401) {
+      return endSessionResponse(error.message);
+    }
     if (error instanceof ApiError) {
       return NextResponse.json(
         { message: error.message, fieldErrors: error.fieldErrors },
@@ -71,4 +79,16 @@ async function forward(
       { status: 500 },
     );
   }
+}
+
+/**
+ * Drops the session cookie and answers the `401` that sends the browser client to /login.
+ * For any BFF route whose authenticated call to the API came back `401`.
+ */
+export async function endSessionResponse(message: string): Promise<NextResponse> {
+  await clearSessionCookie();
+  return NextResponse.json(
+    { message },
+    { status: 401, headers: { [SESSION_ENDED_HEADER]: "1" } },
+  );
 }

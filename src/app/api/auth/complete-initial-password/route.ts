@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import * as z from "zod";
 import { apiServerFetch } from "@/lib/api/server-client";
 import { ApiError } from "@/lib/api/api-error";
+import { endSessionResponse } from "@/lib/api/proxy";
 import { getSessionToken, setSessionCookie } from "@/lib/session";
 import { logger } from "@/lib/logger";
 import type { ApiLoginResponse, LoginResponse } from "@/types/api/auth";
@@ -30,7 +31,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const token = await getSessionToken();
   if (!token) {
-    return NextResponse.json({ message: "No autorizado." }, { status: 401 });
+    return endSessionResponse("No autorizado.");
   }
 
   try {
@@ -48,6 +49,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     const body: LoginResponse = { user };
     return NextResponse.json(body, { status: 200 });
   } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      return endSessionResponse(error.message);
+    }
     if (error instanceof ApiError) {
       return NextResponse.json(
         { message: error.message, fieldErrors: error.fieldErrors },

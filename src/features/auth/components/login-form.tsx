@@ -31,18 +31,28 @@ const FIELD_CLASS =
 
 /**
  * `failed` comes from `/login?error=login`: a native submit (one made before React hydrated)
- * that the BFF bounced back. See `withLoginFormPost`.
+ * that the BFF bounced back. See `withLoginFormPost`. `sessionEnded` comes from
+ * `/login?error=session`: the panel was signed out because its session expired or the owner
+ * deactivated the user (see `lib/api/session-ended`).
  */
-export function LoginForm({ failed = false }: { failed?: boolean }) {
+export function LoginForm({
+  failed = false,
+  sessionEnded = false,
+}: {
+  failed?: boolean;
+  sessionEnded?: boolean;
+}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [showFailed, setShowFailed] = useState(failed);
+  const [showSessionEnded, setShowSessionEnded] = useState(sessionEnded);
   const login = useLogin();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     setShowFailed(false);
+    setShowSessionEnded(false);
     const result = loginSchema.safeParse({ email, password });
 
     if (!result.success) {
@@ -125,6 +135,12 @@ export function LoginForm({ failed = false }: { failed?: boolean }) {
         {showFailed && (
           <p role="alert" className="text-destructive text-sm">
             No pudimos iniciar sesión. Revisá el email y la contraseña.
+          </p>
+        )}
+
+        {showSessionEnded && (
+          <p role="status" className="text-muted-foreground text-sm">
+            Tu sesión se cerró. Ingresá de nuevo para seguir.
           </p>
         )}
 

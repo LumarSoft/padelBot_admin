@@ -2,7 +2,7 @@ import "server-only";
 
 import type { NextRequest } from "next/server";
 import { API_URL } from "@/lib/env";
-import { getSessionToken } from "@/lib/session";
+import { clearSessionCookie, getSessionToken } from "@/lib/session";
 import { logger } from "@/lib/logger";
 
 // An SSE stream must stay open and must never be cached or statically rendered.
@@ -41,6 +41,12 @@ export async function GET(request: NextRequest): Promise<Response> {
     });
   }
 
+  // The session is over (expired, or the user was deactivated). EventSource can't read the
+  // response, so just drop the cookie: the panel's next data request then sends the user to
+  // /login (see endSessionResponse).
+  if (upstream.status === 401) {
+    await clearSessionCookie();
+  }
   if (!upstream.ok || !upstream.body) {
     return new Response("Stream no disponible.", {
       status: upstream.status || 502,

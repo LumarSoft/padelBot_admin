@@ -19,5 +19,7 @@ export default async function LoginPage({
   }
 
   const { error } = await searchParams;
-  return <LoginForm failed={error === "login"} />;
+  return (
+    <LoginForm failed={error === "login"} sessionEnded={error === "session"} />
+  );
 }
