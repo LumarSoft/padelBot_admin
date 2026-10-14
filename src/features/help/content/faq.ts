@@ -551,7 +551,7 @@ export const HELP_ENTRIES = [
     question: "Un empleado se fue, ¿cómo le saco el acceso?",
     answer: [
       "En Configuración → Equipo, tocá «Desactivar» en su fila.",
-      "Ya no puede entrar al panel. Lo que hizo queda en el historial.",
+      "Ya no puede volver a iniciar sesión. Lo que hizo queda en el historial.",
     ],
     keywords: ["baja", "desactivar", "renuncio", "se fue", "sacar acceso", "eliminar usuario", "borrar empleado"],
     tour: "baja-empleado",
