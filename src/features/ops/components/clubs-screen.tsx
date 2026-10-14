@@ -13,6 +13,7 @@ import { formatUsd, SUBSCRIPTION_LABELS, timeAgo } from "@/features/ops/lib/labe
 import { useOpsClubs } from "@/features/ops/hooks/use-ops";
 import { SubscriptionDialog } from "@/features/ops/components/subscription-dialog";
 import { ClubPasswordDialog } from "@/features/ops/components/club-password-dialog";
+import { HelpSearchMisses } from "@/features/ops/components/help-search-misses";
 import type { OpsClub } from "@/types/api/ops";
 
 export function ClubsScreen() {
@@ -47,6 +48,8 @@ export function ClubsScreen() {
           description="Cuando confirmás una solicitud, el club aparece acá."
         />
       )}
+
+      <HelpSearchMisses />
 
       {editing && (
         <SubscriptionDialog

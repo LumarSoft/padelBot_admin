@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import type { HelpSearchMiss } from "@/types/api/help";
 import type {
   BotMetrics,
   BusinessMetrics,
@@ -74,5 +75,8 @@ export const opsService = {
   },
   getHealth(): Promise<OpsHealth> {
     return apiClient.get<OpsHealth>("/api/ops/health");
+  },
+  getHelpSearchMisses(): Promise<HelpSearchMiss[]> {
+    return apiClient.get<HelpSearchMiss[]>("/api/ops/help/search-misses");
   },
 };

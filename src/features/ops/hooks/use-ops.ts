@@ -19,6 +19,7 @@ import type {
   UpdateLeadPayload,
   UpdateSubscriptionPayload,
 } from "@/types/api/ops";
+import type { HelpSearchMiss } from "@/types/api/help";
 
 function errorMessage(error: unknown, fallback: string): string {
   return error instanceof ApiError ? error.message : fallback;
@@ -169,5 +170,15 @@ export function useOpsHealth() {
     queryFn: () => opsService.getHealth(),
     // The health screen is what you leave open when something is on fire.
     refetchInterval: 30_000,
+  });
+}
+
+// ── Staff help ───────────────────────────────────────────────────────────────
+
+/** What the clubs' desk staff searched in the "?" help without finding it. */
+export function useHelpSearchMisses() {
+  return useQuery<HelpSearchMiss[]>({
+    queryKey: queryKeys.ops.helpSearchMisses,
+    queryFn: () => opsService.getHelpSearchMisses(),
   });
 }

@@ -86,5 +86,6 @@ export const queryKeys = {
     business: ["ops", "metrics", "business"] as const,
     bot: ["ops", "metrics", "bot"] as const,
     health: ["ops", "health"] as const,
+    helpSearchMisses: ["ops", "help", "search-misses"] as const,
   },
 } as const;
