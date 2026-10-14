@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { summaryGroups } from "@/features/signup/lib/summary";
 import { firstName, type SignupAnswers } from "@/features/signup/lib/questions";
+import { planName } from "@/lib/plans";
 
 /**
  * The review. Everything they told us, read back in plain language and grouped the way the
@@ -37,6 +38,13 @@ export function SummaryScreen({
         <p className="text-muted-foreground text-pretty">
           Si algo no quedó bien, tocá el lápiz y lo corregís.
         </p>
+        {answers.plan && (
+          <p className="text-sm text-pretty">
+            Elegiste el plan{" "}
+            <strong className="font-semibold">{planName(answers.plan)}</strong>. Lo
+            terminamos de ver juntos cuando te llamemos.
+          </p>
+        )}
       </header>
 
       {/* Columns, not a grid: a grid stretches every card in a row to the tallest one,

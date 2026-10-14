@@ -17,6 +17,7 @@ import {
   User,
   Wallet,
 } from "lucide-react";
+import type { PlanKey } from "@/lib/plans";
 
 /** Everything the step-by-step signup collects. Mirrors the API's RequestClubDto. */
 export interface SignupAnswers {
@@ -45,6 +46,10 @@ export interface SignupAnswers {
   email?: string;
   phone?: string;
   message?: string;
+
+  /** The pricing card they came from (`/register?plan=…`). Not a question: it rides along
+   *  with the answers so a restored draft keeps it, and ops sees it in the alert. */
+  plan?: PlanKey;
 }
 
 export type AnswerKey = keyof SignupAnswers;

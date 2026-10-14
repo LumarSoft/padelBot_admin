@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProvisionLead } from "@/features/ops/hooks/use-ops";
+import { PLAN_KEYS, PLAN_NAMES, type PlanKey } from "@/lib/plans";
 import type { Lead } from "@/types/api/ops";
 
 interface ProvisionDialogProps {
@@ -42,12 +43,14 @@ export function ProvisionDialog({
   const [ownerName, setOwnerName] = useState(lead.ownerName);
   const [email, setEmail] = useState(lead.email);
   const [password, setPassword] = useState(suggestPassword);
+  // What they picked on the landing, unless we agreed on another one on the call.
+  const [plan, setPlan] = useState<PlanKey>(lead.plan ?? "saque");
   const provision = useProvisionLead();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     provision.mutate(
-      { id: lead.id, payload: { clubName, ownerName, email, password } },
+      { id: lead.id, payload: { clubName, ownerName, email, password, plan } },
       { onSuccess: () => onOpenChange(false) },
     );
   }
@@ -94,6 +97,30 @@ export function ProvisionDialog({
               onChange={(event) => setEmail(event.target.value)}
               disabled={provision.isPending}
             />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label>Plan</Label>
+            <div className="flex flex-wrap gap-2">
+              {PLAN_KEYS.map((option) => (
+                <Button
+                  key={option}
+                  type="button"
+                  size="sm"
+                  variant={plan === option ? "default" : "outline"}
+                  onClick={() => setPlan(option)}
+                  disabled={provision.isPending}
+                >
+                  {PLAN_NAMES[option]}
+                </Button>
+              ))}
+            </div>
+            {lead.courtCount != null && (
+              <p className="text-muted-foreground text-xs">
+                Dijo que tiene {lead.courtCount} cancha
+                {lead.courtCount === 1 ? "" : "s"}: revisá que el plan las cubra.
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">

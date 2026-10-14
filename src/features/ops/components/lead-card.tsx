@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { planName } from "@/lib/plans";
 import { Button } from "@/components/ui/button";
 import { WhatsAppLink } from "@/components/ui/whatsapp-link";
 import { formatPrice } from "@/lib/format";
@@ -80,6 +81,9 @@ export function LeadCard({ lead }: LeadCardProps) {
               <Badge variant={STATUS_VARIANT[lead.status]}>
                 {LEAD_STATUS_LABELS[lead.status]}
               </Badge>
+              {lead.plan && (
+                <Badge variant="outline">Eligió {planName(lead.plan)}</Badge>
+              )}
             </div>
             <p className="text-muted-foreground text-sm">
               {lead.ownerName} · {lead.email}

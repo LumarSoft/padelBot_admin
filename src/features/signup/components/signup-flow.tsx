@@ -13,6 +13,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { apiClient } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
+import { isPlanKey, type PlanKey } from "@/lib/plans";
 import {
   QUESTIONS,
   canAdvance,
@@ -36,7 +37,7 @@ const SENT = QUESTIONS.length + 1;
 /** How long the choice card stays lit before the flow moves on. */
 const AUTO_ADVANCE_MS = 260;
 
-export function SignupFlow() {
+export function SignupFlow({ plan }: { plan?: PlanKey }) {
   // Read once, at first render. This component is mounted client-only (see
   // signup-flow-client.tsx), so touching localStorage here can't desync a server-rendered
   // tree — and it means the restored answers are simply the initial state, rather than
@@ -55,8 +56,12 @@ export function SignupFlow() {
     // this flow can carry an untouched `openTime: ""`, and letting that blank overwrite a
     // default would silently disable Continuar on a question that looks answered.
     ...Object.fromEntries(
-      Object.entries(restored?.answers ?? {}).filter(([, v]) => v !== undefined && v !== ""),
+      Object.entries(restored?.answers ?? {}).filter(
+        ([key, v]) => v !== undefined && v !== "" && (key !== "plan" || isPlanKey(v)),
+      ),
     ),
+    // The pricing card they just clicked beats the plan an older draft remembers.
+    ...(plan ? { plan } : {}),
   }));
   const [index, setIndex] = useState(
     // Never resume onto the confirmation screen, and never past the review.

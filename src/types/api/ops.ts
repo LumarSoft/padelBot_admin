@@ -42,6 +42,8 @@ export interface Lead {
   howFound: string | null;
   contactWindow: string | null;
   contactWindowNote: string | null;
+  /** The pricing card they came from (`/register?plan=…`); null when they didn't pick one. */
+  plan: PlanKey | null;
 
   // Our side of the file.
   status: LeadStatus;
@@ -69,6 +71,8 @@ export interface ProvisionLeadPayload {
   clubName?: string;
   email?: string;
   ownerName?: string;
+  /** Defaults API-side to the lead's plan, then to Saque. */
+  plan?: PlanKey;
 }
 
 // ── Clubs (tenants) ──────────────────────────────────────────────────────────

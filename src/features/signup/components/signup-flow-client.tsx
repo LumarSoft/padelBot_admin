@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Logo } from "@/components/ui/logo";
+import type { PlanKey } from "@/lib/plans";
 
 /**
  * The signup is mounted client-only.
@@ -29,6 +30,7 @@ const SignupFlow = dynamic(
   },
 );
 
-export function SignupFlowClient() {
-  return <SignupFlow />;
+/** `plan`: the pricing card the prospect came from, if any. */
+export function SignupFlowClient({ plan }: { plan?: PlanKey }) {
+  return <SignupFlow plan={plan} />;
 }

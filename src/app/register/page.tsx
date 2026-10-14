@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { SignupFlowClient } from "@/features/signup/components/signup-flow-client";
+import { isPlanKey } from "@/lib/plans";
 
 export const metadata: Metadata = {
   title: "Pedí tu club · GTP",
@@ -15,12 +16,18 @@ export const metadata: Metadata = {
  * in the proxy's PUBLIC_ROUTES — a prospect has no session, so anything else bounces the
  * landing's main CTA straight to /login.
  */
-export default async function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string | string[] }>;
+}) {
   // Already a customer → they want the panel, not the signup.
   const session = await getSession();
   if (session) {
     redirect("/panel");
   }
 
-  return <SignupFlowClient />;
+  // The landing's pricing cards link here with `?plan=<key>`; anything else is ignored.
+  const { plan } = await searchParams;
+  return <SignupFlowClient plan={isPlanKey(plan) ? plan : undefined} />;
 }
