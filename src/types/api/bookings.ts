@@ -63,6 +63,12 @@ export interface Booking {
   receiptUploadedAt: string | null;
   /** True when at least one receipt image is attached (RECEIPT mode → review it). */
   hasReceipt: boolean;
+  /** Fijos only: when the bot WhatsApped "¿venís?" (ISO). Null = not asked. */
+  attendanceAskedAt: string | null;
+  /** Fijos only: true = viene, false = no viene (the date was released), null = no answer yet. */
+  attendanceConfirmed: boolean | null;
+  /** When the answer arrived — from the player on WhatsApp or the front desk (ISO). */
+  attendanceAnsweredAt: string | null;
   /** Products consumed during this court session. */
   bookingProducts: BookingProductEntry[];
   createdAt: string;

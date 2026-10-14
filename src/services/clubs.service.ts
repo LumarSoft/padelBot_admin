@@ -11,6 +11,8 @@ import type {
   UpdateTransferConfigRequest,
   FaqEntry,
   UpdateFaqRequest,
+  FixedConfirmationConfig,
+  UpdateFixedConfirmationRequest,
 } from "@/types/api/clubs";
 import type {
   CreateWhatsAppLineRequest,
@@ -61,6 +63,14 @@ export const clubsService = {
     body: UpdateTransferConfigRequest,
   ): Promise<TransferConfig> {
     return apiClient.patch<TransferConfig>("/api/clubs/transfer-config", body);
+  },
+  getFixedConfirmation(): Promise<FixedConfirmationConfig> {
+    return apiClient.get<FixedConfirmationConfig>("/api/clubs/fixed-confirmation");
+  },
+  updateFixedConfirmation(
+    body: UpdateFixedConfirmationRequest,
+  ): Promise<FixedConfirmationConfig> {
+    return apiClient.patch<FixedConfirmationConfig>("/api/clubs/fixed-confirmation", body);
   },
   getMercadoPagoStatus(): Promise<MercadoPagoStatus> {
     return apiClient.get<MercadoPagoStatus>("/api/clubs/mercadopago");

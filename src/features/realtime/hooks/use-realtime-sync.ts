@@ -7,7 +7,8 @@ import { queryKeys } from "@/lib/query-keys";
 import { primeAudio, playCashSound } from "@/features/realtime/lib/play-cash-sound";
 import { useSoundStore } from "@/features/realtime/stores/sound-store";
 
-type BookingAction = "created" | "cancelled" | "rescheduled";
+/** `attendance` = a fijo answered "Sí, voy" to the WhatsApp "¿venís?". */
+type BookingAction = "created" | "cancelled" | "rescheduled" | "attendance";
 
 interface BookingChangedEvent {
   type: "booking.changed";
@@ -44,6 +45,7 @@ const TOAST_BY_ACTION: Record<BookingAction, (summary: string) => void> = {
   created: (s) => toast.success(`Nueva reserva: ${s}`),
   cancelled: (s) => toast.info(`Reserva cancelada: ${s}`),
   rescheduled: (s) => toast.info(`Reserva reprogramada: ${s}`),
+  attendance: (s) => toast.success(`Fijo confirmado, viene: ${s}`),
 };
 
 /**

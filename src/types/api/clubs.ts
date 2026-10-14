@@ -116,3 +116,16 @@ export interface WhatsAppLine {
   /** The number also stays on the club's WhatsApp Business app (Meta "coexistence"). */
   coexistence?: boolean;
 }
+
+/** The automatic WhatsApp "¿venís?" to the fijos. */
+export interface FixedConfirmationConfig {
+  enabled: boolean;
+  /** Hours before the turno the question goes out (24 = the day before, same time). */
+  leadHours: number;
+}
+
+export interface UpdateFixedConfirmationRequest {
+  enabled?: boolean;
+  /** One of 3, 6, 12, 24, 48. */
+  leadHours?: number;
+}

@@ -19,6 +19,7 @@ import {
 import { ClubProfileManager } from "@/features/configuracion/components/club-profile-manager";
 import { CourtsManager } from "@/features/configuracion/components/courts-manager";
 import { FaqManager } from "@/features/configuracion/components/faq-manager";
+import { FixedConfirmationManager } from "@/features/configuracion/components/fixed-confirmation-manager";
 import { RecurringBookingsManager } from "@/features/configuracion/components/recurring-bookings-manager";
 import { TransferConfigManager } from "@/features/configuracion/components/transfer-config-manager";
 import { TeamManager } from "@/features/configuracion/components/team-manager";
@@ -100,7 +101,8 @@ export function ConfiguracionScreen({ clubName }: { clubName?: string }) {
           <FaqManager />
         </TabsPanel>
 
-        <TabsPanel value="fijos">
+        <TabsPanel value="fijos" className="flex flex-col gap-6">
+          <FixedConfirmationManager />
           <RecurringBookingsManager />
         </TabsPanel>
 

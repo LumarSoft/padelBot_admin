@@ -32,6 +32,7 @@ export const queryKeys = {
     profile: ["clubs", "profile"] as const,
     faq: ["clubs", "faq"] as const,
     transferConfig: ["clubs", "transfer-config"] as const,
+    fixedConfirmation: ["clubs", "fixed-confirmation"] as const,
     mercadopago: ["clubs", "mercadopago"] as const,
     subscription: ["clubs", "subscription"] as const,
     whatsappLines: ["clubs", "whatsapp-lines"] as const,

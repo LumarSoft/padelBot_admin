@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Plus, CheckCircle2, Hourglass, RotateCcw, FileCheck2, Repeat } from "lucide-react";
+import { Check, Plus, CheckCircle2, Hourglass, RotateCcw, FileCheck2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/format";
 import { paidDepositCents } from "@/lib/booking-account";
@@ -18,6 +18,7 @@ import {
   ReserveCellForm,
 } from "@/features/agenda/components/cell-popovers";
 import { buildSlotDateTimes, type ScheduleBand } from "@/features/agenda/lib/schedule";
+import { FijoBadge } from "@/features/agenda/components/fixed-attendance";
 import type { AgendaCellData } from "@/features/agenda/hooks/use-agenda-day";
 
 interface AgendaCellProps {
@@ -49,7 +50,9 @@ export function AgendaCell({
   const [open, setOpen] = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
 
-  const { slot, booking, pending, freed } = data;
+  const { slot, booking, pending, freed, freedBooking } = data;
+  // A fijo who answered "No puedo": the court is free for this date only.
+  const fijoDeclined = freedBooking?.recurringBookingId != null && freedBooking.attendanceConfirmed === false;
   const kind: CellKind = booking
     ? "booked"
     : pending
@@ -107,10 +110,7 @@ export function AgendaCell({
           <span className="line-clamp-1 font-medium">{booking!.playerName}</span>
           <span className="text-muted-foreground flex items-center gap-1">
             {booking!.recurringBookingId ? (
-              <span className="bg-brand/15 text-brand inline-flex items-center gap-0.5 rounded px-1 text-[9px] font-medium">
-                <Repeat className="size-2.5" />
-                Fijo
-              </span>
+              <FijoBadge booking={booking!} />
             ) : isBot ? (
               <span className="bg-muted text-muted-foreground rounded px-1 text-[9px] font-medium">
                 Bot
@@ -151,9 +151,12 @@ export function AgendaCell({
 
       {kind === "freed" && (
         <>
-          <span className="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
+          <span
+            className="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400"
+            title={fijoDeclined ? `${freedBooking!.playerName} avisó que no viene: la cancha quedó libre solo esta fecha` : undefined}
+          >
             <RotateCcw className="size-3" />
-            Liberado
+            {fijoDeclined ? "Fijo no viene" : "Liberado"}
           </span>
           <span className="text-muted-foreground">
             {formatPrice(slot?.priceCents ?? courtPriceCents)}

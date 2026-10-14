@@ -23,6 +23,7 @@ import { CreateBookingDialog } from "@/features/reservas/components/create-booki
 import { AgendaGrid } from "@/features/agenda/components/agenda-grid";
 import { WeekStrip } from "@/features/agenda/components/week-strip";
 import { BookingsList } from "@/features/agenda/components/bookings-list";
+import { UnansweredFijos } from "@/features/agenda/components/fixed-attendance";
 import { formatDayLabel, shiftDay, todayKey } from "@/features/agenda/lib/schedule";
 
 export function AgendaScreen({ initialDayKey }: { initialDayKey?: string } = {}) {
@@ -69,7 +70,7 @@ export function AgendaScreen({ initialDayKey }: { initialDayKey?: string } = {})
 
         <TabsPanel value="calendario" className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="outline"
                 size="icon-sm"
@@ -96,6 +97,7 @@ export function AgendaScreen({ initialDayKey }: { initialDayKey?: string } = {})
               <span className="ml-1 text-sm font-medium capitalize">
                 {formatDayLabel(dayKey)}
               </span>
+              <UnansweredFijos dayKey={dayKey} courts={courts} />
             </div>
 
             {courts.length > 0 && (

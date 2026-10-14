@@ -30,6 +30,10 @@ export const bookingsService = {
   cancel(id: string): Promise<Booking> {
     return apiClient.patch<Booking>(`/api/bookings/${id}/cancel`);
   },
+  /** The front desk records a fijo's answer: true = viene, false = no viene (releases that date). */
+  setAttendance(id: string, confirmed: boolean): Promise<Booking> {
+    return apiClient.patch<Booking>(`/api/bookings/${id}/attendance`, { confirmed });
+  },
   markNoShow(id: string): Promise<{ noShowAt: string }> {
     return apiClient.post<{ noShowAt: string }>(`/api/bookings/${id}/no-show`);
   },

@@ -15,6 +15,8 @@ export interface AgendaCellData {
   pending?: Booking;
   /** True when a reservation here was cancelled and the band is free again ("recién liberado"). */
   freed?: boolean;
+  /** The cancelled reservation behind `freed` — e.g. a fijo who answered "no puedo". */
+  freedBooking?: Booking;
 }
 
 /**
@@ -45,7 +47,7 @@ export function useAgendaDay(dayKey: string, courtId?: string, courts?: Court[])
     }
     // A cancelled booking marks its band as "freed" — overridden below if it was re-taken.
     for (const booking of cancelledQuery.data ?? []) {
-      upsert(cellKey(booking.slot.court.id, booking.slot.startsAt), { freed: true });
+      upsert(cellKey(booking.slot.court.id, booking.slot.startsAt), { freed: true, freedBooking: booking });
     }
     for (const pending of pendingQuery.data ?? []) {
       upsert(cellKey(pending.slot.court.id, pending.slot.startsAt), { pending, freed: false });

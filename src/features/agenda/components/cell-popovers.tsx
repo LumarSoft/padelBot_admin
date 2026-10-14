@@ -41,6 +41,7 @@ import {
 } from "@/features/reservas/hooks/use-bookings";
 import { useCreateSlot, useUpdateSlot, useDeleteSlot } from "@/features/turnos/hooks/use-slots";
 import { useTransferConfig } from "@/features/configuracion/hooks/use-transfer-config";
+import { FixedAttendanceBlock } from "@/features/agenda/components/fixed-attendance";
 import type { Slot } from "@/types/api/turnos";
 import type { Booking } from "@/types/api/bookings";
 
@@ -459,6 +460,8 @@ export function BookingActions({
         {booking.notes && (
           <p className="text-muted-foreground text-xs italic">&ldquo;{booking.notes}&rdquo;</p>
         )}
+
+        {!isPast && !isSettled && <FixedAttendanceBlock booking={booking} onDone={onDone} />}
 
         {isSettled ? (
           <p className="flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
