@@ -99,11 +99,6 @@ export function GlobalSearch() {
   const results = resultsQuery.data ?? [];
   const showPanel = focused && debounced.length >= 2;
 
-  // Reset active index whenever results change
-  useEffect(() => {
-    setActiveIndex(-1);
-  }, [results]);
-
   const goTo = useCallback(
     (booking: Booking) => {
       setFocused(false);
@@ -169,6 +164,8 @@ export function GlobalSearch() {
         value={term}
         onChange={(e) => {
           setTerm(e.target.value);
+          // New text, new results: the keyboard highlight starts over.
+          setActiveIndex(-1);
         }}
         onFocus={() => setFocused(true)}
         onKeyDown={handleKeyDown}
@@ -226,7 +223,7 @@ export function GlobalSearch() {
               <Search className="text-muted-foreground/40 size-7" />
               <p className="text-muted-foreground text-sm">
                 Sin resultados para{" "}
-                <span className="font-medium text-foreground">"{debounced}"</span>
+                <span className="font-medium text-foreground">«{debounced}»</span>
               </p>
               <p className="text-muted-foreground/60 text-xs">
                 Probá con otro nombre o teléfono
