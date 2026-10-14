@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+  AlertTriangle,
   Banknote,
   CheckCircle2,
   Landmark,
@@ -39,6 +40,8 @@ import { computeBookingAccount, splitEqually } from "@/lib/booking-account";
 import { useProducts } from "@/features/productos/hooks/use-products";
 import { useSetBookingProducts } from "@/features/reservas/hooks/use-bookings";
 import { bookingsService } from "@/services/bookings.service";
+import { stockWarning } from "@/features/kiosco/lib/stock-warning";
+import { isLowStock } from "@/types/api/stock";
 import { queryKeys } from "@/lib/query-keys";
 import { CATEGORY_LABELS, type ProductCategory } from "@/types/api/products";
 import type {
@@ -281,6 +284,28 @@ export function AddProductsDialog({
     {},
   );
 
+  // Units this bill already took out of stock when it was last saved — still available to it.
+  const savedQuantityById = currentProducts.reduce<Map<string, number>>(
+    (acc, entry) =>
+      acc.set(entry.product.id, (acc.get(entry.product.id) ?? 0) + entry.quantity),
+    new Map(),
+  );
+  const draftQuantityById = lines.reduce<Map<string, number>>(
+    (acc, line) => acc.set(line.productId, (acc.get(line.productId) ?? 0) + line.quantity),
+    new Map(),
+  );
+  const warningFor = (productId: string): string | null =>
+    stockWarning(
+      activeProducts.find((p) => p.id === productId),
+      draftQuantityById.get(productId) ?? 0,
+      savedQuantityById.get(productId) ?? 0,
+    );
+  /** Short hint for the picker: only for tracked products that are running out. */
+  const pickerHint = (product: Product): string => {
+    if (product.stockQuantity === null || !isLowStock(product)) return "";
+    return product.stockQuantity <= 0 ? " · sin stock" : ` · quedan ${product.stockQuantity}`;
+  };
+
   const account = computeBookingAccount(
     courtPriceCents,
     lines.map((line) => ({
@@ -373,6 +398,7 @@ export function AddProductsDialog({
                       {byCategory[cat].map((product) => (
                         <SelectItem key={product.id} value={product.id}>
                           {product.name} · {formatPrice(product.priceCents)}
+                          {pickerHint(product)}
                         </SelectItem>
                       ))}
                     </SelectGroup>
@@ -394,6 +420,7 @@ export function AddProductsDialog({
                       ?.product;
                   const unitCents = priceForProduct(line.productId);
                   const lineTotalCents = unitCents * line.quantity;
+                  const warning = warningFor(line.productId);
                   return (
                     <div
                       key={line.key}
@@ -434,6 +461,12 @@ export function AddProductsDialog({
                           </Button>
                         </div>
                       </div>
+                      {warning && (
+                        <p className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400">
+                          <AlertTriangle className="size-3 shrink-0" />
+                          {warning}
+                        </p>
+                      )}
                       <PlayerToggles
                         players={line.players}
                         lineTotalCents={lineTotalCents}
