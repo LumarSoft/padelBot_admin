@@ -281,6 +281,7 @@ export function AgendaCell({
               dayKey={dayKey}
               band={band}
               freed={kind === "freed"}
+              fijoDeclined={kind === "freed" && fijoDeclined}
               onDone={close}
             />
           )}

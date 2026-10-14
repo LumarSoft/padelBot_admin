@@ -42,6 +42,7 @@ import {
 import { useCreateSlot, useUpdateSlot, useDeleteSlot } from "@/features/turnos/hooks/use-slots";
 import { useTransferConfig } from "@/features/configuracion/hooks/use-transfer-config";
 import { FixedAttendanceBlock } from "@/features/agenda/components/fixed-attendance";
+import { StatusWhy } from "@/features/help/components/status-why";
 import type { Slot } from "@/types/api/turnos";
 import type { Booking } from "@/types/api/bookings";
 
@@ -179,6 +180,8 @@ interface ReserveCellProps {
   band: ScheduleBand;
   /** True when this band was just freed by a cancellation. */
   freed?: boolean;
+  /** The cancellation was a fijo saying they don't come: only this date is free. */
+  fijoDeclined?: boolean;
   onDone: () => void;
 }
 
@@ -195,6 +198,7 @@ export function ReserveCellForm({
   dayKey,
   band,
   freed = false,
+  fijoDeclined = false,
   onDone,
 }: ReserveCellProps) {
   const [playerName, setPlayerName] = useState("");
@@ -264,9 +268,12 @@ export function ReserveCellForm({
         subtitle={timeText}
         badge={
           freed ? (
-            <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-              Liberado
-            </span>
+            <>
+              <span className="shrink-0 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                {fijoDeclined ? "Fijo no viene" : "Liberado"}
+              </span>
+              <StatusWhy entry={fijoDeclined ? "fijo-no-viene-estado" : "liberado"} />
+            </>
           ) : undefined
         }
         meta={
@@ -278,7 +285,9 @@ export function ReserveCellForm({
 
       {freed && (
         <p className="text-muted-foreground -mt-1 text-xs">
-          Se canceló una reserva en esta franja. Ya está libre para reasignar.
+          {fijoDeclined
+            ? "El fijo avisó que no viene: la cancha quedó libre solo esta fecha."
+            : "Se canceló una reserva en esta franja. Ya está libre para reasignar."}
         </p>
       )}
 
@@ -582,9 +591,13 @@ export function PendingActions({ booking, onDone }: { booking: Booking; onDone: 
           </>
         }
         badge={
-          <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
-            Esperando pago
-          </span>
+          <>
+            {/* Same words as the agenda cell: a receipt to review reads "Revisar pago". */}
+            <span className="shrink-0 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+              {booking.hasReceipt ? "Revisar pago" : "Esperando pago"}
+            </span>
+            <StatusWhy entry={booking.hasReceipt ? "revisar-pago" : "esperando-pago"} />
+          </>
         }
       />
 
@@ -722,7 +735,15 @@ export function BlockedActions({ slot, onDone }: { slot: Slot; onDone: () => voi
         tone="muted"
         disc={<Lock className="size-4" />}
         title={slot.court.name}
-        subtitle={`${formatTimeRange(slot.startsAt, slot.endsAt)} · Bloqueado`}
+        subtitle={formatTimeRange(slot.startsAt, slot.endsAt)}
+        badge={
+          <>
+            <span className="bg-muted text-muted-foreground shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium">
+              Bloqueado
+            </span>
+            <StatusWhy entry="turno-bloqueado" />
+          </>
+        }
       />
       <Button
         type="button"

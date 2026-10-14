@@ -16,6 +16,7 @@ import {
 import { formatPrice } from "@/lib/format";
 import { usePlayerDetail, useUpdatePlayer } from "@/features/jugadores/hooks/use-players";
 import type { PlayerBooking } from "@/types/api/players";
+import { StatusWhy } from "@/features/help/components/status-why";
 
 function bookingLabel(booking: PlayerBooking): string {
   const start = new Date(booking.slot.startsAt);
@@ -69,7 +70,12 @@ export function PlayerDetailDialog({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 {player.name ?? "Sin nombre"}
-                {player.isBlocked && <Badge variant="destructive">Bloqueado</Badge>}
+                {player.isBlocked && (
+                  <>
+                    <Badge variant="destructive">Bloqueado</Badge>
+                    <StatusWhy entry="jugador-bloqueado" />
+                  </>
+                )}
               </DialogTitle>
               <DialogDescription>
                 {player.phone}
@@ -95,8 +101,11 @@ export function PlayerDetailDialog({
             </div>
 
             {player.noShowCount >= 3 && !player.isBlocked && (
-              <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5 text-xs">
-                Por acumular ausencias, el bot le exige el precio total como seña.
+              <p className="flex items-start gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5 text-xs">
+                <span className="flex-1">
+                  Por acumular ausencias, el bot le exige el precio total como seña.
+                </span>
+                <StatusWhy entry="sena-total" />
               </p>
             )}
 

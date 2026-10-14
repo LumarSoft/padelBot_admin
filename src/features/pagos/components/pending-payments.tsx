@@ -36,6 +36,7 @@ import { AddProductsDialog } from "@/features/productos/components/add-products-
 import { useSoundStore } from "@/features/realtime/stores/sound-store";
 import { playCashSound, primeAudio } from "@/features/realtime/lib/play-cash-sound";
 import type { Booking } from "@/types/api/bookings";
+import { StatusWhy } from "@/features/help/components/status-why";
 
 /** Short relative time, e.g. "recién", "hace 4 min", "hace 2 h". */
 
@@ -143,15 +144,21 @@ function PaymentCard({
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="truncate font-semibold">{booking.playerName}</h3>
                 {needsReview ? (
-                  <Badge className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
-                    <ImageIcon className="size-3" />
-                    Comprobante
-                  </Badge>
+                  <span className="inline-flex items-center gap-1">
+                    <Badge className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                      <ImageIcon className="size-3" />
+                      Comprobante
+                    </Badge>
+                    <StatusWhy entry="revisar-pago" />
+                  </span>
                 ) : receiptMode ? (
-                  <Badge variant="secondary" className="text-muted-foreground">
-                    <Hourglass className="size-3" />
-                    Esperando comprobante
-                  </Badge>
+                  <span className="inline-flex items-center gap-1">
+                    <Badge variant="secondary" className="text-muted-foreground">
+                      <Hourglass className="size-3" />
+                      Esperando comprobante
+                    </Badge>
+                    <StatusWhy entry="esperando-comprobante" />
+                  </span>
                 ) : null}
               </div>
               <div className="mt-1">

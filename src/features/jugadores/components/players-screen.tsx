@@ -16,6 +16,7 @@ import {
 import { formatPrice } from "@/lib/format";
 import { usePlayers } from "@/features/jugadores/hooks/use-players";
 import { PlayerDetailDialog } from "@/features/jugadores/components/player-detail-dialog";
+import { StatusWhy } from "@/features/help/components/status-why";
 
 export function PlayersScreen() {
   const [search, setSearch] = useState("");
@@ -90,12 +91,18 @@ export function PlayersScreen() {
                   </TableCell>
                   <TableCell>
                     {player.isBlocked ? (
-                      <Badge variant="destructive" className="gap-1">
-                        <Ban className="size-3" />
-                        Bloqueado
-                      </Badge>
+                      <span className="inline-flex items-center gap-1">
+                        <Badge variant="destructive" className="gap-1">
+                          <Ban className="size-3" />
+                          Bloqueado
+                        </Badge>
+                        <StatusWhy entry="jugador-bloqueado" />
+                      </span>
                     ) : player.noShowCount >= 3 ? (
-                      <Badge variant="secondary">Seña total</Badge>
+                      <span className="inline-flex items-center gap-1">
+                        <Badge variant="secondary">Seña total</Badge>
+                        <StatusWhy entry="sena-total" />
+                      </span>
                     ) : (
                       <Badge variant="outline">Normal</Badge>
                     )}

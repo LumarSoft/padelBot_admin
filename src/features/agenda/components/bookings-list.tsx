@@ -29,6 +29,7 @@ import { BookingStatusBadge } from "@/features/reservas/components/booking-statu
 import { RescheduleBookingDialog } from "@/features/reservas/components/reschedule-booking-dialog";
 import { dateToKey, shiftDay } from "@/features/agenda/lib/schedule";
 import type { Booking, BookingStatus } from "@/types/api/bookings";
+import { StatusWhy } from "@/features/help/components/status-why";
 
 export function BookingsList() {
   const [from, setFrom] = useState(() => dateToKey(new Date()));
@@ -216,7 +217,12 @@ export function BookingsList() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <BookingStatusBadge status={booking.status} />
+                      <span className="inline-flex items-center gap-1">
+                        <BookingStatusBadge status={booking.status} />
+                        {booking.status === "PENDING_PAYMENT" && (
+                          <StatusWhy entry={booking.hasReceipt ? "revisar-pago" : "esperando-pago"} />
+                        )}
+                      </span>
                       {booking.settledAt && (
                         <span className="mt-0.5 block text-xs font-medium text-emerald-600">
                           cuenta completa ✓
