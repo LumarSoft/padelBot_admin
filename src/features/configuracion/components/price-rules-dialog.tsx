@@ -117,7 +117,11 @@ export function PriceRulesDialog({
           )}
 
           {freeBands.length > 0 && (
-            <form onSubmit={handleAdd} className="flex flex-col gap-3 rounded-lg border p-3">
+            <form
+              onSubmit={handleAdd}
+              className="flex flex-col gap-3 rounded-lg border p-3"
+              data-help="franja-agregar"
+            >
               <p className="text-sm font-medium">Agregar excepción</p>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div className="flex flex-1 flex-col gap-1.5">
@@ -154,6 +158,7 @@ export function PriceRulesDialog({
                 <Button
                   type="submit"
                   disabled={createRule.isPending || !bandStart || !priceValid}
+                  data-help="franja-confirmar"
                 >
                   <Plus className="size-4" />
                   Agregar

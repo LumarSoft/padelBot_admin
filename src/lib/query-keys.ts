@@ -77,6 +77,7 @@ export const queryKeys = {
     firstDay: ["help", "first-day"] as const,
     team: ["help", "first-day", "team"] as const,
     houseRules: ["help", "house-rules"] as const,
+    newsSeen: ["help", "news", "seen"] as const,
   },
   ops: {
     leads: (status?: string) => ["ops", "leads", status ?? "all"] as const,

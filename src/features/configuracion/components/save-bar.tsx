@@ -37,6 +37,7 @@ export function SaveBar({
         </p>
         <Button
           type={onSave ? "button" : "submit"}
+          data-help="config-guardar"
           onClick={onSave}
           disabled={pending || unchanged || disabled}
         >

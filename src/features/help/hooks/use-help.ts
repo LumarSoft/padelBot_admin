@@ -8,6 +8,7 @@ import type { ApiError } from "@/lib/api/api-error";
 import type {
   FirstDayStatus,
   HouseRule,
+  NewsSeen,
   TeamMemberFirstDay,
   UpdateHouseRulesRequest,
 } from "@/types/api/help";
@@ -67,5 +68,32 @@ export function useUpdateHouseRules() {
 export function useRecordSearchMiss() {
   return useMutation<{ recorded: boolean }, ApiError, string>({
     mutationFn: (query) => helpService.recordSearchMiss(query),
+  });
+}
+
+/** The newest "Novedades" entry the user has seen — drives the dot on the "?". */
+export function useNewsSeen(enabled = true) {
+  return useQuery<NewsSeen>({
+    queryKey: queryKeys.help.newsSeen,
+    queryFn: () => helpService.getNewsSeen(),
+    enabled,
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** Marks the news as seen up to `newsId`. Optimistic: the dot goes away on open, not after a round trip. */
+export function useMarkNewsSeen() {
+  const queryClient = useQueryClient();
+  return useMutation<{ seenId: string }, ApiError, string, { previous?: NewsSeen }>({
+    mutationFn: (newsId) => helpService.markNewsSeen(newsId),
+    onMutate: (newsId) => {
+      const previous = queryClient.getQueryData<NewsSeen>(queryKeys.help.newsSeen);
+      queryClient.setQueryData<NewsSeen>(queryKeys.help.newsSeen, { seenId: newsId });
+      return { previous };
+    },
+    // Silent: the worst case is the dot showing up again next time.
+    onError: (_error, _newsId, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKeys.help.newsSeen, context.previous);
+    },
   });
 }

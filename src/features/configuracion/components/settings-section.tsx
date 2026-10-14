@@ -15,6 +15,8 @@ interface SettingsSectionProps {
   flush?: boolean;
   className?: string;
   contentClassName?: string;
+  /** `data-help` anchor for the "Mostrame" guides (features/help/content/tours.ts). */
+  helpAnchor?: string;
   children: ReactNode;
 }
 
@@ -31,10 +33,11 @@ export function SettingsSection({
   flush = false,
   className,
   contentClassName,
+  helpAnchor,
   children,
 }: SettingsSectionProps) {
   return (
-    <Card className={cn("gap-0", className)}>
+    <Card className={cn("gap-0", className)} data-help={helpAnchor}>
       <CardHeader className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3 pb-4">
         <div className="flex min-w-0 items-start gap-3">
           {Icon && (

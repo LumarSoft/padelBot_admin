@@ -106,7 +106,7 @@ function InviteUserDialog() {
         }
       }}
     >
-      <DialogTrigger render={<Button variant="outline" />}>
+      <DialogTrigger render={<Button variant="outline" data-help="equipo-agregar" />}>
         <Plus className="size-4" />
         Agregar usuario
       </DialogTrigger>
@@ -127,7 +127,7 @@ function InviteUserDialog() {
             </DialogFooter>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" data-help="equipo-form">
             <div className="flex flex-col gap-2">
               <Label htmlFor="user-name">Nombre</Label>
               <Input
@@ -152,7 +152,7 @@ function InviteUserDialog() {
               />
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={!canSubmit}>
+              <Button type="submit" disabled={!canSubmit} data-help="equipo-crear">
                 {createUser.isPending ? "Creando…" : "Crear usuario"}
               </Button>
             </DialogFooter>
@@ -256,7 +256,7 @@ export function TeamManager() {
               <TableHead>Usuario</TableHead>
               <TableHead>Rol</TableHead>
               <TableHead>Estado</TableHead>
-              <TableHead>Primer día</TableHead>
+              <TableHead data-help="equipo-primer-dia">Primer día</TableHead>
               <TableHead className="w-40" />
             </TableRow>
           </TableHeader>
@@ -306,6 +306,7 @@ export function TeamManager() {
                           title="Resetear contraseña"
                           onClick={() => void handleReset(user)}
                           disabled={resetPassword.isPending}
+                          data-help="equipo-clave"
                           className="text-muted-foreground hover:text-foreground size-8"
                         >
                           <KeyRound className="size-4" />
@@ -320,6 +321,7 @@ export function TeamManager() {
                             })
                           }
                           disabled={updateUser.isPending}
+                          data-help={user.isActive ? "equipo-desactivar" : undefined}
                           className="text-muted-foreground hover:text-foreground h-8 px-2 text-xs"
                         >
                           {user.isActive ? "Desactivar" : "Activar"}

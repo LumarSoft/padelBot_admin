@@ -92,7 +92,7 @@ export function BulkPriceDialog() {
         if (!v) reset();
       }}
     >
-      <DialogTrigger render={<Button variant="outline" />}>
+      <DialogTrigger render={<Button variant="outline" data-help="precios-ajustar" />}>
         <TrendingUp className="size-4" />
         Ajustar precios
       </DialogTrigger>
@@ -105,7 +105,7 @@ export function BulkPriceDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-end gap-3">
+        <div className="flex items-end gap-3" data-help="precios-porcentaje">
           <div className="flex flex-col gap-2">
             <Label htmlFor="bulk-percent">Porcentaje</Label>
             <Input
@@ -129,12 +129,13 @@ export function BulkPriceDialog() {
             variant="outline"
             onClick={() => adjust.mutate(true)}
             disabled={!percentValid || adjust.isPending}
+            data-help="precios-ver"
           >
             Ver cómo queda
           </Button>
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2" data-help="precios-fecha">
           <Label htmlFor="bulk-effective">Aplicar desde (opcional)</Label>
           <Input
             id="bulk-effective"
@@ -213,6 +214,7 @@ export function BulkPriceDialog() {
             type="button"
             onClick={() => adjust.mutate(false)}
             disabled={!percentValid || (!preview && !isScheduling) || adjust.isPending}
+            data-help="precios-aplicar"
           >
             {adjust.isPending
               ? "Guardando…"

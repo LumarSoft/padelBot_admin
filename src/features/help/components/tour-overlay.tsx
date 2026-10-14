@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Pointer, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -80,6 +80,16 @@ function union(a: DOMRect, b: DOMRect | null): DOMRect {
   return new DOMRect(left, top, Math.max(a.right, b.right) - left, Math.max(a.bottom, b.bottom) - top);
 }
 
+/**
+ * Whether the person is on the guide's screen: same path and, when the route carries a query
+ * (`?tab=pagos`), the same values for those params — other params (`?mp=connected`) don't count.
+ */
+function isOnRoute(route: string, pathname: string, searchParams: URLSearchParams): boolean {
+  const [path, query] = route.split("?");
+  if (pathname !== path) return false;
+  return [...new URLSearchParams(query)].every(([key, value]) => searchParams.get(key) === value);
+}
+
 function bubblePosition(rect: DOMRect): CSSProperties {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -110,6 +120,7 @@ export function TourOverlay() {
   const back = useTourStore((state) => state.back);
   const stop = useTourStore((state) => state.stop);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -117,7 +128,7 @@ export function TourOverlay() {
   const current = tour?.steps[step] ?? null;
   const isLast = tour ? step === tour.steps.length - 1 : false;
   const canGoBack = step > 0 && !!tour?.steps[step - 1]?.waitFor;
-  const onRoute = !tour?.route || pathname === tour.route;
+  const onRoute = !tour?.route || isOnRoute(tour.route, pathname, searchParams);
 
   // What the current step found, tagged with the step it belongs to: a new step starts blank
   // without an effect having to reset anything.
@@ -146,14 +157,14 @@ export function TourOverlay() {
   }, [tourId]);
   useEffect(() => {
     if (!tour?.route) return;
-    if (pathname === tour.route) {
+    if (onRoute) {
       arrivedRef.current = true;
     } else if (arrivedRef.current) {
       finish();
     } else {
       router.push(tour.route);
     }
-  }, [tour, pathname, router, finish]);
+  }, [tour, onRoute, router, finish]);
 
   // Find the step's element and follow it (scroll, popovers animating, dialogs resizing).
   useEffect(() => {

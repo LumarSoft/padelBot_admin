@@ -93,7 +93,7 @@ function FixedConfirmationForm({
         description="El bot le escribe a cada turno fijo antes de su turno para saber si viene, así no tenés que llamarlos uno por uno."
       >
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
-          <div className="flex min-w-0 flex-col gap-5">
+          <div className="flex min-w-0 flex-col gap-5" data-help="fijos-pregunta">
             <fieldset className="flex flex-col gap-2">
               <legend className="mb-2 text-sm font-medium">¿Activamos la pregunta automática?</legend>
               {STATUS_OPTIONS.map((option) => (

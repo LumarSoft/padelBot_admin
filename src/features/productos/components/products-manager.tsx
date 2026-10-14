@@ -176,7 +176,7 @@ function ProductForm({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-lg border p-3">
+      <div className="flex flex-col gap-3 rounded-lg border p-3" data-help="producto-stock">
         <button
           type="button"
           onClick={() => setTrackStock((v) => !v)}
@@ -255,6 +255,7 @@ function ProductForm({
         <Button
           type="submit"
           disabled={isPending || !trimmed || !priceValid || !stockValid}
+          data-help="producto-guardar"
         >
           {isPending ? "Guardando…" : submitLabel}
         </Button>
@@ -421,6 +422,7 @@ function Catalog({
                         size="icon"
                         aria-label={`Editar ${product.name}`}
                         onClick={() => onEdit(product)}
+                        data-help="producto-editar"
                         className="text-muted-foreground hover:text-foreground size-8"
                       >
                         <Pencil className="size-4" />
@@ -478,7 +480,7 @@ export function ProductsManager() {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2" data-help="kiosco-acciones">
         <StockActions />
         <CreateProductDialog />
       </div>

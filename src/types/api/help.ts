@@ -34,6 +34,11 @@ export interface UpdateHouseRulesRequest {
   entries: HouseRule[];
 }
 
+/** The newest "Novedades" entry the user has seen (null = never opened them). */
+export interface NewsSeen {
+  seenId: string | null;
+}
+
 /** A help search some club's staff made without finding an answer (ops console). */
 export interface HelpSearchMiss {
   query: string;

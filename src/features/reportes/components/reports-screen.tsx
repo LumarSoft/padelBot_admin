@@ -429,7 +429,7 @@ function KpiCards({ revenue }: { revenue: RevenueReport }) {
   ];
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" data-help="reportes-ingresos">
       {cards.map(({ label, value, sub, subClass, icon: Icon, iconBg, iconText }) => (
         <Card key={label}>
           <CardContent className="p-4">
@@ -1051,7 +1051,7 @@ export function ReportsScreen() {
         {occupancyQuery.isLoading ? (
           <SectionLoader label="Calculando ocupación…" />
         ) : occupancyQuery.data ? (
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-5" data-help="reportes-ocupacion">
             <OccupancyInsights report={occupancyQuery.data} />
             <Card>
               <CardContent className="p-5">

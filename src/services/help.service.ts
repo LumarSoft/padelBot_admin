@@ -2,6 +2,7 @@ import { apiClient } from "@/lib/api/client";
 import type {
   FirstDayStatus,
   HouseRule,
+  NewsSeen,
   TeamMemberFirstDay,
   UpdateHouseRulesRequest,
 } from "@/types/api/help";
@@ -21,6 +22,12 @@ export const helpService = {
   },
   updateHouseRules(body: UpdateHouseRulesRequest): Promise<HouseRule[]> {
     return apiClient.patch<HouseRule[]>("/api/help/house-rules", body);
+  },
+  getNewsSeen(): Promise<NewsSeen> {
+    return apiClient.get<NewsSeen>("/api/help/news/seen");
+  },
+  markNewsSeen(newsId: string): Promise<{ seenId: string }> {
+    return apiClient.post<{ seenId: string }>("/api/help/news/seen", { newsId });
   },
   recordSearchMiss(query: string): Promise<{ recorded: boolean }> {
     return apiClient.post<{ recorded: boolean }>("/api/help/search-misses", { query });

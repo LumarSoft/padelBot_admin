@@ -185,6 +185,7 @@ function TransferConfigForm({
       <div className="grid gap-6 lg:grid-cols-2">
         <SettingsSection
           icon={Landmark}
+          helpAnchor="transfer-datos"
           title="Datos de la transferencia"
           description={
             noDeposit
@@ -220,6 +221,7 @@ function TransferConfigForm({
 
         <SettingsSection
           icon={Percent}
+          helpAnchor="cobro-modo"
           title="Qué cobra el bot para confirmar"
           description="Cuánta plata pide por adelantado para dar la reserva por confirmada."
         >
@@ -300,6 +302,7 @@ function TransferConfigForm({
 
         <SettingsSection
           icon={CalendarX2}
+          helpAnchor="cobro-cancelacion"
           title="Política de cancelación"
           description={
             noDeposit
@@ -436,7 +439,7 @@ function MercadoPagoConnect({ noDeposit }: { noDeposit: boolean }) {
   // A connection status reads as one line, not as a form card — so this stays a full-width
   // banner above the grid instead of taking a column from the settings.
   return (
-    <Card>
+    <Card data-help="mp-conectar">
       <CardContent className="flex flex-col gap-4 py-1 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="font-medium">Cuenta de MercadoPago</p>

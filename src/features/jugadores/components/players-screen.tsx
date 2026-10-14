@@ -69,6 +69,7 @@ export function PlayersScreen() {
                   key={player.id}
                   className="cursor-pointer"
                   onClick={() => setSelectedId(player.id)}
+                  data-help="jugadores-fila"
                 >
                   <TableCell>
                     <div className="flex flex-col gap-0.5">

@@ -133,6 +133,7 @@ export function PlayerDetailDialog({
                 size="sm"
                 onClick={toggleBlocked}
                 disabled={updatePlayer.isPending}
+                data-help={player.isBlocked ? undefined : "jugador-bloquear"}
               >
                 {player.isBlocked ? "Desbloquear jugador" : "Bloquear jugador"}
               </Button>

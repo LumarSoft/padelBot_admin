@@ -1,14 +1,17 @@
+import type { HelpAudience } from "@/features/help/content/faq";
 import type { TourId } from "@/features/help/content/tours";
 
 /** One answer the help can show: built-in (content/faq.ts) or the club's own house rule. */
 export interface HelpItem {
   id: string;
   question: string;
-  answer: string[];
-  keywords: string[];
+  answer: readonly string[];
+  keywords: readonly string[];
   tour?: TourId;
   /** "club" = a house rule the owner wrote. */
   source: "gtp" | "club";
+  /** Who sees it (house rules are for everyone). */
+  audience: HelpAudience;
 }
 
 /** Words that say nothing about what the person is looking for. */

@@ -67,6 +67,7 @@ function HouseRulesEditor({ initial }: { initial: HouseRule[] }) {
     <div className="flex flex-col gap-6">
       <SettingsSection
         icon={BookMarked}
+        helpAnchor="reglas-casa"
         title="Reglas de la casa"
         description="Lo que le explicarías a cada recepcionista nueva. Aparece en la ayuda «?» del panel, junto a las respuestas de GTP. El bot no lo ve."
         actions={

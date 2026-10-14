@@ -315,7 +315,9 @@ export function CourtsManager() {
                       variant="ghost"
                       size="icon"
                       aria-label={`Precios por horario de ${court.name}`}
+                      title="Precios por horario"
                       onClick={() => setPricingCourt(court)}
+                      data-help="cancha-precios"
                       className="text-muted-foreground hover:text-foreground size-8"
                     >
                       <DollarSign className="size-4" />

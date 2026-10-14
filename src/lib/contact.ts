@@ -32,6 +32,18 @@ export function lumarsoftWhatsApp(intent: ContactIntent = "help"): string {
   return waLink(LUMARSOFT.whatsapp, INTENT_MESSAGE[intent]);
 }
 
+/**
+ * wa.me link to Lumarsoft from a help search that found nothing: the message carries what the
+ * owner searched and their club, so we can answer without asking back.
+ */
+export function lumarsoftHelpSearch(query: string, clubName?: string): string {
+  const from = clubName ? `, les escribo de ${clubName}` : "";
+  return waLink(
+    LUMARSOFT.whatsapp,
+    `Hola Lumarsoft${from}. Busqué «${query}» en la ayuda del panel y no encontré la respuesta.`,
+  );
+}
+
 /** mailto link to Lumarsoft with a subject/body pre-filled for the given intent. */
 export function lumarsoftEmail(intent: ContactIntent = "help"): string {
   const subject = "GTP — consulta";

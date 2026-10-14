@@ -93,6 +93,7 @@ function FaqEditor({ initial }: { initial: FaqEntry[] }) {
     <div className="flex flex-col gap-6">
       <SettingsSection
         icon={Bot}
+        helpAnchor="bot-faq"
         title="Preguntas del bot"
         description={
           <>
