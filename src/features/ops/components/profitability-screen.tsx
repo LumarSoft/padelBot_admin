@@ -135,11 +135,11 @@ export function ProfitabilityScreen() {
           <DollarNote usdArs={report.data.usdArs} />
           <p className="text-muted-foreground text-xs text-pretty">
             Meta: los mensajes de servicio después de los primeros 1.000 de cada número, más todas
-            las plantillas, a US$ {report.data.metaMessagePriceUsd} cada uno.{" "}
+            las plantillas, a {usdUnit(report.data.metaMessagePriceUsd)} cada uno.{" "}
             {report.data.taxRegime === "monotributo"
               ? "Monotributo: Meta, la IA y la comisión de MercadoPago llevan el 21% de IVA que no se recupera."
               : "Responsable inscripto: los ingresos van sin el 21% de IVA."}{" "}
-            Los paquetes pierden el {report.data.mpFeePercent}% de MercadoPago. El ingreso del plan usa
+            Los paquetes pierden el {decimal.format(report.data.mpFeePercent)}% de MercadoPago. El ingreso del plan usa
             el plan y el estado de hoy de cada club; la demo no suma en los totales.
           </p>
         </>
@@ -232,7 +232,16 @@ function DollarNote({ usdArs }: { usdArs: ProfitabilityReport["usdArs"] }) {
 }
 
 const usdFormat = new Intl.NumberFormat("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const usd = (value: number) => `US$ ${usdFormat.format(value)}`;
+const usdSmall = new Intl.NumberFormat("es-AR", { maximumSignificantDigits: 2 });
+const decimal = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 4 });
+/**
+ * Dollars the way they read best: cents for normal amounts, and the significant digits for the
+ * tiny ones (an AI step costs fractions of a cent — "US$ 0,00" would hide it).
+ */
+const usd = (value: number) =>
+  `US$ ${value > 0 && value < 0.01 ? usdSmall.format(value) : usdFormat.format(value)}`;
+/** A unit price as it is (0.026 → "US$ 0,026"), never rounded to cents. */
+const usdUnit = (value: number) => `US$ ${decimal.format(value)}`;
 const rateFormat = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 1 });
 /** 4500000 → "4,5 M". */
 const millions = (value: number) =>
@@ -257,14 +266,21 @@ function Breakdown({ report }: { report: ProfitabilityReport }) {
             {formatCount(ai.steps)} pasos del bot (mensajes que tuvo que entender, audios, imágenes y
             comprobantes): {millions(ai.inputTokens)} tokens de entrada y{" "}
             {millions(ai.outputTokens)} de salida. El modelo {ai.model} cobra{" "}
-            {usd(ai.inputPerMTokUsd)} por millón de entrada y {usd(ai.outputPerMTokUsd)} por millón
+            {usdUnit(ai.inputPerMTokUsd)} por millón de entrada y {usdUnit(ai.outputPerMTokUsd)} por millón
             de salida → <strong>{usd(ai.costUsd)}</strong>
             {ai.steps > 0 && ` (${usd(perStep)} por paso)`}.
+            {ai.priceEstimated && (
+              <span className="text-amber-600 dark:text-amber-400">
+                {" "}
+                Precio estimado: el modelo no tiene uno cargado (OPENAI_PRICE_INPUT_PER_MTOK y
+                OPENAI_PRICE_OUTPUT_PER_MTOK).
+              </span>
+            )}
           </Step>
           <Step title="Meta (WhatsApp)">
             {formatCount(meta.messages)} mensajes enviados: {formatCount(meta.free)} gratis (los
             primeros 1.000 de servicio de cada número) y {formatCount(meta.paid)} pagos (servicio
-            después de esos 1.000 y todas las plantillas) × {usd(report.metaMessagePriceUsd)} →{" "}
+            después de esos 1.000 y todas las plantillas) × {usdUnit(report.metaMessagePriceUsd)} →{" "}
             <strong>{usd(meta.costUsd)}</strong>.
           </Step>
           <Step title="Del dólar a pesos">
@@ -278,7 +294,7 @@ function Breakdown({ report }: { report: ProfitabilityReport }) {
           <Step title="Nuestra ganancia">
             Ingresos {pesos(totals.revenueCents)} (de {pesos(totals.grossRevenueCents)} cobrados
             {report.taxRegime === "inscripto" ? ", sin IVA" : ""}; los paquetes sin el{" "}
-            {report.mpFeePercent}% de MercadoPago) − costos {pesos(totals.costCents)} ={" "}
+            {decimal.format(report.mpFeePercent)}% de MercadoPago) − costos {pesos(totals.costCents)} ={" "}
             <strong>
               {pesos(totals.marginCents)}
               {totals.marginPercent !== null && ` (${totals.marginPercent}%)`}

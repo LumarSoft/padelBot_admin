@@ -291,6 +291,8 @@ export interface ProfitabilityReport {
       model: string;
       inputPerMTokUsd: number;
       outputPerMTokUsd: number;
+      /** No known price for the model: a stand-in is used. */
+      priceEstimated: boolean;
       steps: number;
       inputTokens: number;
       outputTokens: number;
