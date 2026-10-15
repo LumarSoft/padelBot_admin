@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/api/api-error";
 import type {
   BotMetrics,
   BusinessMetrics,
+  ProfitabilityReport,
   ClubUser,
   Lead,
   LeadStatus,
@@ -154,6 +155,13 @@ export function useBusinessMetrics() {
   return useQuery<BusinessMetrics>({
     queryKey: queryKeys.ops.business,
     queryFn: () => opsService.getBusinessMetrics(),
+  });
+}
+
+export function useProfitability(month: string) {
+  return useQuery<ProfitabilityReport>({
+    queryKey: queryKeys.ops.profitability(month),
+    queryFn: () => opsService.getProfitability(month),
   });
 }
 

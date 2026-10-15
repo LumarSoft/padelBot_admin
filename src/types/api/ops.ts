@@ -229,3 +229,40 @@ export interface OpsHealth {
   webhookDedupRows: number;
   checkedAt: string;
 }
+
+// ── Profitability ────────────────────────────────────────────────────────────
+
+export type MarginFlag = "negative" | "low" | "noRevenue" | null;
+
+/** One club in one month (`GET /ops/profitability`). Money in ARS cents. */
+export interface ClubProfitRow {
+  id: string;
+  name: string;
+  plan: string;
+  subscriptionStatus: SubscriptionStatus;
+  /** The sales demo: listed, never in the totals. */
+  isDemo: boolean;
+  revenue: { planCents: number; packsCents: number; totalCents: number };
+  messages: { total: number; free: number; paid: number };
+  cost: { metaCents: number; aiCents: number; totalCents: number };
+  marginCents: number;
+  marginPercent: number | null;
+  flag: MarginFlag;
+  credits: { used: number; included: number | null };
+}
+
+export interface ProfitabilityReport {
+  month: string;
+  metaMessagePriceUsd: number;
+  usdArsRate: number;
+  totals: {
+    revenueCents: number;
+    costCents: number;
+    metaCents: number;
+    aiCents: number;
+    marginCents: number;
+    marginPercent: number | null;
+    messages: { total: number; free: number; paid: number };
+  };
+  clubs: ClubProfitRow[];
+}

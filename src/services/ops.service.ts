@@ -3,6 +3,7 @@ import type { HelpSearchMiss } from "@/types/api/help";
 import type {
   BotMetrics,
   BusinessMetrics,
+  ProfitabilityReport,
   ClubUser,
   Lead,
   LeadStatus,
@@ -69,6 +70,11 @@ export const opsService = {
 
   getBusinessMetrics(): Promise<BusinessMetrics> {
     return apiClient.get<BusinessMetrics>("/api/ops/metrics/business");
+  },
+  getProfitability(month: string): Promise<ProfitabilityReport> {
+    return apiClient.get<ProfitabilityReport>(
+      `/api/ops/profitability?month=${encodeURIComponent(month)}`,
+    );
   },
   getBotMetrics(): Promise<BotMetrics> {
     return apiClient.get<BotMetrics>("/api/ops/metrics/bot");

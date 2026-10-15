@@ -89,6 +89,7 @@ export const queryKeys = {
     clubs: ["ops", "clubs"] as const,
     clubUsers: (clubId: string) => ["ops", "clubs", clubId, "users"] as const,
     business: ["ops", "metrics", "business"] as const,
+    profitability: (month: string) => ["ops", "profitability", month] as const,
     bot: ["ops", "metrics", "bot"] as const,
     health: ["ops", "health"] as const,
     helpSearchMisses: ["ops", "help", "search-misses"] as const,
