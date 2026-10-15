@@ -242,7 +242,8 @@ export interface ClubProfitRow {
   subscriptionStatus: SubscriptionStatus;
   /** The sales demo: listed, never in the totals. */
   isDemo: boolean;
-  revenue: { planCents: number; packsCents: number; totalCents: number };
+  /** `grossCents` is what it paid; the rest is net of IVA (and packs, of MercadoPago's fee). */
+  revenue: { grossCents: number; planCents: number; packsCents: number; totalCents: number };
   messages: { total: number; free: number; paid: number };
   cost: { metaCents: number; aiCents: number; totalCents: number };
   marginCents: number;
@@ -254,8 +255,19 @@ export interface ClubProfitRow {
 export interface ProfitabilityReport {
   month: string;
   metaMessagePriceUsd: number;
-  usdArsRate: number;
+  /** The dollar used: fetched daily (dolarapi), or a fallback when the fetch never worked. */
+  usdArs: {
+    rate: number;
+    quote: "tarjeta" | "oficial";
+    source: "dolarapi" | "config" | "default";
+    dateKey: string | null;
+    /** A fallback, or this month's last fetch is days old. */
+    stale: boolean;
+  };
+  pricesIncludeIva: boolean;
+  mpFeePercent: number;
   totals: {
+    grossRevenueCents: number;
     revenueCents: number;
     costCents: number;
     metaCents: number;

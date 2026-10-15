@@ -17,7 +17,7 @@ import { formatPrice } from "@/lib/format";
 import { formatCount, monthName } from "@/features/plan/lib/format";
 import { StatTile } from "@/features/ops/components/stat-tile";
 import { useProfitability } from "@/features/ops/hooks/use-ops";
-import type { ClubProfitRow, MarginFlag } from "@/types/api/ops";
+import type { ClubProfitRow, MarginFlag, ProfitabilityReport } from "@/types/api/ops";
 
 /** "2026-10" for this month and the five before it. */
 function lastMonths(count = 6): string[] {
@@ -77,9 +77,9 @@ export function ProfitabilityScreen() {
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <StatTile
-              label="Ingresos"
+              label="Ingresos netos"
               value={pesos(report.data.totals.revenueCents)}
-              hint="Planes que pagan + paquetes de créditos"
+              hint={`De ${pesos(report.data.totals.grossRevenueCents)} cobrados, sin IVA ni comisión de MercadoPago`}
             />
             <StatTile
               label="Costos"
@@ -126,10 +126,12 @@ export function ProfitabilityScreen() {
             </CardContent>
           </Card>
 
+          <DollarNote usdArs={report.data.usdArs} />
           <p className="text-muted-foreground text-xs text-pretty">
             Meta: los mensajes de servicio después de los primeros 1.000 de cada número, más todas
-            las plantillas, a US$ {report.data.metaMessagePriceUsd} cada uno. Dólar a $
-            {formatCount(report.data.usdArsRate)}. El ingreso del plan usa el plan y el estado de
+            las plantillas, a US$ {report.data.metaMessagePriceUsd} cada uno. Ingresos
+            {report.data.pricesIncludeIva ? " sin el 21% de IVA" : ""} y, en los paquetes, sin el{" "}
+            {report.data.mpFeePercent}% de MercadoPago. El ingreso del plan usa el plan y el estado de
             hoy de cada club; la demo no suma en los totales.
           </p>
         </>
@@ -196,5 +198,27 @@ function ClubRow({ club }: { club: ClubProfitRow }) {
         {club.credits.included !== null && ` / ${formatCount(club.credits.included)}`}
       </TableCell>
     </TableRow>
+  );
+}
+
+/** Which dollar the costs used, and a warning when it isn't a fresh fetched one. */
+function DollarNote({ usdArs }: { usdArs: ProfitabilityReport["usdArs"] }) {
+  const stale = usdArs.stale;
+  const quote = usdArs.quote === "tarjeta" ? "tarjeta" : "oficial";
+  return (
+    <p
+      className={cn(
+        "text-xs text-pretty",
+        stale ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground",
+      )}
+    >
+      Dólar {quote} a {formatPrice(usdArs.rate * 100)}
+      {usdArs.source === "dolarapi" && usdArs.dateKey
+        ? ` (dolarapi.com, ${usdArs.dateKey.split("-").reverse().join("/")}; se actualiza solo todos los días${stale ? ", pero hace días que no se puede traer" : ""})`
+        : usdArs.source === "config"
+          ? " (USD_ARS_RATE: todavía no se pudo traer de dolarapi.com)"
+          : " (valor de respaldo: todavía no se pudo traer de dolarapi.com)"}
+      .
+    </p>
   );
 }
