@@ -66,6 +66,29 @@ export function useLeadsSummary() {
   });
 }
 
+/** Leads nobody has contacted yet, for the console's nav. Polls so a new one shows up on its own. */
+export function useNewLeadsCount(): number {
+  const { data } = useQuery<LeadsSummary>({
+    queryKey: queryKeys.ops.leadsSummary,
+    queryFn: () => opsService.getLeadsSummary(),
+    refetchInterval: 60_000,
+  });
+  return data?.pipeline.NEW ?? 0;
+}
+
+export function useDeleteLead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => opsService.deleteLead(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["ops", "leads"] });
+      toast.success("Solicitud eliminada");
+    },
+    onError: (error) =>
+      toast.error(errorMessage(error, "No pudimos eliminar la solicitud.")),
+  });
+}
+
 export function useUpdateLead() {
   const queryClient = useQueryClient();
   return useMutation({

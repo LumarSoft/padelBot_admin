@@ -77,6 +77,11 @@ export function formatUsd(microUsd: number): string {
 }
 
 /** ISO → "hace 3 días" / "hace 2 h". Null → "nunca". */
+/** Whole hours since an instant. */
+export function hoursSince(iso: string): number {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 3_600_000);
+}
+
 export function timeAgo(iso: string | null): string {
   if (!iso) return "nunca";
   const ms = Date.now() - new Date(iso).getTime();

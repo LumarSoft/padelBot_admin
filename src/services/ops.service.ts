@@ -37,6 +37,9 @@ export const opsService = {
   getLeadsSummary(): Promise<LeadsSummary> {
     return apiClient.get<LeadsSummary>("/api/ops/leads/summary");
   },
+  deleteLead(id: string): Promise<void> {
+    return apiClient.del<void>(`/api/ops/leads/${encodeURIComponent(id)}`);
+  },
   updateLead(id: string, payload: UpdateLeadPayload): Promise<Lead> {
     return apiClient.patch<Lead>(`/api/ops/leads/${id}`, payload);
   },

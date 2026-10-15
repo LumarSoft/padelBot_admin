@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useNewLeadsCount } from "@/features/ops/hooks/use-ops";
 
 const LINKS = [
   { href: "/ops", label: "Leads" },
@@ -15,6 +16,8 @@ const LINKS = [
 
 export function OpsNav() {
   const pathname = usePathname();
+  // A lead waiting for a call is the one thing that can't wait: it shows from any screen.
+  const newLeads = useNewLeadsCount();
 
   return (
     <nav className="flex items-center gap-1">
@@ -38,6 +41,11 @@ export function OpsNav() {
             )}
           >
             {link.label}
+            {link.href === "/ops" && newLeads > 0 && (
+              <span className="bg-brand ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold text-white tabular-nums">
+                {newLeads}
+              </span>
+            )}
           </Link>
         );
       })}

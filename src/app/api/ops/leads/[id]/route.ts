@@ -13,3 +13,8 @@ export async function PATCH(request: NextRequest, { params }: Context) {
   const body = await request.json().catch(() => undefined);
   return proxyToOpsApi(`/ops/leads/${id}`, { method: "PATCH", body });
 }
+
+export async function DELETE(_request: NextRequest, { params }: Context) {
+  const { id } = await params;
+  return proxyToOpsApi(`/ops/leads/${id}`, { method: "DELETE" });
+}

@@ -9,8 +9,9 @@ import { WhatsAppLink } from "@/components/ui/whatsapp-link";
 import { formatPrice } from "@/lib/format";
 import { waLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
-import { answerLabel, LEAD_STATUS_LABELS, timeAgo } from "@/features/ops/lib/labels";
-import { useUpdateLead } from "@/features/ops/hooks/use-ops";
+import { answerLabel, hoursSince, LEAD_STATUS_LABELS, timeAgo } from "@/features/ops/lib/labels";
+import { useDeleteLead, useUpdateLead } from "@/features/ops/hooks/use-ops";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { ProvisionDialog } from "@/features/ops/components/provision-dialog";
 import { LeadNotes } from "@/features/ops/components/lead-notes";
 import type { Lead, LeadStatus } from "@/types/api/ops";
@@ -63,8 +64,25 @@ export function LeadCard({ lead }: LeadCardProps) {
     updateLead.mutate({ id: lead.id, payload: { status } });
   }
 
+  const deleteLead = useDeleteLead();
+  const confirm = useConfirm();
+  async function handleDelete(): Promise<void> {
+    const ok = await confirm({
+      title: `¿Eliminar la solicitud de ${lead.clubName}?`,
+      description: "Se borra para siempre, con sus respuestas y tus notas.",
+      confirmLabel: "Eliminar",
+      cancelLabel: "No, volver",
+      tone: "destructive",
+    });
+    if (ok) deleteLead.mutate(lead.id);
+  }
+
+  // A new lead stands out until someone calls; a day without a call turns it into a warning.
+  const isNew = lead.status === "NEW";
+  const waitingHours = isNew ? hoursSince(lead.createdAt) : 0;
+
   return (
-    <Card>
+    <Card className={cn(isNew && "ring-brand/50 bg-brand/[0.03] ring-1")}>
       <CardContent className="space-y-4">
         {/* Who, and how to reach them. */}
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -78,9 +96,13 @@ export function LeadCard({ lead }: LeadCardProps) {
                   {lead.city}
                 </span>
               )}
-              <Badge variant={STATUS_VARIANT[lead.status]}>
-                {LEAD_STATUS_LABELS[lead.status]}
-              </Badge>
+              {isNew ? (
+                <Badge className="bg-brand text-white">Nueva</Badge>
+              ) : (
+                <Badge variant={STATUS_VARIANT[lead.status]}>
+                  {LEAD_STATUS_LABELS[lead.status]}
+                </Badge>
+              )}
               {lead.plan && (
                 <Badge variant="outline">Eligió {planName(lead.plan)}</Badge>
               )}
@@ -88,8 +110,16 @@ export function LeadCard({ lead }: LeadCardProps) {
             <p className="text-muted-foreground text-sm">
               {lead.ownerName} · {lead.email}
             </p>
-            <p className="text-muted-foreground text-xs">
+            <p
+              className={cn(
+                "text-xs",
+                waitingHours >= 24
+                  ? "font-medium text-amber-600 dark:text-amber-400"
+                  : "text-muted-foreground",
+              )}
+            >
               Entró {timeAgo(lead.createdAt)}
+              {waitingHours >= 24 && " · todavía sin contactar"}
               {lead.contactedAt && ` · contactado ${timeAgo(lead.contactedAt)}`}
             </p>
           </div>
@@ -174,6 +204,18 @@ export function LeadCard({ lead }: LeadCardProps) {
                   Marcar {LEAD_STATUS_LABELS[status].toLowerCase()}
                 </Button>
               ))}
+            {/* Only a lost lead can go: one we still have to call can't vanish by a slip. */}
+            {lead.status === "LOST" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive ml-auto"
+                onClick={() => void handleDelete()}
+                disabled={deleteLead.isPending}
+              >
+                Eliminar
+              </Button>
+            )}
           </div>
         )}
       </CardContent>
