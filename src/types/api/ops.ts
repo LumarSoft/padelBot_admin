@@ -285,6 +285,20 @@ export interface ProfitabilityReport {
   /** Where IVA lands: monotributo pays the IVA of Meta, OpenAI and MP; inscripto nets it out of prices. */
   taxRegime: "monotributo" | "inscripto";
   mpFeePercent: number;
+  /** The month step by step (real clubs only): AI, Meta, and pesos per dollar actually paid. */
+  breakdown: {
+    ai: {
+      model: string;
+      inputPerMTokUsd: number;
+      outputPerMTokUsd: number;
+      steps: number;
+      inputTokens: number;
+      outputTokens: number;
+      costUsd: number;
+    };
+    meta: { messages: number; free: number; paid: number; costUsd: number };
+    effectiveRate: number;
+  };
   totals: {
     grossRevenueCents: number;
     revenueCents: number;

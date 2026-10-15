@@ -107,6 +107,8 @@ export function ProfitabilityScreen() {
             />
           </div>
 
+          <Breakdown report={report.data} />
+
           <Card>
             <CardContent className="px-0">
               <Table>
@@ -226,5 +228,78 @@ function DollarNote({ usdArs }: { usdArs: ProfitabilityReport["usdArs"] }) {
           : " (valor de respaldo: todavía no se pudo traer de dolarapi.com)"}
       .
     </p>
+  );
+}
+
+const usdFormat = new Intl.NumberFormat("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const usd = (value: number) => `US$ ${usdFormat.format(value)}`;
+const rateFormat = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 1 });
+/** 4500000 → "4,5 M". */
+const millions = (value: number) =>
+  value >= 1_000_000 ? `${rateFormat.format(value / 1_000_000)} M` : formatCount(value);
+
+/**
+ * "Cómo se calcula": the month's margin step by step, with this month's real numbers — what the
+ * AI did and cost, what Meta billed, how dollars became pesos, and what that leaves us.
+ */
+function Breakdown({ report }: { report: ProfitabilityReport }) {
+  const { ai, meta, effectiveRate } = report.breakdown;
+  const { totals } = report;
+  const perStep = ai.steps > 0 ? ai.costUsd / ai.steps : 0;
+  const quote = report.usdArs.quote === "tarjeta" ? "tarjeta" : "oficial";
+
+  return (
+    <Card size="sm">
+      <CardContent className="space-y-3">
+        <p className="text-sm font-medium">Cómo se calcula</p>
+        <dl className="grid gap-3 text-sm md:grid-cols-2">
+          <Step title="IA (OpenAI)">
+            {formatCount(ai.steps)} pasos del bot (mensajes que tuvo que entender, audios, imágenes y
+            comprobantes): {millions(ai.inputTokens)} tokens de entrada y{" "}
+            {millions(ai.outputTokens)} de salida. El modelo {ai.model} cobra{" "}
+            {usd(ai.inputPerMTokUsd)} por millón de entrada y {usd(ai.outputPerMTokUsd)} por millón
+            de salida → <strong>{usd(ai.costUsd)}</strong>
+            {ai.steps > 0 && ` (${usd(perStep)} por paso)`}.
+          </Step>
+          <Step title="Meta (WhatsApp)">
+            {formatCount(meta.messages)} mensajes enviados: {formatCount(meta.free)} gratis (los
+            primeros 1.000 de servicio de cada número) y {formatCount(meta.paid)} pagos (servicio
+            después de esos 1.000 y todas las plantillas) × {usd(report.metaMessagePriceUsd)} →{" "}
+            <strong>{usd(meta.costUsd)}</strong>.
+          </Step>
+          <Step title="Del dólar a pesos">
+            Dólar {quote} {formatPrice(report.usdArs.rate * 100)}
+            {report.taxRegime === "monotributo"
+              ? " + 21% de IVA (monotributo: no se recupera)"
+              : ""}{" "}
+            = <strong>${rateFormat.format(effectiveRate)} por US$</strong>. Meta{" "}
+            {pesos(totals.metaCents)} · IA {pesos(totals.aiCents)}.
+          </Step>
+          <Step title="Nuestra ganancia">
+            Ingresos {pesos(totals.revenueCents)} (de {pesos(totals.grossRevenueCents)} cobrados
+            {report.taxRegime === "inscripto" ? ", sin IVA" : ""}; los paquetes sin el{" "}
+            {report.mpFeePercent}% de MercadoPago) − costos {pesos(totals.costCents)} ={" "}
+            <strong>
+              {pesos(totals.marginCents)}
+              {totals.marginPercent !== null && ` (${totals.marginPercent}%)`}
+            </strong>
+            .
+          </Step>
+        </dl>
+        <p className="text-muted-foreground text-xs text-pretty">
+          Los créditos del club son solo los mensajes que manda el bot; el costo de Meta cuenta
+          todos, también las respuestas del staff. Todo sin la demo.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Step({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-0.5">
+      <dt className="text-muted-foreground text-xs font-medium">{title}</dt>
+      <dd className="text-pretty">{children}</dd>
+    </div>
   );
 }
