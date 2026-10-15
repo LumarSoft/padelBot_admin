@@ -9,36 +9,73 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { formatUsd, SUBSCRIPTION_LABELS, timeAgo } from "@/features/ops/lib/labels";
-import { useOpsClubs } from "@/features/ops/hooks/use-ops";
+import {
+  CLUB_HEALTH,
+  CLUB_HEALTH_ORDER,
+  SUBSCRIPTION_LABELS,
+  timeAgo,
+} from "@/features/ops/lib/labels";
+import { useOpsClubs, useProfitability } from "@/features/ops/hooks/use-ops";
 import { isPlanKey, planName } from "@/lib/plans";
 import { SubscriptionDialog } from "@/features/ops/components/subscription-dialog";
 import { ClubPasswordDialog } from "@/features/ops/components/club-password-dialog";
 import { HelpSearchMisses } from "@/features/ops/components/help-search-misses";
 import { formatCount } from "@/features/plan/lib/format";
 import type { PlanUsage } from "@/types/api/clubs";
-import type { OpsClub } from "@/types/api/ops";
+import type { ClubHealthStatus, ClubProfitRow, OpsClub } from "@/types/api/ops";
+
+type Filter = ClubHealthStatus | "all";
 
 export function ClubsScreen() {
   const clubs = useOpsClubs();
+  // This month's money per club, from the profitability report: one more number per row.
+  const profit = useProfitability();
+  const [filter, setFilter] = useState<Filter>("all");
   const [editing, setEditing] = useState<OpsClub | null>(null);
   const [managingPw, setManagingPw] = useState<OpsClub | null>(null);
+
+  const all = clubs.data ?? [];
+  const real = all.filter((club) => !club.isDemo);
+  const counts = new Map<ClubHealthStatus, number>();
+  for (const club of real) counts.set(club.health.status, (counts.get(club.health.status) ?? 0) + 1);
+  // "Todos" includes the demo (last); a state filter only ever shows real clubs.
+  const shown = filter === "all" ? all : real.filter((club) => club.health.status === filter);
+  const profitById = new Map((profit.data?.clubs ?? []).map((row) => [row.id, row]));
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Clubes"
-        description="Cada cliente, su suscripción, si puede tomar una reserva y si sigue usando el panel."
+        description="Cómo está cada cliente y si tenés que hacer algo: lo más urgente primero."
       />
+
+      {real.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
+            Todos ({real.length})
+          </FilterChip>
+          {CLUB_HEALTH_ORDER.filter((status) => counts.has(status)).map((status) => (
+            <FilterChip
+              key={status}
+              active={filter === status}
+              onClick={() => setFilter(status)}
+              className={filter === status ? undefined : CLUB_HEALTH[status].className}
+            >
+              {CLUB_HEALTH[status].label} ({counts.get(status)})
+            </FilterChip>
+          ))}
+        </div>
+      )}
 
       {clubs.isLoading ? (
         <p className="text-muted-foreground text-sm">Cargando clubes…</p>
-      ) : clubs.data && clubs.data.length > 0 ? (
+      ) : shown.length > 0 ? (
         <div className="space-y-3">
-          {clubs.data.map((club) => (
+          {shown.map((club) => (
             <ClubRow
               key={club.id}
               club={club}
+              profit={profitById.get(club.id)}
               onEdit={() => setEditing(club)}
               onManagePasswords={() => setManagingPw(club)}
             />
@@ -73,17 +110,51 @@ export function ClubsScreen() {
   );
 }
 
+function FilterChip({
+  active,
+  onClick,
+  className,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+        active
+          ? "bg-foreground text-background"
+          : (className ?? "text-muted-foreground hover:text-foreground hover:bg-foreground/5"),
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Whole pesos, the way the console reads money. */
+const pesos = (cents: number) => formatPrice(Math.round(cents / 100) * 100);
+
 function ClubRow({
   club,
+  profit,
   onEdit,
   onManagePasswords,
 }: {
   club: OpsClub;
+  profit?: ClubProfitRow;
   onEdit: () => void;
   onManagePasswords: () => void;
 }) {
-  const { subscription, readiness, activity, plan } = club;
+  const { subscription, readiness, activity, plan, health } = club;
   const credits = plan.aiCredits;
+  const creditsTotal = credits.available ?? credits.limit;
+  const creditsShare = creditsTotal ? Math.floor((credits.used * 100) / creditsTotal) : null;
 
   return (
     <Card size="sm">
@@ -94,6 +165,13 @@ function ClubRow({
               <h3 className="font-heading text-base font-semibold">
                 {club.name}
               </h3>
+              {club.isDemo ? (
+                <Badge variant="outline">Demo</Badge>
+              ) : (
+                <Badge className={CLUB_HEALTH[health.status].className}>
+                  {CLUB_HEALTH[health.status].label}
+                </Badge>
+              )}
               {/* An unknown key restricts nothing API-side — flag it so ops fixes it. */}
               <Badge
                 variant={
@@ -118,15 +196,12 @@ function ClubRow({
                   ` · ${subscription.daysLeft} d`}
               </Badge>
 
-              {/* The one flag that matters most: a club that can't take a booking is
-                  not a customer yet, whatever its subscription says. */}
-              {!readiness.ready && (
-                <Badge variant="destructive">No puede reservar</Badge>
-              )}
-              {activity.dormant && (
-                <Badge variant="outline">Sin entrar al panel</Badge>
-              )}
             </div>
+
+            {/* Why it's in that state, in words: what to talk about with the club. */}
+            {!club.isDemo && health.reasons.length > 0 && (
+              <p className="text-sm">{health.reasons.join(" · ")}</p>
+            )}
 
             <p className="text-muted-foreground text-xs">
               {withLimit(plan.courts, "cancha")} ·{" "}
@@ -158,27 +233,35 @@ function ClubRow({
             value={formatPrice(activity.depositsCents)}
             hint="últimos 30 días"
           />
-          {/* Over 100% never cuts the bot: it's the cue to offer a bigger plan. */}
+          {/* Over 100% never cuts the bot: it's the cue to offer a pack or a bigger plan. */}
           <Metric
             label="Créditos de IA"
             value={
-              credits.limit === null
+              creditsTotal === null
                 ? formatCount(credits.used)
-                : `${formatCount(credits.used)} / ${formatCount(credits.limit)}`
+                : `${formatCount(credits.used)} / ${formatCount(creditsTotal)}`
             }
-            hint={credits.percent === null ? "este mes" : `${credits.percent}% este mes`}
+            hint={creditsShare === null ? "este mes" : `${creditsShare}% este mes`}
             tone={
-              credits.percent === null || credits.percent < 80
+              creditsShare === null || creditsShare < 80
                 ? "default"
-                : credits.percent >= 100
+                : creditsShare >= 100
                   ? "danger"
                   : "warning"
             }
           />
+          {/* Revenue minus Meta and OpenAI, the same number as Rentabilidad. */}
           <Metric
-            label="Nos cuesta"
-            value={formatUsd(club.llmCostMicroUsd)}
-            hint="OpenAI, 30 días"
+            label="Margen del mes"
+            value={profit ? pesos(profit.marginCents) : "—"}
+            hint={
+              !profit
+                ? undefined
+                : profit.revenue.totalCents === 0
+                  ? "todavía no paga"
+                  : `${profit.marginPercent}% de ${pesos(profit.revenue.totalCents)}`
+            }
+            tone={profit && profit.marginCents < 0 ? "danger" : "default"}
           />
           <Metric
             label="Último ingreso"

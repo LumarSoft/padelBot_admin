@@ -89,11 +89,25 @@ export interface SubscriptionState {
   daysLeft: number | null;
 }
 
+/** One word per club, the most urgent that applies (api `ops/lib/club-health.ts`). */
+export type ClubHealthStatus =
+  | "inactive"
+  | "atRisk"
+  | "overCredits"
+  | "trialEnding"
+  | "setup"
+  | "starting"
+  | "healthy";
+
 export interface OpsClub {
   id: string;
   name: string;
   slug: string;
   createdAt: string;
+  /** The sales demo: shown apart, never counted among the states. */
+  isDemo: boolean;
+  /** How the club is doing, and every signal behind it. */
+  health: { status: ClubHealthStatus; reasons: string[] };
   subscription: SubscriptionState;
   readiness: {
     courts: number;
@@ -119,7 +133,11 @@ export interface OpsClub {
     courts: PlanUsage;
     users: PlanUsage;
     /** This calendar month. Over 100% never cuts the bot: it's a sales call. */
-    aiCredits: PlanUsage & { percent: number | null };
+    aiCredits: PlanUsage & {
+      percent: number | null;
+      /** Plan + pack credits (spent this month + left); null = no allowance. */
+      available: number | null;
+    };
     /** Predates the plans: keeps every module whatever its plan, until ops clears it. */
     grandfatheredFeatures: boolean;
   };

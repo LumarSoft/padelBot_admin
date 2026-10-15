@@ -181,9 +181,10 @@ export function useBusinessMetrics() {
   });
 }
 
-export function useProfitability(month: string) {
+/** Without a month: the current one (what the clubs table shows next to each club). */
+export function useProfitability(month?: string) {
   return useQuery<ProfitabilityReport>({
-    queryKey: queryKeys.ops.profitability(month),
+    queryKey: queryKeys.ops.profitability(month ?? "current"),
     queryFn: () => opsService.getProfitability(month),
   });
 }

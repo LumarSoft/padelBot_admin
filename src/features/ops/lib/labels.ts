@@ -1,4 +1,4 @@
-import type { LeadStatus } from "@/types/api/ops";
+import type { ClubHealthStatus, LeadStatus } from "@/types/api/ops";
 
 /**
  * Spanish for the signup's coded answers. The API stores them as constants
@@ -92,3 +92,25 @@ export function timeAgo(iso: string | null): string {
   const days = Math.round(hours / 24);
   return `hace ${days} ${days === 1 ? "día" : "días"}`;
 }
+
+/** The ops console's names for a club's state, most urgent first (the order the API sorts by). */
+export const CLUB_HEALTH: Record<ClubHealthStatus, { label: string; className: string }> = {
+  inactive: { label: "Inactivo", className: "bg-foreground/10 text-muted-foreground" },
+  atRisk: { label: "En riesgo", className: "bg-red-500/15 text-red-700 dark:text-red-300" },
+  overCredits: {
+    label: "Pasado de créditos",
+    className: "bg-amber-500/15 text-amber-800 dark:text-amber-300",
+  },
+  trialEnding: {
+    label: "Prueba por vencer",
+    className: "bg-amber-500/15 text-amber-800 dark:text-amber-300",
+  },
+  setup: { label: "Configurándose", className: "bg-sky-500/15 text-sky-800 dark:text-sky-300" },
+  starting: { label: "Arrancando", className: "bg-brand/15 text-brand" },
+  healthy: {
+    label: "Sano",
+    className: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300",
+  },
+};
+
+export const CLUB_HEALTH_ORDER = Object.keys(CLUB_HEALTH) as ClubHealthStatus[];

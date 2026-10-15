@@ -74,9 +74,10 @@ export const opsService = {
   getBusinessMetrics(): Promise<BusinessMetrics> {
     return apiClient.get<BusinessMetrics>("/api/ops/metrics/business");
   },
-  getProfitability(month: string): Promise<ProfitabilityReport> {
+  /** Without a month, the API's current (club-local) one. */
+  getProfitability(month?: string): Promise<ProfitabilityReport> {
     return apiClient.get<ProfitabilityReport>(
-      `/api/ops/profitability?month=${encodeURIComponent(month)}`,
+      `/api/ops/profitability${month ? `?month=${encodeURIComponent(month)}` : ""}`,
     );
   },
   getBotMetrics(): Promise<BotMetrics> {
