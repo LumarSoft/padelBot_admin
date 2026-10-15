@@ -79,7 +79,11 @@ export function ProfitabilityScreen() {
             <StatTile
               label="Ingresos netos"
               value={pesos(report.data.totals.revenueCents)}
-              hint={`De ${pesos(report.data.totals.grossRevenueCents)} cobrados, sin IVA ni comisión de MercadoPago`}
+              hint={
+                report.data.taxRegime === "inscripto"
+                  ? `De ${pesos(report.data.totals.grossRevenueCents)} cobrados, sin IVA ni comisión de MercadoPago`
+                  : `De ${pesos(report.data.totals.grossRevenueCents)} cobrados, sin la comisión de MercadoPago`
+              }
             />
             <StatTile
               label="Costos"
@@ -129,10 +133,12 @@ export function ProfitabilityScreen() {
           <DollarNote usdArs={report.data.usdArs} />
           <p className="text-muted-foreground text-xs text-pretty">
             Meta: los mensajes de servicio después de los primeros 1.000 de cada número, más todas
-            las plantillas, a US$ {report.data.metaMessagePriceUsd} cada uno. Ingresos
-            {report.data.pricesIncludeIva ? " sin el 21% de IVA" : ""} y, en los paquetes, sin el{" "}
-            {report.data.mpFeePercent}% de MercadoPago. El ingreso del plan usa el plan y el estado de
-            hoy de cada club; la demo no suma en los totales.
+            las plantillas, a US$ {report.data.metaMessagePriceUsd} cada uno.{" "}
+            {report.data.taxRegime === "monotributo"
+              ? "Monotributo: Meta, la IA y la comisión de MercadoPago llevan el 21% de IVA que no se recupera."
+              : "Responsable inscripto: los ingresos van sin el 21% de IVA."}{" "}
+            Los paquetes pierden el {report.data.mpFeePercent}% de MercadoPago. El ingreso del plan usa
+            el plan y el estado de hoy de cada club; la demo no suma en los totales.
           </p>
         </>
       )}

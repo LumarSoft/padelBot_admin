@@ -264,7 +264,8 @@ export interface ProfitabilityReport {
     /** A fallback, or this month's last fetch is days old. */
     stale: boolean;
   };
-  pricesIncludeIva: boolean;
+  /** Where IVA lands: monotributo pays the IVA of Meta, OpenAI and MP; inscripto nets it out of prices. */
+  taxRegime: "monotributo" | "inscripto";
   mpFeePercent: number;
   totals: {
     grossRevenueCents: number;
