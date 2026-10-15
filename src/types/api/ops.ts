@@ -133,11 +133,7 @@ export interface OpsClub {
     courts: PlanUsage;
     users: PlanUsage;
     /** This calendar month. Over 100% never cuts the bot: it's a sales call. */
-    aiCredits: PlanUsage & {
-      percent: number | null;
-      /** Plan + pack credits (spent this month + left); null = no allowance. */
-      available: number | null;
-    };
+    aiCredits: PlanUsage & { percent: number | null };
     /** Predates the plans: keeps every module whatever its plan, until ops clears it. */
     grandfatheredFeatures: boolean;
   };
@@ -260,8 +256,8 @@ export interface ClubProfitRow {
   subscriptionStatus: SubscriptionStatus;
   /** The sales demo: listed, never in the totals. */
   isDemo: boolean;
-  /** `grossCents` is what it paid; the rest is net of IVA (and packs, of MercadoPago's fee). */
-  revenue: { grossCents: number; planCents: number; packsCents: number; totalCents: number };
+  /** `grossCents` is what its plan paid; `totalCents` is that net of IVA. */
+  revenue: { grossCents: number; totalCents: number };
   messages: { total: number; free: number; paid: number };
   cost: { metaCents: number; aiCents: number; totalCents: number };
   marginCents: number;
@@ -282,9 +278,8 @@ export interface ProfitabilityReport {
     /** A fallback, or this month's last fetch is days old. */
     stale: boolean;
   };
-  /** Where IVA lands: monotributo pays the IVA of Meta, OpenAI and MP; inscripto nets it out of prices. */
+  /** Where IVA lands: monotributo pays the IVA of Meta and OpenAI; inscripto nets it out of prices. */
   taxRegime: "monotributo" | "inscripto";
-  mpFeePercent: number;
   /** The month step by step (real clubs only): AI, Meta, and pesos per dollar actually paid. */
   breakdown: {
     ai: {

@@ -6,16 +6,16 @@ import { usePlan } from "@/features/plan/hooks/use-plan";
 import { formatCount } from "@/features/plan/lib/format";
 
 /**
- * "Créditos de IA · usados / total" at the foot of the sidebar, always in sight for the owner.
- * The total counts the credit packs too. Opens Facturación.
+ * "Créditos de IA · usados / del plan" at the foot of the sidebar, always in sight for the owner.
+ * Opens Facturación.
  */
 export function CreditsSidebarMeter() {
   const { data } = usePlan();
   const credits = data?.aiCredits;
-  if (!credits || credits.available === null) return null;
+  if (!credits || credits.limit === null) return null;
 
-  const share = credits.available > 0 ? Math.min(100, (credits.used / credits.available) * 100) : 100;
-  const over = credits.used >= credits.available;
+  const share = credits.limit > 0 ? Math.min(100, (credits.used / credits.limit) * 100) : 100;
+  const over = credits.used >= credits.limit;
 
   return (
     <Link
@@ -25,7 +25,7 @@ export function CreditsSidebarMeter() {
       <span className="flex items-center justify-between gap-2 text-xs">
         <span className="text-muted-foreground">Créditos de IA</span>
         <span className={cn("font-medium tabular-nums", over && "text-red-600 dark:text-red-400")}>
-          {formatCount(credits.used)} / {formatCount(credits.available)}
+          {formatCount(credits.used)} / {formatCount(credits.limit)}
         </span>
       </span>
       <span aria-hidden className="bg-muted block h-1 overflow-hidden rounded-full">

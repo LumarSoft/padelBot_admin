@@ -1,30 +1,29 @@
 "use client";
 
 import { Sparkles, X } from "lucide-react";
-import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { queryKeys } from "@/lib/query-keys";
+import { lumarsoftWhatsApp } from "@/lib/contact";
 import { buttonVariants } from "@/components/ui/button";
 import { clubsService } from "@/services/clubs.service";
 import { usePlan } from "@/features/plan/hooks/use-plan";
 import { formatCount, monthName } from "@/features/plan/lib/format";
 import type { ClubPlanOverview } from "@/types/api/clubs";
 
-/** "Usaste el 85% de tus créditos de IA de octubre (2.450 de 2.850)." */
+/** "Usaste el 85% de tus créditos de IA de octubre (1.700 de 2.000)." */
 export function creditsNoticeText(credits: ClubPlanOverview["aiCredits"], level: 80 | 100): string {
   const month = monthName(credits.month);
-  const usage = `${formatCount(credits.used)} de ${formatCount(credits.available ?? 0)}`;
+  const usage = `${formatCount(credits.used)} de ${formatCount(credits.limit ?? 0)}`;
   if (level === 100) return `Usaste todos tus créditos de IA de ${month} (${usage}).`;
-  const percent = Math.floor((credits.used * 100) / (credits.available || 1));
-  return `Usaste el ${percent}% de tus créditos de IA de ${month} (${usage}).`;
+  return `Usaste el ${credits.percent ?? 0}% de tus créditos de IA de ${month} (${usage}).`;
 }
 
 /**
- * Tells the owner their month's credits are running out (80%) or used up (100%), counting the
- * credit packs, with the way to buy more. Closing it hides it for the month (it comes back once
- * if the credits run out); Facturación always shows the state. Never says what the bot will do,
- * because running out changes nothing for the players.
+ * Tells the owner their month's plan credits are running out (80%) or used up (100%), with the
+ * way to a bigger plan. Closing it hides it for the month (it comes back once if the credits run
+ * out); Facturación always shows the state. Never says what the bot will do, because running out
+ * changes nothing for the players.
  */
 export function AiCreditsBanner() {
   const { data } = usePlan();
@@ -55,12 +54,14 @@ export function AiCreditsBanner() {
         <Sparkles className="size-4 shrink-0" />
         {creditsNoticeText(data.aiCredits, notice.level)}
       </span>
-      <Link
-        href="/panel/facturacion?comprar=1"
+      <a
+        href={lumarsoftWhatsApp("upgrade")}
+        target="_blank"
+        rel="noreferrer"
         className={cn(buttonVariants({ size: "sm", variant: "outline" }), "h-7 bg-transparent")}
       >
-        Comprar créditos
-      </Link>
+        Cambiar plan
+      </a>
       <button
         type="button"
         onClick={() => dismiss.mutate()}

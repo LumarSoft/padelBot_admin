@@ -153,7 +153,7 @@ function ClubRow({
 }) {
   const { subscription, readiness, activity, plan, health } = club;
   const credits = plan.aiCredits;
-  const creditsTotal = credits.available ?? credits.limit;
+  const creditsTotal = credits.limit;
   const creditsShare = creditsTotal ? Math.floor((credits.used * 100) / creditsTotal) : null;
 
   return (
@@ -233,7 +233,7 @@ function ClubRow({
             value={formatPrice(activity.depositsCents)}
             hint="últimos 30 días"
           />
-          {/* Over 100% never cuts the bot: it's the cue to offer a pack or a bigger plan. */}
+          {/* Over 100% never cuts the bot: it's the cue to offer a bigger plan. */}
           <Metric
             label="Créditos de IA"
             value={

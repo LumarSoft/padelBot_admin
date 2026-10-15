@@ -1,34 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { CreditCard, Loader2, Sparkles } from "lucide-react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { WhatsAppLink } from "@/components/ui/whatsapp-link";
 import { cn } from "@/lib/utils";
-import { formatPrice } from "@/lib/format";
 import { lumarsoftWhatsApp } from "@/lib/contact";
 import { formatCount, monthName } from "@/features/plan/lib/format";
-import { BuyCreditsDialog } from "@/features/billing/components/buy-credits-dialog";
-import { useBilling, useConfirmPurchase } from "@/features/billing/hooks/use-billing";
+import { useBilling } from "@/features/billing/hooks/use-billing";
 import { usePlan } from "@/features/plan/hooks/use-plan";
 import { creditsNoticeText } from "@/features/plan/components/ai-credits-banner";
-import type { BillingOverview, CreditPackStatus } from "@/types/api/billing";
+import type { BillingOverview } from "@/types/api/billing";
 
 const STATUS_LABEL: Record<BillingOverview["subscription"]["status"], string> = {
   ACTIVE: "Activa",
   TRIAL: "Prueba gratis",
   PAST_DUE: "Vencida",
   CANCELLED: "Inactiva",
-};
-
-const PURCHASE_LABEL: Record<CreditPackStatus, string> = {
-  APPROVED: "Acreditado",
-  PENDING: "En proceso",
-  REJECTED: "No aprobado",
 };
 
 /** "2026-11-10T…" → "10 de noviembre" (with the year when it isn't this one). */
@@ -41,14 +30,9 @@ function longDate(iso: string): string {
   });
 }
 
-/**
- * Facturación: the plan the club is on, this month's credits with the button to buy more, and
- * where to ask for help. Also where MercadoPago returns the owner after paying a pack.
- */
+/** Facturación: the plan the club is on, this month's credits, and where to ask for help. */
 export function BillingScreen() {
   const { data, isLoading } = useBilling();
-  const [buying, setBuying] = useState(false);
-  usePurchaseReturn(() => setBuying(true));
 
   if (isLoading || !data) {
     return (
@@ -63,31 +47,20 @@ export function BillingScreen() {
     <div className="flex flex-col gap-4">
       <div className="grid gap-4 md:grid-cols-2">
         <SubscriptionCard data={data} />
-        <CreditsCard data={data} onBuy={() => setBuying(true)} />
+        <CreditsCard data={data} />
       </div>
-
-      {data.purchases.length > 0 && <PurchaseHistory data={data} />}
 
       <Card size="sm">
         <CardContent className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-medium">¿Necesitás ayuda?</p>
             <p className="text-muted-foreground text-xs">
-              Con tu plan, tus créditos o un pago: escribinos y lo resolvemos.
+              Con tu plan o tus créditos: escribinos y lo resolvemos.
             </p>
           </div>
           <WhatsAppLink href={lumarsoftWhatsApp("help")}>WhatsApp</WhatsAppLink>
         </CardContent>
       </Card>
-
-      {buying && (
-        <BuyCreditsDialog
-          open
-          onOpenChange={setBuying}
-          catalog={data.catalog}
-          validityMonths={data.validityMonths}
-        />
-      )}
     </div>
   );
 }
@@ -130,15 +103,14 @@ function SubscriptionCard({ data }: { data: BillingOverview }) {
   );
 }
 
-function CreditsCard({ data, onBuy }: { data: BillingOverview; onBuy: () => void }) {
+function CreditsCard({ data }: { data: BillingOverview }) {
   const { credits } = data;
   // The banner can be closed; here the warning is always in sight.
   const plan = usePlan().data;
   const level = plan?.creditsNotice.level ?? null;
-  const total = credits.available ?? credits.included;
+  const total = credits.included;
   const share = total ? Math.min(100, (credits.used / total) * 100) : 0;
   const over = total !== null && credits.used >= total;
-  const nextExpiry = data.packs[0]?.expiresAt;
 
   return (
     <Card>
@@ -166,11 +138,7 @@ function CreditsCard({ data, onBuy }: { data: BillingOverview; onBuy: () => void
             </div>
           )}
           <p className="text-muted-foreground text-xs text-pretty">
-            {credits.extraBalance > 0
-              ? `Incluye ${formatCount(credits.extraBalance)} créditos extra${nextExpiry ? `, el primer paquete vence el ${longDate(nextExpiry)}` : ""}. `
-              : ""}
-            Cada mensaje que el bot manda por WhatsApp usa un crédito. Los del plan se renuevan el 1° de
-            cada mes.
+            Cada mensaje que el bot manda por WhatsApp usa un crédito. Se renuevan el 1° de cada mes.
           </p>
         </div>
         {plan && level && (
@@ -185,89 +153,7 @@ function CreditsCard({ data, onBuy }: { data: BillingOverview; onBuy: () => void
             {creditsNoticeText(plan.aiCredits, level)}
           </p>
         )}
-        <div className="mt-auto flex flex-wrap items-center gap-2">
-          <Button onClick={onBuy} disabled={!data.canBuy}>
-            Comprar más créditos
-          </Button>
-          {!data.canBuy && (
-            <span className="text-muted-foreground text-xs">Necesitás tener el plan activo.</span>
-          )}
-        </div>
       </CardContent>
     </Card>
   );
-}
-
-function PurchaseHistory({ data }: { data: BillingOverview }) {
-  return (
-    <Card size="sm">
-      <CardContent className="flex flex-col gap-2">
-        <h2 className="text-sm font-medium">Compras de créditos</h2>
-        <ul className="divide-border/60 divide-y text-sm">
-          {data.purchases.map((purchase) => (
-            <li key={purchase.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-1.5">
-              <span className="font-medium tabular-nums">{formatCount(purchase.credits)} créditos</span>
-              <span className="text-muted-foreground tabular-nums">{formatPrice(purchase.priceCents)}</span>
-              <span className="text-muted-foreground text-xs">
-                {longDate(purchase.approvedAt ?? purchase.createdAt)}
-                {purchase.expiresAt && ` · vence el ${longDate(purchase.expiresAt)}`}
-              </span>
-              <Badge
-                className="ml-auto"
-                variant={purchase.status === "REJECTED" ? "destructive" : "secondary"}
-              >
-                {PURCHASE_LABEL[purchase.status]}
-              </Badge>
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
-  );
-}
-
-/**
- * MercadoPago sends the owner back to `?compra=<purchase>&payment_id=…`. The API checks that
- * payment and credits the pack; the toast says how it went and the URL is cleaned up. Also opens
- * the buy dialog for `?comprar=1` (the credits banner's button).
- */
-function usePurchaseReturn(openBuyDialog: () => void) {
-  const params = useSearchParams();
-  const router = useRouter();
-  const confirm = useConfirmPurchase();
-  const handled = useRef(false);
-
-  useEffect(() => {
-    if (handled.current) return;
-    const purchaseId = params.get("compra");
-    const wantsToBuy = params.get("comprar") === "1";
-    if (!purchaseId && !wantsToBuy) return;
-    handled.current = true;
-    router.replace("/panel/facturacion", { scroll: false });
-
-    if (wantsToBuy) {
-      openBuyDialog();
-      return;
-    }
-    const paymentId = params.get("payment_id");
-    if (!purchaseId || !paymentId || paymentId === "null") {
-      toast("No se completó la compra. Podés intentarlo de nuevo cuando quieras.");
-      return;
-    }
-    confirm.mutate(
-      { purchaseId, paymentId },
-      {
-        onSuccess: (purchase) => {
-          if (purchase.status === "APPROVED") {
-            toast.success(`¡Listo! Sumamos ${formatCount(purchase.credits)} créditos.`);
-          } else if (purchase.status === "PENDING") {
-            toast("Tu pago está en proceso. Los créditos se suman apenas MercadoPago lo apruebe.");
-          } else {
-            toast.error("MercadoPago no aprobó el pago, así que no sumamos los créditos.");
-          }
-        },
-        onError: (error: Error) => toast.error(error.message),
-      },
-    );
-  }, [params, router, confirm, openBuyDialog]);
 }

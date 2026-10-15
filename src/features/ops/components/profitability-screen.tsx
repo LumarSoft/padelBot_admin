@@ -137,9 +137,9 @@ export function ProfitabilityScreen() {
             Meta: los mensajes de servicio después de los primeros 1.000 de cada número, más todas
             las plantillas, a {usdUnit(report.data.metaMessagePriceUsd)} cada uno.{" "}
             {report.data.taxRegime === "monotributo"
-              ? "Monotributo: Meta, la IA y la comisión de MercadoPago llevan el 21% de IVA que no se recupera."
+              ? "Monotributo: Meta y la IA llevan el 21% de IVA que no se recupera."
               : "Responsable inscripto: los ingresos van sin el 21% de IVA."}{" "}
-            Los paquetes pierden el {decimal.format(report.data.mpFeePercent)}% de MercadoPago. El ingreso del plan usa
+            El ingreso del plan usa
             el plan y el estado de hoy de cada club; la demo no suma en los totales.
           </p>
         </>
@@ -173,11 +173,6 @@ function ClubRow({ club }: { club: ClubProfitRow }) {
       </TableCell>
       <TableCell className="text-right tabular-nums">
         {pesos(club.revenue.totalCents)}
-        {club.revenue.packsCents > 0 && (
-          <p className="text-muted-foreground text-xs">
-            {pesos(club.revenue.packsCents)} en paquetes
-          </p>
-        )}
       </TableCell>
       <TableCell className="text-right tabular-nums">
         {formatCount(club.messages.total)}
@@ -293,8 +288,7 @@ function Breakdown({ report }: { report: ProfitabilityReport }) {
           </Step>
           <Step title="Nuestra ganancia">
             Ingresos {pesos(totals.revenueCents)} (de {pesos(totals.grossRevenueCents)} cobrados
-            {report.taxRegime === "inscripto" ? ", sin IVA" : ""}; los paquetes sin el{" "}
-            {decimal.format(report.mpFeePercent)}% de MercadoPago) − costos {pesos(totals.costCents)} ={" "}
+            {report.taxRegime === "inscripto" ? ", sin IVA" : ""}) − costos {pesos(totals.costCents)} ={" "}
             <strong>
               {pesos(totals.marginCents)}
               {totals.marginPercent !== null && ` (${totals.marginPercent}%)`}
