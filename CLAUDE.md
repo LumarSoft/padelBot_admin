@@ -39,6 +39,8 @@ App Router project. Code is split between routing (`src/app/`) and a feature-fir
 
 **Plans:** `src/lib/plans.ts` holds the plan keys (`saque` / `bandeja` / `smash`); prices and copy are sold in `features/landing/lib/plans.ts`. What the club's plan allows comes from the API (`GET /clubs/me/plan` → `features/plan`: `usePlan`, `useFeature`, `PlanLimitNotice`, `PlanUpsell`, the "Tu plan" card and the AI-credits banner). The API enforces it; the panel only explains it before the refusal, and `useFeature` reads as enabled while loading so nothing hides on a guess.
 
+**Billing:** `/panel/facturacion` (owner only, `features/billing`) shows the plan and its renewal, this month's credits ("créditos de IA": one per WhatsApp message the bot sends) and the credit packs. The sidebar's credits bar and the owner's card open it. "Comprar más créditos" sends the owner to MercadoPago (`POST /billing/credit-packs` → `checkoutUrl`); MercadoPago returns to `?compra=<id>&payment_id=…`, which the page confirms with the API and toasts. `?comprar=1` opens the buy dialog (the credits banner links there). Never mention Meta or a per-message cost to the club. The ops console's `/ops/rentabilidad` shows revenue against Meta and OpenAI cost per club and month.
+
 State/data conventions: **TanStack Query** for server state (keys in `src/lib/query-keys.ts`), **sonner** for toasts, real-time panel updates via **SSE** (`src/features/realtime`). Currency is stored in cents; format with `src/lib/format.ts`. Build WhatsApp deep links with `src/lib/whatsapp.ts`.
 
 Path alias: `@/*` maps to `src/` (e.g. `@/features/...`, `@/lib/...`). Static assets go in `public/`.
