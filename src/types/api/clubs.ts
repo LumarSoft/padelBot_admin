@@ -150,6 +150,8 @@ export interface ClubPlanOverview {
   features: Record<PlanFeature, { enabled: boolean; plan: string }>;
   /** The club predates the plans and keeps every module. */
   grandfatheredFeatures: boolean;
+  /** The "te quedan pocos créditos" banner: 80 / 100% of plan + packs, and whether this user closed it. */
+  creditsNotice: { level: 80 | 100 | null; dismissed: boolean };
 }
 
 export interface WhatsAppLine {

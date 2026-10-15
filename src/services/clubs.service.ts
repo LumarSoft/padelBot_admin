@@ -31,6 +31,9 @@ export const clubsService = {
   getPlan(): Promise<ClubPlanOverview> {
     return apiClient.get<ClubPlanOverview>("/api/clubs/plan");
   },
+  dismissCreditsNotice(): Promise<void> {
+    return apiClient.post<void>("/api/clubs/plan/credits-notice/dismiss");
+  },
   getWhatsAppLines(): Promise<WhatsAppLine[]> {
     return apiClient.get<WhatsAppLine[]>("/api/whatsapp-lines");
   },

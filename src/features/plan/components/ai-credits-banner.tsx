@@ -1,27 +1,46 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
 import Link from "next/link";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { queryKeys } from "@/lib/query-keys";
 import { buttonVariants } from "@/components/ui/button";
+import { clubsService } from "@/services/clubs.service";
 import { usePlan } from "@/features/plan/hooks/use-plan";
 import { formatCount, monthName } from "@/features/plan/lib/format";
+import type { ClubPlanOverview } from "@/types/api/clubs";
+
+/** "Usaste el 85% de tus créditos de IA de octubre (2.450 de 2.850)." */
+export function creditsNoticeText(credits: ClubPlanOverview["aiCredits"], level: 80 | 100): string {
+  const month = monthName(credits.month);
+  const usage = `${formatCount(credits.used)} de ${formatCount(credits.available ?? 0)}`;
+  if (level === 100) return `Usaste todos tus créditos de IA de ${month} (${usage}).`;
+  const percent = Math.floor((credits.used * 100) / (credits.available || 1));
+  return `Usaste el ${percent}% de tus créditos de IA de ${month} (${usage}).`;
+}
 
 /**
  * Tells the owner their month's credits are running out (80%) or used up (100%), counting the
- * credit packs they bought, with the way to buy more. Only a heads-up: it never says what the
- * bot will do, because running out changes nothing for the players.
+ * credit packs, with the way to buy more. Closing it hides it for the month (it comes back once
+ * if the credits run out); Facturación always shows the state. Never says what the bot will do,
+ * because running out changes nothing for the players.
  */
 export function AiCreditsBanner() {
   const { data } = usePlan();
-  const credits = data?.aiCredits;
-  if (!credits || !credits.available) return null;
-  const percent = Math.floor((credits.used * 100) / credits.available);
-  if (percent < 80) return null;
+  const queryClient = useQueryClient();
+  const dismiss = useMutation({
+    mutationFn: clubsService.dismissCreditsNotice,
+    // Gone at once; the server remembers it for every device.
+    onMutate: () =>
+      queryClient.setQueryData<ClubPlanOverview>(queryKeys.clubs.plan, (old) =>
+        old ? { ...old, creditsNotice: { ...old.creditsNotice, dismissed: true } } : old,
+      ),
+  });
 
-  const month = monthName(credits.month);
-  const usage = `${formatCount(credits.used)} de ${formatCount(credits.available)}`;
-  const full = percent >= 100;
+  const notice = data?.creditsNotice;
+  if (!data || !notice?.level || notice.dismissed) return null;
+  const full = notice.level === 100;
 
   return (
     <div
@@ -34,9 +53,7 @@ export function AiCreditsBanner() {
     >
       <span className="flex items-center gap-2">
         <Sparkles className="size-4 shrink-0" />
-        {full
-          ? `Usaste todos tus créditos de IA de ${month} (${usage}).`
-          : `Usaste el ${percent}% de tus créditos de IA de ${month} (${usage}).`}
+        {creditsNoticeText(data.aiCredits, notice.level)}
       </span>
       <Link
         href="/panel/facturacion?comprar=1"
@@ -44,6 +61,14 @@ export function AiCreditsBanner() {
       >
         Comprar créditos
       </Link>
+      <button
+        type="button"
+        onClick={() => dismiss.mutate()}
+        aria-label="Cerrar aviso"
+        className="ml-auto rounded-md p-1 opacity-70 transition-opacity hover:opacity-100"
+      >
+        <X className="size-4" />
+      </button>
     </div>
   );
 }

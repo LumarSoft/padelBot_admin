@@ -14,6 +14,8 @@ import { lumarsoftWhatsApp } from "@/lib/contact";
 import { formatCount, monthName } from "@/features/plan/lib/format";
 import { BuyCreditsDialog } from "@/features/billing/components/buy-credits-dialog";
 import { useBilling, useConfirmPurchase } from "@/features/billing/hooks/use-billing";
+import { usePlan } from "@/features/plan/hooks/use-plan";
+import { creditsNoticeText } from "@/features/plan/components/ai-credits-banner";
 import type { BillingOverview, CreditPackStatus } from "@/types/api/billing";
 
 const STATUS_LABEL: Record<BillingOverview["subscription"]["status"], string> = {
@@ -130,6 +132,9 @@ function SubscriptionCard({ data }: { data: BillingOverview }) {
 
 function CreditsCard({ data, onBuy }: { data: BillingOverview; onBuy: () => void }) {
   const { credits } = data;
+  // The banner can be closed; here the warning is always in sight.
+  const plan = usePlan().data;
+  const level = plan?.creditsNotice.level ?? null;
   const total = credits.available ?? credits.included;
   const share = total ? Math.min(100, (credits.used / total) * 100) : 0;
   const over = total !== null && credits.used >= total;
@@ -168,6 +173,18 @@ function CreditsCard({ data, onBuy }: { data: BillingOverview; onBuy: () => void
             cada mes.
           </p>
         </div>
+        {plan && level && (
+          <p
+            className={cn(
+              "rounded-lg px-3 py-2 text-sm",
+              level === 100
+                ? "bg-red-500/10 text-red-900 dark:text-red-200"
+                : "bg-amber-500/15 text-amber-900 dark:text-amber-200",
+            )}
+          >
+            {creditsNoticeText(plan.aiCredits, level)}
+          </p>
+        )}
         <div className="mt-auto flex flex-wrap items-center gap-2">
           <Button onClick={onBuy} disabled={!data.canBuy}>
             Comprar más créditos
