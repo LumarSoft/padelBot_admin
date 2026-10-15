@@ -206,12 +206,11 @@ function Waveform() {
   );
 }
 
-/** Marks a step of the chat where the bot used its AI (and so, credits). */
-function AiStep({ children }: { children: ReactNode }) {
+/** Marks a bot message in the chat: each one the bot sends uses a credit. */
+function CreditTag() {
   return (
-    <p className="text-ball -mt-0.5 mb-1 flex items-center justify-end gap-1.5 font-mono text-[10px] tracking-[0.14em] uppercase">
-      <Sparkles aria-hidden className="size-3" />
-      {children}
+    <p className="text-ball -mt-0.5 mb-1 flex items-center gap-1.5 font-mono text-[10px] tracking-[0.14em] uppercase">
+      <Sparkles aria-hidden className="size-3" />1 crédito
     </p>
   );
 }
@@ -249,31 +248,31 @@ function CreditsPopover() {
             Lo que usa el bot para atender.
           </h3>
           <p className="text-chalk/70 text-sm text-pretty">
-            Cada vez que el bot entiende un mensaje, escucha un audio o lee un
-            comprobante, usa créditos de IA. Cada plan trae los suyos, todos
-            los meses.
+            Cada mensaje que el bot manda por WhatsApp usa un crédito:
+            respuestas, recordatorios y confirmaciones. Entender audios y leer
+            comprobantes viene incluido. Cada plan trae los suyos, todos los
+            meses.
           </p>
         </div>
 
         <div className="bg-ink flex flex-col gap-2 rounded-2xl p-4">
           <PlayerBubble>¡Hola! ¿Tienen cancha mañana a las 20?</PlayerBubble>
-          <AiStep>Entiende el mensaje</AiStep>
           <PlayerBubble>
             <Mic className="size-4 shrink-0" />
             <Waveform />
             <span className="text-xs tabular-nums opacity-80">0:06</span>
           </PlayerBubble>
-          <AiStep>Escucha el audio</AiStep>
           <BotBubble>
             Sí, la Cancha 2 está libre. Para reservarla, transferí la seña de
             $5.000 al alias del club.
           </BotBubble>
+          <CreditTag />
           <PlayerBubble>
             <Paperclip className="size-4 shrink-0" />
             comprobante.jpg
           </PlayerBubble>
-          <AiStep>Lee el comprobante</AiStep>
           <BotBubble>¡Listo, Lucas! Mañana 20:00, Cancha 2. Confirmada ✅</BotBubble>
+          <CreditTag />
         </div>
       </div>
     </div>

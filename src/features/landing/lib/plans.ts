@@ -23,7 +23,7 @@ export interface Plan {
   recommended?: boolean;
   /** Court limit; null = no limit. */
   courts: number | null;
-  /** AI credits included per month. */
+  /** AI credits included per month: one per message the bot sends (Meta bills each one). */
   aiCredits: number;
   /** Staff users (panel + app); null = no limit. */
   users: number | null;
@@ -58,7 +58,7 @@ export const PLANS: Plan[] = [
     regularPriceCents: 15_999_900,
     recommended: true,
     courts: 4,
-    aiCredits: 3_000,
+    aiCredits: 2_000,
     users: 5,
     includesFrom: "Saque",
     highlights: [
@@ -73,7 +73,7 @@ export const PLANS: Plan[] = [
     priceCents: 12_999_900,
     regularPriceCents: 25_999_900,
     courts: null,
-    aiCredits: 8_000,
+    aiCredits: 3_000,
     users: null,
     includesFrom: "Bandeja",
     highlights: ["Soporte prioritario por WhatsApp", "Cargamos tus fijos y jugadores"],
