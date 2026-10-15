@@ -104,7 +104,7 @@ export default async function DashboardLayout({
         </header>
 
         <SubscriptionBanner />
-        {user.role === "owner" && <AiCreditsBanner />}
+        <AiCreditsBanner isOwner={user.role === "owner"} />
 
         <main className="mx-auto w-full max-w-6xl flex-1 p-4 md:p-8">
           {children}

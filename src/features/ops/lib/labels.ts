@@ -96,11 +96,11 @@ export function timeAgo(iso: string | null): string {
 /** The ops console's names for a club's state, most urgent first (the order the API sorts by). */
 export const CLUB_HEALTH: Record<ClubHealthStatus, { label: string; className: string }> = {
   inactive: { label: "Inactivo", className: "bg-foreground/10 text-muted-foreground" },
-  atRisk: { label: "En riesgo", className: "bg-red-500/15 text-red-700 dark:text-red-300" },
-  overCredits: {
-    label: "Pasado de créditos",
-    className: "bg-amber-500/15 text-amber-800 dark:text-amber-300",
+  botPaused: {
+    label: "Bot pausado",
+    className: "bg-red-500/15 text-red-700 dark:text-red-300",
   },
+  atRisk: { label: "En riesgo", className: "bg-red-500/15 text-red-700 dark:text-red-300" },
   trialEnding: {
     label: "Prueba por vencer",
     className: "bg-amber-500/15 text-amber-800 dark:text-amber-300",

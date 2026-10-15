@@ -138,14 +138,15 @@ function CreditsCard({ data }: { data: BillingOverview }) {
             </div>
           )}
           <p className="text-muted-foreground text-xs text-pretty">
-            Cada mensaje que el bot manda por WhatsApp usa un crédito. Se renuevan el 1° de cada mes.
+            Cada mensaje que el bot manda por WhatsApp usa un crédito. Se renuevan el 1° de cada mes; si
+            se terminan antes, el bot se pausa hasta que cambies de plan.
           </p>
         </div>
         {plan && level && (
           <p
             className={cn(
               "rounded-lg px-3 py-2 text-sm",
-              level === 100
+              credits.paused || level === 100
                 ? "bg-red-500/10 text-red-900 dark:text-red-200"
                 : "bg-amber-500/15 text-amber-900 dark:text-amber-200",
             )}

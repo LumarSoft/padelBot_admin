@@ -233,7 +233,7 @@ function ClubRow({
             value={formatPrice(activity.depositsCents)}
             hint="últimos 30 días"
           />
-          {/* Over 100% never cuts the bot: it's the cue to offer a bigger plan. */}
+          {/* At 100% the bot is paused until the club moves to a bigger plan: a sales call. */}
           <Metric
             label="Créditos de IA"
             value={
@@ -241,7 +241,13 @@ function ClubRow({
                 ? formatCount(credits.used)
                 : `${formatCount(credits.used)} / ${formatCount(creditsTotal)}`
             }
-            hint={creditsShare === null ? "este mes" : `${creditsShare}% este mes`}
+            hint={
+              credits.paused
+                ? "bot pausado"
+                : creditsShare === null
+                  ? "este mes"
+                  : `${creditsShare}% este mes`
+            }
             tone={
               creditsShare === null || creditsShare < 80
                 ? "default"

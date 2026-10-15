@@ -93,7 +93,7 @@ export interface SubscriptionState {
 export type ClubHealthStatus =
   | "inactive"
   | "atRisk"
-  | "overCredits"
+  | "botPaused"
   | "trialEnding"
   | "setup"
   | "starting"
@@ -133,7 +133,7 @@ export interface OpsClub {
     courts: PlanUsage;
     users: PlanUsage;
     /** This calendar month. Over 100% never cuts the bot: it's a sales call. */
-    aiCredits: PlanUsage & { percent: number | null };
+    aiCredits: PlanUsage & { percent: number | null; paused: boolean };
     /** Predates the plans: keeps every module whatever its plan, until ops clears it. */
     grandfatheredFeatures: boolean;
   };
@@ -221,7 +221,8 @@ export type HealthIssueKind =
   | "RECEIPT_AWAITING_REVIEW"
   | "MP_TOKEN_EXPIRING"
   | "ADVISOR_WAITING"
-  | "CLUB_NOT_LIVE";
+  | "CLUB_NOT_LIVE"
+  | "BOT_PAUSED_NO_CREDITS";
 
 export interface HealthIssue {
   kind: HealthIssueKind;

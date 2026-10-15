@@ -123,6 +123,9 @@ export interface PlanUsage {
 }
 
 /** The club's plan, its limits and how much of them is used (`GET /clubs/me/plan`). */
+/** Credits used, in %: 20%, 10% and 5% left, and none (the bot is paused). */
+export type CreditsNoticeLevel = 80 | 90 | 95 | 100;
+
 export interface ClubPlanOverview {
   plan: {
     key: string;
@@ -139,13 +142,15 @@ export interface ClubPlanOverview {
     month: string;
     /** Whole percentage of the plan's credits used (can pass 100); null without an allowance. */
     percent: number | null;
+    /** Used up: the bot isn't answering players until a bigger plan or the next month. */
+    paused: boolean;
   };
   /** Whether the club may use (turn on) each module, and the cheapest plan that includes it. */
   features: Record<PlanFeature, { enabled: boolean; plan: string }>;
   /** The club predates the plans and keeps every module. */
   grandfatheredFeatures: boolean;
-  /** The "te quedan pocos créditos" banner: 80 / 100% of the plan's credits, and whether this user closed it. */
-  creditsNotice: { level: 80 | 100 | null; dismissed: boolean };
+  /** The "te quedan pocos créditos" banner: the level crossed (% used), and whether this user closed it. */
+  creditsNotice: { level: CreditsNoticeLevel | null; dismissed: boolean };
 }
 
 export interface WhatsAppLine {

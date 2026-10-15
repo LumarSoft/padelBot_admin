@@ -15,5 +15,7 @@ export interface BillingOverview {
     /** The plan's credits for the month; null for an unknown plan. */
     included: number | null;
     percent: number | null;
+    /** Used up: the bot is paused until a bigger plan or the next month. */
+    paused: boolean;
   };
 }
