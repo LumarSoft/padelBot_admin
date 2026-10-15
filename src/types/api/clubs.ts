@@ -133,12 +133,18 @@ export interface ClubPlanOverview {
   courts: PlanUsage;
   /** Active users, the owner included. */
   users: PlanUsage;
-  /** This calendar month's AI credits: one per AI step (message, audio, image or receipt). */
+  /**
+   * This calendar month's credits: one per WhatsApp message the bot sends. `limit` is the
+   * plan's; `available` adds credit packs (spent this month + left), the sidebar bar's total.
+   */
   aiCredits: PlanUsage & {
     /** "2026-10" (club-local). */
     month: string;
-    /** Whole percentage used (can pass 100); null without an allowance. */
+    /** Whole percentage of the plan's credits used (can pass 100); null without an allowance. */
     percent: number | null;
+    fromPacks: number;
+    extraBalance: number;
+    available: number | null;
   };
   /** Whether the club may use (turn on) each module, and the cheapest plan that includes it. */
   features: Record<PlanFeature, { enabled: boolean; plan: string }>;

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { requireSession } from "@/lib/session";
 import { Logo } from "@/components/ui/logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -10,6 +11,7 @@ import { ForcePasswordChangeDialog } from "@/features/auth/components/force-pass
 import { DashboardNav } from "@/features/dashboard/components/dashboard-nav";
 import { SubscriptionBanner } from "@/features/dashboard/components/subscription-banner";
 import { AiCreditsBanner } from "@/features/plan/components/ai-credits-banner";
+import { CreditsSidebarMeter } from "@/features/billing/components/credits-sidebar-meter";
 import { GlobalSearch } from "@/features/dashboard/components/global-search";
 import { HelpButton } from "@/features/help/components/help-button";
 import { TourOverlay } from "@/features/help/components/tour-overlay";
@@ -55,7 +57,9 @@ export default async function DashboardLayout({
         </div>
 
         <div className="border-border/60 border-t px-3 py-3">
-          <div className="bg-card/50 ring-foreground/[0.05] flex items-center gap-3 rounded-xl px-2.5 py-2 shadow-[inset_0_1px_0_0_var(--glass-highlight)] ring-1">
+          {user.role === "owner" && <CreditsSidebarMeter />}
+          {/* The owner's card opens Facturación (plan, credits); the staff's is just a label. */}
+          <UserCard href={user.role === "owner" ? "/panel/facturacion" : undefined}>
             <div className="from-brand to-brand/70 flex size-8 shrink-0 items-center justify-center rounded-full bg-linear-to-b text-xs font-semibold text-white shadow-[inset_0_1px_0_0_--alpha(var(--color-white)/25%)]">
               {initials(user.clubName)}
             </div>
@@ -65,7 +69,7 @@ export default async function DashboardLayout({
                 {user.role === "owner" ? "Dueño" : "Staff"}
               </p>
             </div>
-          </div>
+          </UserCard>
         </div>
       </aside>
 
@@ -75,12 +79,20 @@ export default async function DashboardLayout({
             <span className="md:hidden">
               <Logo showWordmark={false} />
             </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{user.name}</p>
-              <p className="text-muted-foreground truncate text-xs">
-                {user.email}
-              </p>
-            </div>
+            {/* On a phone there's no sidebar: the owner's name is the way to Facturación. */}
+            {user.role === "owner" ? (
+              <Link href="/panel/facturacion" className="min-w-0 hover:opacity-80">
+                <p className="truncate text-sm font-medium">{user.name}</p>
+                <p className="text-muted-foreground truncate text-xs">{user.email}</p>
+              </Link>
+            ) : (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{user.name}</p>
+                <p className="text-muted-foreground truncate text-xs">
+                  {user.email}
+                </p>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <GlobalSearch />
@@ -99,5 +111,18 @@ export default async function DashboardLayout({
         </main>
       </div>
     </div>
+  );
+}
+
+const USER_CARD_CLASS =
+  "bg-card/50 ring-foreground/[0.05] flex items-center gap-3 rounded-xl px-2.5 py-2 shadow-[inset_0_1px_0_0_var(--glass-highlight)] ring-1";
+
+/** The club card at the foot of the sidebar: a link when there's somewhere to go. */
+function UserCard({ href, children }: { href?: string; children: ReactNode }) {
+  if (!href) return <div className={USER_CARD_CLASS}>{children}</div>;
+  return (
+    <Link href={href} className={`${USER_CARD_CLASS} hover:bg-card/80 transition-colors`}>
+      {children}
+    </Link>
   );
 }

@@ -3,56 +3,47 @@
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { lumarsoftWhatsApp } from "@/lib/contact";
+import { buttonVariants } from "@/components/ui/button";
 import { usePlan } from "@/features/plan/hooks/use-plan";
 import { formatCount, monthName } from "@/features/plan/lib/format";
 
 /**
- * Tells the owner their month's AI credits are running out (80%) or used up (100%). Only a
- * heads-up: it never says what the bot will do, because going over changes nothing today.
+ * Tells the owner their month's credits are running out (80%) or used up (100%), counting the
+ * credit packs they bought, with the way to buy more. Only a heads-up: it never says what the
+ * bot will do, because running out changes nothing for the players.
  */
 export function AiCreditsBanner() {
   const { data } = usePlan();
   const credits = data?.aiCredits;
-  if (!credits || credits.limit === null || credits.percent === null || credits.percent < 80) {
-    return null;
-  }
+  if (!credits || !credits.available) return null;
+  const percent = Math.floor((credits.used * 100) / credits.available);
+  if (percent < 80) return null;
 
   const month = monthName(credits.month);
-  const usage = `${formatCount(credits.used)} de ${formatCount(credits.limit)}`;
-  const full = credits.percent >= 100;
+  const usage = `${formatCount(credits.used)} de ${formatCount(credits.available)}`;
+  const full = percent >= 100;
 
   return (
     <div
       className={cn(
-        "flex items-center gap-2 border-b px-4 py-2 text-sm md:px-6",
+        "flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b px-4 py-2 text-sm md:px-6",
         full
           ? "bg-red-500/10 text-red-900 dark:text-red-200"
           : "bg-amber-500/15 text-amber-900 dark:text-amber-200",
       )}
     >
-      <Sparkles className="size-4 shrink-0" />
-      <span>
+      <span className="flex items-center gap-2">
+        <Sparkles className="size-4 shrink-0" />
         {full
-          ? `Usaste todos los créditos de IA de ${month} (${usage}).`
-          : `Usaste el ${credits.percent}% de los créditos de IA de ${month} (${usage}).`}{" "}
-        <Link
-          href="/panel/configuracion?tab=complejo"
-          className="font-medium underline underline-offset-2"
-        >
-          Ver tu plan
-        </Link>{" "}
-        o{" "}
-        <a
-          href={lumarsoftWhatsApp("upgrade")}
-          target="_blank"
-          rel="noreferrer"
-          className="font-medium underline underline-offset-2"
-        >
-          escribinos para pasar a uno con más créditos
-        </a>
-        .
+          ? `Usaste todos tus créditos de IA de ${month} (${usage}).`
+          : `Usaste el ${percent}% de tus créditos de IA de ${month} (${usage}).`}
       </span>
+      <Link
+        href="/panel/facturacion?comprar=1"
+        className={cn(buttonVariants({ size: "sm", variant: "outline" }), "h-7 bg-transparent")}
+      >
+        Comprar créditos
+      </Link>
     </div>
   );
 }

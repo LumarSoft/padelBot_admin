@@ -47,8 +47,9 @@ export function PlanCard() {
         <Meter label="Usuarios activos" usage={data.users} />
         <Meter
           label={`Créditos de IA de ${monthName(data.aiCredits.month)}`}
-          usage={data.aiCredits}
-          hint="Los usa el bot cada vez que entiende un mensaje, escucha un audio o lee un comprobante. Se renuevan el 1° de cada mes."
+          // The total counts the credit packs, like the sidebar bar and Facturación.
+          usage={{ used: data.aiCredits.used, limit: data.aiCredits.available }}
+          hint="Cada mensaje que el bot manda por WhatsApp usa un crédito. Los del plan se renuevan el 1° de cada mes."
         />
       </div>
 

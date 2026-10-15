@@ -51,6 +51,9 @@ export const queryKeys = {
   users: {
     all: ["users"] as const,
   },
+  billing: {
+    overview: ["billing", "overview"] as const,
+  },
   players: {
     all: ["players"] as const,
     list: (search: string) => ["players", "list", search] as const,
