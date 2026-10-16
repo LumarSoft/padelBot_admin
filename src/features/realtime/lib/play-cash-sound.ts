@@ -86,3 +86,42 @@ function bell(c: AudioContext, dest: AudioNode, start: number, freq: number): vo
   shimmer.start(start);
   shimmer.stop(start + 0.5);
 }
+
+/**
+ * The WhatsApp inbox's cue: a soft, quick two-note "pop" for a chat that needs someone —
+ * deliberately gentler than the cash bell, so staff can tell a message from money by ear.
+ * Shares the context `primeAudio()` unlocks.
+ */
+export function playChatSound(): void {
+  const c = getCtx();
+  const dest = master;
+  if (!c || !dest) return;
+  const play = () => {
+    const now = c.currentTime;
+    pop(c, dest, now, 880); // A5
+    pop(c, dest, now + 0.09, 1319); // E6
+  };
+  if (c.state === "suspended") {
+    void c.resume().then(play);
+    return;
+  }
+  play();
+}
+
+/** One short, round sine blip with a fast decay. */
+function pop(c: AudioContext, dest: AudioNode, start: number, freq: number): void {
+  const gain = c.createGain();
+  gain.connect(dest);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(0.32, start + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.18);
+
+  const osc = c.createOscillator();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(freq, start);
+  // A slight upward glide gives it the bubbly "pop".
+  osc.frequency.exponentialRampToValueAtTime(freq * 1.06, start + 0.08);
+  osc.connect(gain);
+  osc.start(start);
+  osc.stop(start + 0.2);
+}
