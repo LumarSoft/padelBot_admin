@@ -103,7 +103,10 @@ export function AgendaCell({
     kind === "pending" && "border-amber-400/50 bg-amber-400/10 text-foreground",
     kind === "freed" && "border-emerald-400/40 bg-emerald-400/[0.07] text-foreground",
     kind === "available" && "border-emerald-400/50 bg-emerald-400/[0.18] text-foreground",
-    kind === "blocked" && "border-dashed border-destructive/30 bg-destructive/5 text-muted-foreground",
+    kind === "blocked" &&
+      (slot?.competition
+        ? "border-dashed border-brand/40 bg-brand/[0.07] text-foreground"
+        : "border-dashed border-destructive/30 bg-destructive/5 text-muted-foreground"),
     kind === "empty" && "border-dashed border-emerald-400/30 bg-emerald-400/[0.08] text-muted-foreground/70",
   );
 
@@ -185,7 +188,15 @@ export function AgendaCell({
         </>
       )}
 
-      {kind === "blocked" && <span className="font-medium">Bloqueado</span>}
+      {kind === "blocked" &&
+        (slot?.competition ? (
+          <>
+            <span className="font-medium">{slot.competition.kind === "PENA" ? "Peña" : "Torneo"}</span>
+            <span className="text-muted-foreground w-full truncate">{slot.competition.name}</span>
+          </>
+        ) : (
+          <span className="font-medium">Bloqueado</span>
+        ))}
 
       {kind === "empty" && (
         <span className="flex items-center gap-1">

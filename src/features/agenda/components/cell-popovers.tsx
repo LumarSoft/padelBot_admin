@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import {
   CalendarClock,
@@ -22,7 +23,7 @@ import {
 } from "lucide-react";
 import { AddProductsDialog } from "@/features/productos/components/add-products-dialog";
 import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -739,12 +740,21 @@ export function BlockedActions({ slot, onDone }: { slot: Slot; onDone: () => voi
         badge={
           <>
             <span className="bg-muted text-muted-foreground shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium">
-              Bloqueado
+              {slot.competition ? (slot.competition.kind === "PENA" ? "Peña" : "Torneo") : "Bloqueado"}
             </span>
             <StatusWhy entry="turno-bloqueado" />
           </>
         }
       />
+      {slot.competition && (
+        <Link
+          href={`${slot.competition.kind === "PENA" ? "/panel/penas" : "/panel/torneos"}/${slot.competition.id}`}
+          onClick={onDone}
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-full")}
+        >
+          Ver {slot.competition.name}
+        </Link>
+      )}
       <Button
         type="button"
         size="sm"

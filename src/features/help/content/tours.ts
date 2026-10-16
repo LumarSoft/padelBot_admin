@@ -388,6 +388,26 @@ export const TOURS = {
       },
     ],
   },
+  "armar-pena": {
+    route: "/panel/penas",
+    steps: [
+      {
+        target: "penas-nueva",
+        text: "Tocá «Nueva peña»: elegís canchas y horario, y esos turnos se bloquean solos en la agenda.",
+        waitFor: "penas-nueva",
+      },
+    ],
+  },
+  "armar-torneo": {
+    route: "/panel/torneos",
+    steps: [
+      {
+        target: "torneos-nueva",
+        text: "Tocá «Nuevo torneo»: días, canchas, categorías y la inscripción por jugador.",
+        waitFor: "torneos-nueva",
+      },
+    ],
+  },
 } satisfies Record<string, Tour>;
 
 export type TourId = keyof typeof TOURS;

@@ -26,6 +26,13 @@ export interface NewsEntry {
 
 export const NEWS: NewsEntry[] = [
   {
+    id: "torneos-penas",
+    date: "2026-10-15",
+    title: "Torneos y peñas",
+    line: "Anotá parejas, cobrá la inscripción y el panel arma zonas, cuadro o los partidos de la peña. Las canchas se bloquean solas.",
+    action: { label: "Mostrame", tour: "armar-torneo" },
+  },
+  {
     id: "confirmacion-fijos",
     date: "2026-10-14",
     title: "El bot les pregunta a los fijos si vienen",

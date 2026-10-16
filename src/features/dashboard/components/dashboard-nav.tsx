@@ -10,7 +10,9 @@ import {
   Settings,
   LayoutDashboard,
   ShoppingBasket,
+  Trophy,
   UserRound,
+  UsersRound,
   Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,6 +31,8 @@ const MAIN_NAV: NavItem[] = [
   { href: "/panel/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/panel/pagos", label: "Pagos", icon: Wallet },
   { href: "/panel/jugadores", label: "Jugadores", icon: UserRound },
+  { href: "/panel/torneos", label: "Torneos", icon: Trophy },
+  { href: "/panel/penas", label: "Peñas", icon: UsersRound },
   {
     href: "/panel/conversaciones",
     label: "Conversaciones",

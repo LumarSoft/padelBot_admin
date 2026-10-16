@@ -35,11 +35,19 @@ interface PaymentConfirmedEvent {
   source: "AUTO" | "MANUAL";
 }
 
+/** A torneo or peña changed (pairs, fixture, results, its blocked turnos) — from another screen or the app. */
+interface CompetitionChangedEvent {
+  type: "competition.changed";
+  clubId: string;
+  competitionId: string;
+}
+
 type AppEvent =
   | BookingChangedEvent
   | ConversationMessageEvent
   | PaymentReceiptEvent
-  | PaymentConfirmedEvent;
+  | PaymentConfirmedEvent
+  | CompetitionChangedEvent;
 
 const TOAST_BY_ACTION: Record<BookingAction, (summary: string) => void> = {
   created: (s) => toast.success(`Nueva reserva: ${s}`),
@@ -106,6 +114,12 @@ export function useRealtimeSync(): void {
           queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
           queryClient.invalidateQueries({ queryKey: queryKeys.slots.all });
         }, 300);
+        return;
+      }
+
+      if (event.type === "competition.changed") {
+        queryClient.invalidateQueries({ queryKey: queryKeys.competitions.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.slots.all });
         return;
       }
 

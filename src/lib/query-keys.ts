@@ -4,6 +4,7 @@
  */
 import type { SlotFilters } from "@/types/api/turnos";
 import type { BookingFilters } from "@/types/api/bookings";
+import type { CompetitionFilters } from "@/types/api/competitions";
 
 export const queryKeys = {
   auth: {
@@ -27,6 +28,11 @@ export const queryKeys = {
   },
   recurringBookings: {
     all: ["recurring-bookings"] as const,
+  },
+  competitions: {
+    all: ["competitions"] as const,
+    list: (filters: CompetitionFilters) => ["competitions", "list", filters] as const,
+    detail: (id: string) => ["competitions", "detail", id] as const,
   },
   clubs: {
     profile: ["clubs", "profile"] as const,

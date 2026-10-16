@@ -40,6 +40,8 @@ export interface Slot {
   priceCents: number;
   status: SlotStatus;
   court: { id: string; name: string };
+  /** The torneo or peña a BLOCKED slot is held for; null for any other block. */
+  competition?: { id: string; name: string; kind: "TOURNAMENT" | "PENA" } | null;
   createdAt: string;
   updatedAt: string;
 }

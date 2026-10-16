@@ -659,6 +659,40 @@ export const HELP_ENTRIES = [
     keywords: ["contrasena", "clave", "password", "olvide", "entrar", "usuario"],
     tour: "cambiar-clave",
   },
+  {
+    id: "armar-pena",
+    audience: "all",
+    question: "¿Cómo armo una peña?",
+    answer: [
+      "En «Peñas», tocá «Nueva peña» y elegí canchas, día y horario: esos turnos se bloquean solos.",
+      "Anotá las parejas con «Anotar pareja».",
+      "En «Partidos», tocá «Armar partidos»: juegan todos contra todos, repartidos en las canchas.",
+    ],
+    keywords: ["peña", "pena", "todos contra todos", "americano", "parejas", "juntada"],
+    tour: "armar-pena",
+  },
+  {
+    id: "armar-torneo",
+    audience: "all",
+    question: "¿Cómo armo un torneo?",
+    answer: [
+      "En «Torneos», tocá «Nuevo torneo» con sus días, canchas y categorías.",
+      "Anotá las parejas y marcá quién pagó la inscripción.",
+      "En «Partidos», «Armar zonas»; cuando estén los resultados, «Armar cuadro».",
+    ],
+    keywords: ["torneo", "categoria", "zonas", "cuadro", "llave", "fixture", "inscripcion", "americano"],
+    tour: "armar-torneo",
+  },
+  {
+    id: "turno-torneo",
+    audience: "all",
+    question: "¿Por qué un turno dice «Torneo» o «Peña»?",
+    answer: [
+      "Está tomado por ese torneo o peña: nadie lo puede reservar, ni el bot.",
+      "Se libera solo si cambiás los horarios o las canchas del evento, o si lo cancelás.",
+    ],
+    keywords: ["torneo", "peña", "pena", "bloqueado", "evento", "no se puede reservar"],
+  },
 ] as const satisfies readonly HelpEntry[];
 
 export type HelpEntryId = (typeof HELP_ENTRIES)[number]["id"];
