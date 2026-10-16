@@ -14,6 +14,7 @@ import { AiCreditsBanner } from "@/features/plan/components/ai-credits-banner";
 import { CreditsSidebarMeter } from "@/features/billing/components/credits-sidebar-meter";
 import { GlobalSearch } from "@/features/dashboard/components/global-search";
 import { HelpButton } from "@/features/help/components/help-button";
+import { SignupInbox } from "@/features/competitions/components/signup-inbox";
 import { TourOverlay } from "@/features/help/components/tour-overlay";
 
 function initials(name: string): string {
@@ -96,6 +97,7 @@ export default async function DashboardLayout({
           </div>
           <div className="flex items-center gap-2">
             <GlobalSearch />
+            <SignupInbox />
             <HelpButton />
             <ThemeToggle />
             <ChangePasswordDialog />

@@ -13,6 +13,7 @@ import { CategoryFixture } from "@/features/competitions/components/category-fix
 import { CompetitionActions } from "@/features/competitions/components/competition-actions";
 import { CompetitionStatusBadge } from "@/features/competitions/components/competition-status-badge";
 import { PairsTable } from "@/features/competitions/components/pairs-table";
+import { SignupRequestsCard } from "@/features/competitions/components/signup-requests-card";
 import {
   CATEGORY_FORMAT_LABEL,
   KIND_LABEL,
@@ -130,6 +131,7 @@ export function CompetitionDetailScreen({ id, kind }: { id: string; kind: Compet
           </TabsList>
 
           <TabsPanel value="pairs" className="flex flex-col gap-4">
+            <SignupRequestsCard competitionId={competition.id} />
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-muted-foreground text-sm">
                 {categoryPairs.length} {categoryPairs.length === 1 ? "pareja anotada" : "parejas anotadas"}

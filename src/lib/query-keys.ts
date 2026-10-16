@@ -5,6 +5,7 @@
 import type { SlotFilters } from "@/types/api/turnos";
 import type { BookingFilters } from "@/types/api/bookings";
 import type { CompetitionFilters } from "@/types/api/competitions";
+import type { SignupRequestFilters } from "@/types/api/competition-signups";
 
 export const queryKeys = {
   auth: {
@@ -33,6 +34,7 @@ export const queryKeys = {
     all: ["competitions"] as const,
     list: (filters: CompetitionFilters) => ["competitions", "list", filters] as const,
     detail: (id: string) => ["competitions", "detail", id] as const,
+    signups: (filters: SignupRequestFilters) => ["competitions", "signups", filters] as const,
   },
   clubs: {
     profile: ["clubs", "profile"] as const,

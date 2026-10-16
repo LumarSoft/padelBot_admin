@@ -70,3 +70,21 @@ export function pesosToCents(value: string): number {
   const pesos = Number(value.replace(",", "."));
   return Number.isFinite(pesos) && pesos > 0 ? Math.round(pesos * 100) : 0;
 }
+
+/** "recién", "hace 5 min", "hace 2 h", "hace 3 días" — how long a request has been waiting. */
+export function timeAgo(iso: string, now: number = Date.now()): string {
+  const minutes = Math.max(0, Math.floor((now - new Date(iso).getTime()) / 60_000));
+  if (minutes < 1) return "recién";
+  if (minutes < 60) return `hace ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `hace ${hours} h`;
+  const days = Math.floor(hours / 24);
+  return `hace ${days} ${days === 1 ? "día" : "días"}`;
+}
+
+/** Groups items by a key, keeping first-seen order. */
+export function groupBy<T>(items: T[], key: (item: T) => string): [string, T[]][] {
+  const groups = new Map<string, T[]>();
+  for (const item of items) groups.set(key(item), [...(groups.get(key(item)) ?? []), item]);
+  return [...groups.entries()];
+}

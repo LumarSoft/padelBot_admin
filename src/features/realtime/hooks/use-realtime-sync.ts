@@ -42,12 +42,22 @@ interface CompetitionChangedEvent {
   competitionId: string;
 }
 
+/** A player asked the WhatsApp bot to sign up for a torneo or peña. */
+interface CompetitionSignupEvent {
+  type: "competition.signup";
+  clubId: string;
+  competitionId: string;
+  competitionName: string;
+  playerName: string | null;
+}
+
 type AppEvent =
   | BookingChangedEvent
   | ConversationMessageEvent
   | PaymentReceiptEvent
   | PaymentConfirmedEvent
-  | CompetitionChangedEvent;
+  | CompetitionChangedEvent
+  | CompetitionSignupEvent;
 
 const TOAST_BY_ACTION: Record<BookingAction, (summary: string) => void> = {
   created: (s) => toast.success(`Nueva reserva: ${s}`),
@@ -114,6 +124,16 @@ export function useRealtimeSync(): void {
           queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
           queryClient.invalidateQueries({ queryKey: queryKeys.slots.all });
         }, 300);
+        return;
+      }
+
+      if (event.type === "competition.signup") {
+        toast.info(`🏆 ${event.playerName ?? "Un jugador"} quiere anotarse a ${event.competitionName}`, {
+          description: "Lo pidió por WhatsApp: el chat quedó para que le respondan.",
+          duration: 8_000,
+        });
+        queryClient.invalidateQueries({ queryKey: queryKeys.competitions.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.conversations.list });
         return;
       }
 
