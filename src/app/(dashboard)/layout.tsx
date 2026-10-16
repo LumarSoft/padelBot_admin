@@ -11,6 +11,7 @@ import { ChangePasswordDialog } from "@/features/auth/components/change-password
 import { ForcePasswordChangeDialog } from "@/features/auth/components/force-password-change-dialog";
 import { AppSidebar } from "@/features/dashboard/components/app-sidebar";
 import { MobileNav } from "@/features/dashboard/components/mobile-nav";
+import { ConnectionStatus } from "@/features/dashboard/components/connection-status";
 import { SIDEBAR_COLLAPSED, SIDEBAR_COOKIE } from "@/features/dashboard/lib/sidebar-cookie";
 import { SubscriptionBanner } from "@/features/dashboard/components/subscription-banner";
 import { AiCreditsBanner } from "@/features/plan/components/ai-credits-banner";
@@ -82,6 +83,7 @@ export default async function DashboardLayout({
           </div>
         </header>
 
+        <ConnectionStatus />
         <SubscriptionBanner />
         <AiCreditsBanner isOwner={user.role === "owner"} />
 
