@@ -1,23 +1,27 @@
 "use client";
 
-import { Bot } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { BUBBLE_SHADOW, TAIL_OUT } from "./message-bubble";
 
 /**
- * "GTP está escribiendo…" bubble. Shown while we're in AI mode and the player's message
- * is the latest one — i.e. the bot is about to answer. (WhatsApp doesn't expose the player's
- * own typing state, so we only show it for the bot, which we can infer.)
+ * "El bot está escribiendo…": three dots in a bubble on the club's side, shown while we're in
+ * AI mode and the player's message is the latest — the bot is about to answer. (WhatsApp
+ * doesn't expose the player's own typing state, so this only exists for the bot.)
  */
-export function TypingIndicator({ label = "GTP está escribiendo" }: { label?: string }) {
+export function TypingIndicator() {
   return (
-    <div className="flex items-center gap-2">
-      <span className="bg-muted mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full">
-        <Bot className="size-3.5" />
-      </span>
-      <div className="bg-brand/10 border-brand/20 flex items-center gap-1.5 rounded-xl border px-3 py-2.5">
-        <span className="sr-only">{label}…</span>
+    <div className="mt-3 flex justify-end" role="status">
+      <div
+        className={cn(
+          "bg-wa-out relative flex items-center gap-1 rounded-lg px-3.5 py-3",
+          BUBBLE_SHADOW,
+          TAIL_OUT,
+        )}
+      >
+        <span className="sr-only">El bot está escribiendo…</span>
         <Dot delay="0ms" />
-        <Dot delay="150ms" />
-        <Dot delay="300ms" />
+        <Dot delay="160ms" />
+        <Dot delay="320ms" />
       </div>
     </div>
   );
@@ -26,7 +30,8 @@ export function TypingIndicator({ label = "GTP está escribiendo" }: { label?: s
 function Dot({ delay }: { delay: string }) {
   return (
     <span
-      className="bg-muted-foreground/60 size-1.5 animate-bounce rounded-full"
+      aria-hidden
+      className="bg-wa-meta size-2 animate-bounce rounded-full"
       style={{ animationDelay: delay, animationDuration: "1s" }}
     />
   );

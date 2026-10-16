@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Padel-themed doodles for the WhatsApp inbox wallpaper. Used as a CSS mask, so only the
+       alpha matters; the color comes from the wa-doodle theme variable. (No double hyphen in
+       here: XML forbids it inside a comment and the whole image would fail to load.) -->
+  <g transform="translate(42 44)">
+    <circle r="11"/>
+    <path d="M-10 -4c6 3 6 11 3 13M10 4c-6-3-6-11-3-13"/>
+  </g>
+  <g transform="translate(138 52) rotate(-30)">
+    <ellipse rx="14" ry="17"/>
+    <path d="M0 17v14M-3.5 31h7v12h-7z"/>
+    <circle cx="-5" cy="-7" r="1.3"/><circle cx="0" cy="-7" r="1.3"/><circle cx="5" cy="-7" r="1.3"/>
+    <circle cx="-6" cy="-1" r="1.3"/><circle cx="0" cy="-1" r="1.3"/><circle cx="6" cy="-1" r="1.3"/>
+    <circle cx="-3" cy="5" r="1.3"/><circle cx="3" cy="5" r="1.3"/>
+  </g>
+  <g transform="translate(250 46)">
+    <path d="M-16-11h32a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-20l-8 7v-7h-4a4 4 0 0 1-4-4v-14a4 4 0 0 1 4-4z"/>
+    <circle cx="-7" cy="0" r="1.2"/><circle cx="0" cy="0" r="1.2"/><circle cx="7" cy="0" r="1.2"/>
+  </g>
+  <g transform="translate(62 150) rotate(12)">
+    <rect x="-16" y="-24" width="32" height="48" rx="2"/>
+    <path d="M-16 0h32M-16-13h32M-16 13h32M0-13v26"/>
+  </g>
+  <g transform="translate(170 158)">
+    <path d="M-10-14h20v8a10 10 0 0 1-20 0zM-10-11h-5a5 5 0 0 0 5 8M10-11h5a5 5 0 0 1-5 8M0 4v7M-7 15h14M-5 11h10"/>
+  </g>
+  <g transform="translate(268 150)">
+    <circle r="12"/>
+    <path d="M0-7v7l5 4"/>
+  </g>
+  <g transform="translate(46 262) rotate(-10)">
+    <rect x="-13" y="-11" width="26" height="24" rx="3"/>
+    <path d="M-13-4h26M-7-15v7M7-15v7"/>
+    <circle cx="-6" cy="3" r="1.1"/><circle cx="0" cy="3" r="1.1"/><circle cx="6" cy="3" r="1.1"/><circle cx="-6" cy="8" r="1.1"/>
+  </g>
+  <g transform="translate(150 266) rotate(40)">
+    <circle r="9"/>
+    <path d="M-8-3c5 2 5 9 2 10M8 3c-5-2-5-9-2-10"/>
+  </g>
+  <g transform="translate(256 258)" stroke-width="1.2">
+    <path d="M0-10v20M-10 0h20M-6-6l12 12M6-6l-12 12"/>
+  </g>
+  <path d="M96 104q8-8 16 0t16 0M206 214q8-8 16 0t16 0M196 98l6 6M202 98l-6 6M104 206l6 6M110 206l-6 6"/>
+  <circle cx="16" cy="200" r="2"/><circle cx="300" cy="300" r="2"/><circle cx="310" cy="100" r="2"/><circle cx="210" cy="300" r="2"/>
+</svg>

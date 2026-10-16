@@ -4,6 +4,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* A panel screen that wants the whole viewport (the WhatsApp inbox) marks its root with
+   `data-full-bleed`; the layout's column, <main> and the route template use this variant
+   to drop their max-width/padding and hand it a bounded height. */
+@custom-variant full-bleed (&:has([data-full-bleed]));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -73,6 +78,33 @@
   --font-display: var(--font-display);
   --font-hand: var(--font-hand);
 
+  /* WhatsApp inbox palette (theme-dependent, see :root / .dark). The panel's
+     own brand stays out of that screen on purpose: it should read as WhatsApp. */
+  --color-wa-bar: var(--wa-bar);
+  --color-wa-panel: var(--wa-panel);
+  --color-wa-hover: var(--wa-hover);
+  --color-wa-active: var(--wa-active);
+  --color-wa-search: var(--wa-search);
+  --color-wa-field: var(--wa-field);
+  --color-wa-line: var(--wa-line);
+  --color-wa-text: var(--wa-text);
+  --color-wa-muted: var(--wa-muted);
+  --color-wa-icon: var(--wa-icon);
+  --color-wa-green: var(--wa-green);
+  --color-wa-green-text: var(--wa-green-text);
+  --color-wa-badge: var(--wa-badge);
+  --color-wa-badge-text: var(--wa-badge-text);
+  --color-wa-chat: var(--wa-chat);
+  --color-wa-in: var(--wa-in);
+  --color-wa-out: var(--wa-out);
+  --color-wa-meta: var(--wa-meta);
+  --color-wa-tick: var(--wa-tick);
+  --color-wa-pill: var(--wa-pill);
+  --color-wa-notice: var(--wa-notice);
+  --color-wa-notice-text: var(--wa-notice-text);
+  --color-wa-chip: var(--wa-chip);
+  --color-wa-chip-active: var(--wa-chip-active);
+
   --animate-fade-up: fade-up 0.55s var(--ease-fluid) both;
   --animate-scale-in: scale-in 0.3s var(--ease-fluid) both;
   --animate-bar-rise: bar-rise 0.7s var(--ease-fluid) both;
@@ -129,6 +161,33 @@
   --glass-overlay-solidity: 86%;
   --glass-shadow: 0 1px 2px oklch(0 0 0 / 4%), 0 8px 24px -12px oklch(0 0 0 / 14%);
   --glass-shadow-lg: 0 2px 6px oklch(0 0 0 / 5%), 0 24px 48px -16px oklch(0 0 0 / 24%);
+
+  /* WhatsApp Web, light. */
+  --wa-bar: #f0f2f5;
+  --wa-panel: #ffffff;
+  --wa-hover: #f5f6f6;
+  --wa-active: #f0f2f5;
+  --wa-search: #f0f2f5;
+  --wa-field: #ffffff;
+  --wa-line: #e9edef;
+  --wa-text: #111b21;
+  --wa-muted: #667781;
+  --wa-icon: #54656f;
+  --wa-green: #00a884;
+  --wa-green-text: #008069;
+  --wa-badge: #25d366;
+  --wa-badge-text: #ffffff;
+  --wa-chat: #efeae2;
+  --wa-doodle: oklch(0.45 0.03 75 / 9%);
+  --wa-in: #ffffff;
+  --wa-out: #d9fdd3;
+  --wa-meta: #667781;
+  --wa-tick: #53bdeb;
+  --wa-pill: #ffffff;
+  --wa-notice: #ffeecd;
+  --wa-notice-text: #54656f;
+  --wa-chip: #f0f2f5;
+  --wa-chip-active: #d9fdd3;
 }
 
 .dark {
@@ -175,6 +234,33 @@
   --glass-overlay-solidity: 95%;
   --glass-shadow: 0 1px 2px oklch(0 0 0 / 30%), 0 8px 24px -12px oklch(0 0 0 / 50%);
   --glass-shadow-lg: 0 2px 6px oklch(0 0 0 / 35%), 0 24px 48px -16px oklch(0 0 0 / 65%);
+
+  /* WhatsApp Web, dark. */
+  --wa-bar: #202c33;
+  --wa-panel: #111b21;
+  --wa-hover: #202c33;
+  --wa-active: #2a3942;
+  --wa-search: #202c33;
+  --wa-field: #2a3942;
+  --wa-line: #222d34;
+  --wa-text: #e9edef;
+  --wa-muted: #8696a0;
+  --wa-icon: #aebac1;
+  --wa-green: #00a884;
+  --wa-green-text: #00a884;
+  --wa-badge: #00a884;
+  --wa-badge-text: #111b21;
+  --wa-chat: #0b141a;
+  --wa-doodle: oklch(1 0 0 / 5%);
+  --wa-in: #202c33;
+  --wa-out: #005c4b;
+  --wa-meta: oklch(0.93 0.005 220 / 60%);
+  --wa-tick: #53bdeb;
+  --wa-pill: #182229;
+  --wa-notice: #182229;
+  --wa-notice-text: #ffd279;
+  --wa-chip: #202c33;
+  --wa-chip-active: #0a332c;
 }
 
 @layer base {
@@ -316,6 +402,28 @@
       color-mix(in oklch, var(--brand) var(--ambient-3), transparent),
       transparent 64%
     );
+}
+
+/* WhatsApp chat wallpaper: the beige (light) / near-black (dark) canvas with a tiled
+   doodle layer. The doodles are a mask over a flat color so they follow the theme; the
+   wrapper doesn't scroll (the messages scroll inside it), so the pattern stays put like
+   WhatsApp's. */
+@utility wa-wallpaper {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--wa-chat);
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--wa-doodle);
+    -webkit-mask-image: url("/wa-doodles.svg");
+    mask-image: url("/wa-doodles.svg");
+    -webkit-mask-size: 320px 320px;
+    mask-size: 320px 320px;
+  }
 }
 
 /* Cascade entrance: direct children fade-up one after another. */
