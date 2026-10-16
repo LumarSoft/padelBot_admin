@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +44,7 @@ export function AddPairDialog({
   const [players, setPlayers] = useState<[PlayerFields, PlayerFields]>(EMPTY);
   const [categoryId, setCategoryId] = useState(defaultCategoryId ?? categories[0]?.id ?? "");
   const [seed, setSeed] = useState("");
+  const firstNameRef = useRef<HTMLInputElement>(null);
 
   const showCategory = categories.length > 1;
   const canSubmit =
@@ -76,8 +77,11 @@ export function AddPairDialog({
         ...(Number.isInteger(seedNumber) && seedNumber > 0 ? { seed: seedNumber } : {}),
       },
       {
-        // Keep the dialog open: the desk usually loads several pairs in a row.
-        onSuccess: () => reset(),
+        // Keep the dialog open and ready for the next one: the desk loads several pairs in a row.
+        onSuccess: () => {
+          reset();
+          firstNameRef.current?.focus();
+        },
       },
     );
   }
@@ -130,6 +134,7 @@ export function AddPairDialog({
                   placeholder="Nombre y apellido"
                   maxLength={100}
                   autoFocus={index === 0}
+                  ref={index === 0 ? firstNameRef : undefined}
                   disabled={addPair.isPending}
                 />
               </div>

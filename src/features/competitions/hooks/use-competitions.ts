@@ -99,7 +99,7 @@ export function useDeleteCompetition(id: string) {
 /** A write on the event's insides (pairs, fixture, results): it only refreshes the event. */
 function useDetailMutation<V>(
   run: (variables: V) => Promise<CompetitionDetail>,
-  successMessage: string | ((variables: V) => string),
+  successMessage: string | ((variables: V, detail: CompetitionDetail) => string),
 ) {
   const queryClient = useQueryClient();
   return useMutation<CompetitionDetail, ApiError, V>({
@@ -107,7 +107,7 @@ function useDetailMutation<V>(
     onSuccess: (detail, variables) => {
       queryClient.setQueryData(queryKeys.competitions.detail(detail.id), detail);
       invalidateCompetitions(queryClient);
-      toast.success(typeof successMessage === "function" ? successMessage(variables) : successMessage);
+      toast.success(typeof successMessage === "function" ? successMessage(variables, detail) : successMessage);
     },
     onError: (error) => toast.error(error.message),
   });
@@ -151,7 +151,7 @@ export function useSetPlayerPayment(id: string) {
 export function useGenerateFixture(id: string) {
   return useDetailMutation(
     (categoryId: string) => competitionsService.generateFixture(id, categoryId),
-    "Fixture armado",
+    (_, detail) => (detail.kind === "PENA" ? "Partidos armados" : "Fixture armado"),
   );
 }
 
@@ -180,6 +180,6 @@ export function useUpdateMatch(id: string) {
   return useDetailMutation(
     ({ matchId, body }: { matchId: string; body: UpdateMatchRequest }) =>
       competitionsService.updateMatch(id, matchId, body),
-    ({ body }) => (body.sets === null ? "Resultado borrado" : "Partido actualizado"),
+    ({ body }) => (body.sets === null ? "Resultado borrado" : body.sets ? "Resultado guardado" : "Partido actualizado"),
   );
 }

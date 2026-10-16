@@ -1,5 +1,6 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Court } from "@/types/api/turnos";
 
@@ -31,12 +32,13 @@ export function CourtToggles({
             onClick={() => toggle(court.id)}
             aria-pressed={active}
             className={cn(
-              "rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
               active
-                ? "border-brand bg-brand/10 text-foreground"
+                ? "border-brand bg-brand/20 text-foreground"
                 : "text-muted-foreground border-dashed hover:border-solid hover:text-foreground",
             )}
           >
+            {active && <Check className="text-brand size-3.5" />}
             {court.name}
           </button>
         );
