@@ -6,6 +6,7 @@ import {
   Loader2,
   PackagePlus,
   Pencil,
+  ScanBarcode,
   ShoppingBasket,
   Trash2,
   ToggleLeft,
@@ -43,24 +44,18 @@ import {
 import { PlanUpsell } from "@/features/plan/components/plan-upsell";
 import { useFeature } from "@/features/plan/hooks/use-plan";
 import type { Product, ProductCategory } from "@/types/api/products";
-import { CATEGORY_LABELS } from "@/types/api/products";
+import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/types/api/products";
 import { KioscoTabs } from "@/features/kiosco/components/kiosco-tabs";
 import { StockActions } from "@/features/kiosco/components/stock-actions";
 import { StockLevel } from "@/features/kiosco/components/stock-level";
-
-const CATEGORIES: ProductCategory[] = [
-  "PELOTA",
-  "BEBIDA",
-  "SNACK",
-  "ACCESORIO",
-  "OTRO",
-];
 
 interface ProductFormValues {
   name: string;
   priceCents: number;
   category: ProductCategory;
   isActive: boolean;
+  /** Only sent when it changed: null removes the code. */
+  barcode?: string | null;
   /** Only sent when it changed: a number (re)sets the stock, null stops tracking it. */
   stockQuantity?: number | null;
   lowStockThreshold?: number | null;
@@ -92,6 +87,7 @@ function ProductForm({
     initial?.category ?? "OTRO",
   );
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const [barcode, setBarcode] = useState(initial?.barcode ?? "");
   const wasTracked = initial?.stockQuantity != null;
   const [trackStock, setTrackStock] = useState(wasTracked);
   // Starting to track depends on the plan; a product already tracked keeps it either way.
@@ -123,10 +119,21 @@ function ProductForm({
     };
   }
 
+  const barcodeValue = barcode.trim() || null;
+  // What a scanner types: no spaces (the API checks the rest).
+  const barcodeValid = barcodeValue === null || !/\s/.test(barcodeValue);
+
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!trimmed || !priceValid || !stockValid) return;
-    onSubmit({ name: trimmed, priceCents, category, isActive, ...stockChanges() });
+    if (!trimmed || !priceValid || !stockValid || !barcodeValid) return;
+    onSubmit({
+      name: trimmed,
+      priceCents,
+      category,
+      isActive,
+      ...(barcodeValue !== (initial?.barcode ?? null) ? { barcode: barcodeValue } : {}),
+      ...stockChanges(),
+    });
   }
 
   return (
@@ -160,9 +167,38 @@ function ProductForm({
       </div>
 
       <div className="flex flex-col gap-2">
+        <Label htmlFor="product-barcode">
+          Código de barras
+          <span className="text-muted-foreground font-normal">(opcional)</span>
+        </Label>
+        <div className="relative">
+          <ScanBarcode className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+          <Input
+            id="product-barcode"
+            value={barcode}
+            onChange={(e) => setBarcode(e.target.value)}
+            // The scanner ends with Enter: it must not save the form halfway through.
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.preventDefault();
+            }}
+            maxLength={64}
+            autoComplete="off"
+            spellCheck={false}
+            placeholder="Escanealo o escribilo"
+            aria-invalid={!barcodeValid || undefined}
+            disabled={isPending}
+            className="pl-8 font-mono"
+          />
+        </div>
+        <p className="text-muted-foreground text-xs">
+          Con el código, el lector lo reconoce solo en «Mostrador».
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-2">
         <Label>Categoría</Label>
         <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map((cat) => (
+          {CATEGORY_ORDER.map((cat) => (
             <button
               key={cat}
               type="button"
@@ -262,7 +298,7 @@ function ProductForm({
       <DialogFooter>
         <Button
           type="submit"
-          disabled={isPending || !trimmed || !priceValid || !stockValid}
+          disabled={isPending || !trimmed || !priceValid || !stockValid || !barcodeValid}
           data-help="producto-guardar"
         >
           {isPending ? "Guardando…" : submitLabel}
@@ -288,7 +324,8 @@ function CreateProductDialog() {
             <DialogTitle>Nuevo producto</DialogTitle>
             <DialogDescription>
               Agregá un ítem al catálogo del complejo (pelotas, bebidas, snacks,
-              etc.).
+              etc.). Si tiene código de barras, escanealo y el lector lo reconoce
+              al cobrar.
             </DialogDescription>
           </DialogHeader>
           <ProductForm
@@ -373,7 +410,7 @@ function Catalog({
 
   return (
     <div className="flex flex-col gap-6">
-      {CATEGORIES.filter((cat) => byCategory[cat]?.length).map((cat) => (
+      {CATEGORY_ORDER.filter((cat) => byCategory[cat]?.length).map((cat) => (
         <div key={cat} className="overflow-hidden rounded-xl border">
           <div className="bg-muted/40 border-b px-4 py-2">
             <p className="text-sm font-medium">{CATEGORY_LABELS[cat]}</p>
@@ -394,7 +431,15 @@ function Catalog({
                   key={product.id}
                   className={!product.isActive ? "opacity-50" : undefined}
                 >
-                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell>
+                    <p className="font-medium">{product.name}</p>
+                    {product.barcode && (
+                      <p className="text-muted-foreground flex items-center gap-1 font-mono text-xs">
+                        <ScanBarcode className="size-3" />
+                        {product.barcode}
+                      </p>
+                    )}
+                  </TableCell>
                   <TableCell className="text-sm tabular-nums">
                     {formatPrice(product.priceCents)}
                   </TableCell>
@@ -488,13 +533,13 @@ export function ProductsManager() {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-end gap-2" data-help="kiosco-acciones">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <StockActions />
         <CreateProductDialog />
       </div>
 
       <KioscoTabs
-        first={{
+        second={{
           value: "catalogo",
           label: "Catálogo",
           icon: BookOpen,

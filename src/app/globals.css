@@ -77,6 +77,7 @@
   --animate-scale-in: scale-in 0.3s var(--ease-fluid) both;
   --animate-bar-rise: bar-rise 0.7s var(--ease-fluid) both;
   --animate-grow-x: grow-x 0.9s var(--ease-fluid) both;
+  --animate-pos-flash: pos-flash 1.2s var(--ease-fluid) both;
 }
 
 :root {
@@ -482,6 +483,16 @@
   }
   to {
     scale: 1 1;
+  }
+}
+
+/* The point of sale's line that a scan just added to: tinted with --flash, then fades out. */
+@keyframes pos-flash {
+  from {
+    background-color: color-mix(in oklch, var(--flash, var(--brand)) 22%, transparent);
+  }
+  to {
+    background-color: transparent;
   }
 }
 

@@ -11,6 +11,12 @@ export const productsService = {
   list(): Promise<Product[]> {
     return apiClient.get<Product[]>("/api/products");
   },
+  /** The product a scanned code belongs to; rejects with a 404 ApiError when none has it. */
+  findByBarcode(code: string): Promise<Product> {
+    return apiClient.get<Product>(
+      `/api/products/by-barcode?code=${encodeURIComponent(code)}`,
+    );
+  },
   create(body: CreateProductRequest): Promise<Product> {
     return apiClient.post<Product>("/api/products", body);
   },

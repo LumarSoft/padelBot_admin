@@ -25,7 +25,7 @@ const METHOD_LABELS: Record<PlayerPaymentMethod, string> = {
   TRANSFER: "Transferencia",
 };
 
-/** Today's counter sales with what each payment method adds up to, and undo for mistakes. */
+/** Today's counter sales (what «Mostrador» charged) with each payment method's total, and undo for mistakes. */
 export function CounterSalesToday() {
   const { data, isLoading } = useCounterSales(todayKey());
   const removeSale = useRemoveCounterSale();
@@ -55,8 +55,8 @@ export function CounterSalesToday() {
     return (
       <EmptyState
         icon={Receipt}
-        title="Sin ventas sueltas hoy"
-        description="Las bebidas o pelotas que se venden sin turno se cargan con «Venta suelta» y suman a la caja del día."
+        title="Sin ventas hoy"
+        description="Lo que se cobra en «Mostrador» (bebidas, pelotas, lo que se vende sin turno) aparece acá y suma a la caja del día."
       />
     );
   }

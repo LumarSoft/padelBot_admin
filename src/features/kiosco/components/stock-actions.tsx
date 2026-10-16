@@ -1,51 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import { ClipboardList, PackagePlus, ShoppingBag } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/features/productos/hooks/use-products";
-import { PurchaseDialog } from "@/features/kiosco/components/purchase-dialog";
 import { CountDialog } from "@/features/kiosco/components/count-dialog";
-import { CounterSaleDialog } from "@/features/kiosco/components/counter-sale-dialog";
 import { useFeature } from "@/features/plan/hooks/use-plan";
 
-type Open = "sale" | "purchase" | "count" | null;
-
-/** The three things the front desk does with the kiosk, as buttons. Active products only. */
+/**
+ * «Contar stock», next to the screen's title. Charging and loading deliveries happen in the
+ * «Mostrador» tab (the point of sale); the count stays a sheet of its own because it's done
+ * shelf in hand, product by product.
+ */
 export function StockActions() {
   const { data } = useProducts();
-  const [open, setOpen] = useState<Open>(null);
-  const products = (data ?? []).filter((p) => p.isActive);
-  // Without kiosk stock in the plan, deliveries and counts can't START tracking a product (the
-  // API refuses it); products a club already tracks keep both.
+  const [open, setOpen] = useState(false);
+  // Without kiosk stock in the plan a count can't START tracking a product (the API refuses
+  // it); products a club already tracks keep it.
   const canTrack = useFeature("kioscoStock").enabled;
-  const stockProducts = canTrack ? products : products.filter((p) => p.stockQuantity !== null);
-  const onOpenChange = (next: boolean) => {
-    if (!next) setOpen(null);
-  };
+  const products = (data ?? []).filter(
+    (p) => p.isActive && (canTrack || p.stockQuantity !== null),
+  );
+
+  if (products.length === 0) return null;
 
   return (
     <>
-      <Button size="sm" variant="outline" onClick={() => setOpen("sale")}>
-        <ShoppingBag className="size-4" />
-        Venta suelta
+      <Button size="sm" variant="outline" onClick={() => setOpen(true)} data-help="kiosco-contar">
+        <ClipboardList className="size-4" />
+        Contar stock
       </Button>
-      {stockProducts.length > 0 && (
-        <>
-          <Button size="sm" variant="outline" onClick={() => setOpen("purchase")}>
-            <PackagePlus className="size-4" />
-            Entró mercadería
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => setOpen("count")}>
-            <ClipboardList className="size-4" />
-            Contar stock
-          </Button>
-        </>
-      )}
-
-      <CounterSaleDialog products={products} open={open === "sale"} onOpenChange={onOpenChange} />
-      <PurchaseDialog products={stockProducts} open={open === "purchase"} onOpenChange={onOpenChange} />
-      <CountDialog products={stockProducts} open={open === "count"} onOpenChange={onOpenChange} />
+      <CountDialog products={products} open={open} onOpenChange={setOpen} />
     </>
   );
 }

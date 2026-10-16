@@ -33,6 +33,13 @@ export const NEWS: NewsEntry[] = [
     action: { label: "Mostrame", tour: "armar-torneo" },
   },
   {
+    id: "mostrador-lector",
+    date: "2026-10-15",
+    title: "Cobrá con lector de código de barras",
+    line: "En Productos, «Mostrador»: escaneás y cobrás, o cargás la mercadería que llega. El stock se actualiza solo.",
+    action: { label: "Mostrame", tour: "kiosco-dueno" },
+  },
+  {
     id: "confirmacion-fijos",
     date: "2026-10-14",
     title: "El bot les pregunta a los fijos si vienen",
@@ -44,7 +51,7 @@ export const NEWS: NewsEntry[] = [
     id: "stock-kiosco",
     date: "2026-10-14",
     title: "Stock del kiosco y venta suelta",
-    line: "Activalo por producto: cada consumo descuenta solo y te avisamos cuando queda poco. Lo que se vende sin turno va en «Venta suelta».",
+    line: "Activalo por producto: cada consumo descuenta solo y te avisamos cuando queda poco. Lo que se vende sin turno se cobra en «Mostrador».",
     action: { label: "Mostrame", tour: "stock" },
   },
   {

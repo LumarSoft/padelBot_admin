@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Receipt, ShoppingCart, type LucideIcon } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Receipt, ScanBarcode, ShoppingCart, type LucideIcon } from "lucide-react";
 import {
   Tabs,
   TabsIndicator,
@@ -13,16 +14,21 @@ import { useShoppingList } from "@/features/kiosco/hooks/use-stock";
 import { ShoppingList } from "@/features/kiosco/components/shopping-list";
 import { CounterSalesToday } from "@/features/kiosco/components/counter-sales-today";
 import { MovementsDialog } from "@/features/kiosco/components/movements-dialog";
+import { PointOfSale } from "@/features/kiosco/components/pos/point-of-sale";
+
+const POS_TAB = "mostrador";
 
 /**
- * The kiosk views shared by Productos (owner) and Kiosco (staff): a first tab of their own
- * (the priced catalog or the plain stock sheet), "Para comprar" and today's counter sales.
- * The first tab gets `onShowHistory` to open a product's ledger.
+ * The kiosk views shared by Productos (owner) and Kiosco (staff). It opens on «Mostrador», the
+ * point of sale where the counter charges and loads deliveries with the barcode scanner; then
+ * a tab of each screen's own (the priced catalog or the plain stock sheet), "Para comprar"
+ * and today's sales. The tab lives in the URL (`?tab=`), so a guide can open the right one;
+ * the own tab gets `onShowHistory` to open a product's ledger.
  */
 export function KioscoTabs({
-  first,
+  second,
 }: {
-  first: {
+  second: {
     value: string;
     label: string;
     icon: LucideIcon;
@@ -31,34 +37,54 @@ export function KioscoTabs({
 }) {
   const [historyOf, setHistoryOf] = useState<string | null>(null);
   const { data: toBuy } = useShoppingList();
-  const Icon = first.icon;
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tabs = [POS_TAB, second.value, "comprar", "ventas"];
+  const requested = searchParams.get("tab");
+  const tab = requested && tabs.includes(requested) ? requested : POS_TAB;
+  const Icon = second.icon;
+
+  function handleChange(value: unknown) {
+    if (typeof value !== "string" || !tabs.includes(value)) return;
+    router.replace(value === POS_TAB ? pathname : `${pathname}?tab=${value}`, { scroll: false });
+  }
 
   return (
     <>
-      <Tabs defaultValue={first.value}>
-        <TabsList className="max-w-full overflow-x-auto">
-          <TabsIndicator />
-          <TabsTab value={first.value}>
-            <Icon />
-            {first.label}
-          </TabsTab>
-          <TabsTab value="comprar">
-            <ShoppingCart />
-            Para comprar
-            {(toBuy?.length ?? 0) > 0 && (
-              <span className="flex size-5 items-center justify-center rounded-full bg-amber-500 text-[11px] font-semibold text-white tabular-nums">
-                {toBuy!.length}
-              </span>
-            )}
-          </TabsTab>
-          <TabsTab value="ventas">
-            <Receipt />
-            Ventas sueltas
-          </TabsTab>
-        </TabsList>
+      <Tabs value={tab} onValueChange={handleChange}>
+        <div className="-mx-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <TabsList>
+            <TabsIndicator />
+            <TabsTab value={POS_TAB}>
+              <ScanBarcode />
+              Mostrador
+            </TabsTab>
+            <TabsTab value={second.value}>
+              <Icon />
+              {second.label}
+            </TabsTab>
+            <TabsTab value="comprar">
+              <ShoppingCart />
+              Para comprar
+              {(toBuy?.length ?? 0) > 0 && (
+                <span className="flex size-5 items-center justify-center rounded-full bg-amber-500 text-[11px] font-semibold text-white tabular-nums">
+                  {toBuy!.length}
+                </span>
+              )}
+            </TabsTab>
+            <TabsTab value="ventas">
+              <Receipt />
+              Ventas de hoy
+            </TabsTab>
+          </TabsList>
+        </div>
 
-        <TabsPanel value={first.value} className="flex flex-col gap-6">
-          {first.render(setHistoryOf)}
+        <TabsPanel value={POS_TAB}>
+          <PointOfSale active={tab === POS_TAB} />
+        </TabsPanel>
+        <TabsPanel value={second.value} className="flex flex-col gap-6">
+          {second.render(setHistoryOf)}
         </TabsPanel>
         <TabsPanel value="comprar">
           <ShoppingList onShowHistory={setHistoryOf} />

@@ -350,7 +350,7 @@ export const TOURS = {
     ],
   },
   stock: {
-    route: "/panel/productos",
+    route: "/panel/productos?tab=catalogo",
     steps: [
       {
         target: "producto-editar",
@@ -366,11 +366,53 @@ export const TOURS = {
     ],
   },
   "kiosco-dueno": {
-    route: "/panel/productos",
+    route: "/panel/productos?tab=mostrador",
     steps: [
       {
-        target: "kiosco-acciones",
-        text: "Venta suelta, mercadería que llegó y conteo de stock: todo arranca acá.",
+        target: "pos-modo",
+        text: "«Cobrar» para vender y «Cargar stock» para la mercadería que llega.",
+      },
+      {
+        target: "pos-lector",
+        text: "Escaneá con el lector o escribí el nombre. Un código nuevo se guarda ahí mismo.",
+      },
+    ],
+  },
+  mostrador: {
+    route: "/panel/kiosco?tab=mostrador",
+    steps: [
+      {
+        target: "pos-modo-cobrar",
+        text: "Tocá «Cobrar».",
+        waitFor: "pos-modo-cobrar",
+      },
+      {
+        target: "pos-lector",
+        text: "Escaneá lo que lleva con el lector, o tocá el producto en la lista.",
+      },
+      {
+        target: "pos-pago",
+        text: "Elegí cómo paga y tocá «Cobrar». El stock baja solo.",
+        missing: "Primero escaneá o tocá un producto: ahí aparece cómo paga.",
+      },
+    ],
+  },
+  "cargar-stock": {
+    route: "/panel/kiosco?tab=mostrador",
+    steps: [
+      {
+        target: "pos-modo-cargar",
+        text: "Tocá «Cargar stock».",
+        waitFor: "pos-modo-cargar",
+      },
+      {
+        target: "pos-lector",
+        text: "Escaneá cada producto que llegó. Si es una caja, escaneá uno y escribí cuántos son.",
+      },
+      {
+        target: "pos-sumar-stock",
+        text: "Tocá «Sumar al stock». Hasta ahí no se suma nada.",
+        missing: "Primero escaneá lo que llegó: ahí aparece «Sumar al stock».",
       },
     ],
   },

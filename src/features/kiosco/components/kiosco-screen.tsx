@@ -14,15 +14,7 @@ import {
 import { useProducts } from "@/features/productos/hooks/use-products";
 import { KioscoTabs } from "@/features/kiosco/components/kiosco-tabs";
 import { StockLevel } from "@/features/kiosco/components/stock-level";
-import { CATEGORY_LABELS, type Product, type ProductCategory } from "@/types/api/products";
-
-const CATEGORY_ORDER: ProductCategory[] = [
-  "PELOTA",
-  "BEBIDA",
-  "SNACK",
-  "ACCESORIO",
-  "OTRO",
-];
+import { CATEGORY_LABELS, CATEGORY_ORDER, type Product } from "@/types/api/products";
 
 /** The plain stock sheet the front desk works with: product, how many, minimum. No prices. */
 function StockSheet({ onShowHistory }: { onShowHistory: (productId: string) => void }) {
@@ -106,7 +98,7 @@ function StockSheet({ onShowHistory }: { onShowHistory: (productId: string) => v
 export function KioscoScreen() {
   return (
     <KioscoTabs
-      first={{
+      second={{
         value: "stock",
         label: "Stock",
         icon: Boxes,

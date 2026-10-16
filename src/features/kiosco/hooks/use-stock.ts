@@ -47,18 +47,12 @@ export function useCounterSales(dateKey: string) {
   });
 }
 
+/** "Cargar stock" in the point of sale; the screen itself confirms what came in. */
 export function useRegisterPurchase() {
   const invalidate = useInvalidateStock();
   return useMutation<StockProduct[], ApiError, RegisterPurchaseRequest>({
     mutationFn: (body) => stockService.registerPurchase(body),
-    onSuccess: (products) => {
-      invalidate();
-      toast.success(
-        products.length === 1
-          ? `Mercadería cargada: ${products[0].name}`
-          : `Mercadería cargada: ${products.length} productos`,
-      );
-    },
+    onSuccess: () => invalidate(),
     onError: (error) => toast.error(error.message),
   });
 }
@@ -72,6 +66,7 @@ export function useRegisterCount() {
   });
 }
 
+/** "Cobrar" in the point of sale; the screen itself confirms the sale (and offers to undo it). */
 export function useCreateCounterSale() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateStock();
@@ -81,9 +76,26 @@ export function useCreateCounterSale() {
       invalidate();
       // It counts in the day's cash.
       void queryClient.invalidateQueries({ queryKey: ["stats"] });
-      toast.success("Venta registrada");
     },
     onError: (error) => toast.error(error.message),
+  });
+}
+
+/** Undoes a whole ticket just charged (one counter sale per product): back to stock, out of the cash. */
+export function useUndoCounterSales() {
+  const queryClient = useQueryClient();
+  const invalidate = useInvalidateStock();
+  return useMutation<void, ApiError, string[]>({
+    mutationFn: async (ids) => {
+      for (const id of ids) await stockService.removeCounterSale(id);
+    },
+    onSuccess: () => toast.success("Venta anulada"),
+    onError: (error) => toast.error(error.message),
+    // Even a half-undone ticket changed the stock and the cash.
+    onSettled: () => {
+      invalidate();
+      void queryClient.invalidateQueries({ queryKey: ["stats"] });
+    },
   });
 }
 
