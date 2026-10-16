@@ -9,6 +9,7 @@ import {
   MessagesSquare,
   Settings,
   LayoutDashboard,
+  Lightbulb,
   ShoppingBasket,
   Trophy,
   UserRound,
@@ -43,6 +44,11 @@ const MAIN_NAV: NavItem[] = [
 /** Kiosk stock for the front desk. The owner manages it from Productos (catalog + stock). */
 const STAFF_NAV: NavItem[] = [
   { href: "/panel/kiosco", label: "Kiosco", icon: Boxes },
+];
+
+/** About GTP itself, for everyone: what we shipped and their suggestions to us. */
+const GTP_NAV: NavItem[] = [
+  { href: "/panel/mejoras", label: "Mejoras", icon: Lightbulb },
 ];
 
 const ADMIN_NAV: NavItem[] = [
@@ -154,6 +160,13 @@ export function DashboardNav() {
           ))}
         </>
       )}
+
+      <p className="text-muted-foreground px-3 pt-4 pb-1.5 text-xs font-medium tracking-wide uppercase">
+        GTP
+      </p>
+      {GTP_NAV.map((item) => (
+        <NavLink key={item.href} item={item} pathname={pathname} />
+      ))}
     </nav>
   );
 }

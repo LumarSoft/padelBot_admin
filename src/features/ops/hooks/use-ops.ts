@@ -23,6 +23,12 @@ import type {
   UpdateSubscriptionPayload,
 } from "@/types/api/ops";
 import type { HelpSearchMiss } from "@/types/api/help";
+import type {
+  OpsImprovement,
+  OpsImprovementSuggestion,
+  SaveImprovementPayload,
+  UpdateImprovementSuggestionPayload,
+} from "@/types/api/improvements";
 
 function errorMessage(error: unknown, fallback: string): string {
   return error instanceof ApiError ? error.message : fallback;
@@ -253,5 +259,83 @@ export function useHelpSearchMisses() {
   return useQuery<HelpSearchMiss[]>({
     queryKey: queryKeys.ops.helpSearchMisses,
     queryFn: () => opsService.getHelpSearchMisses(),
+  });
+}
+
+// ── Mejoras ──────────────────────────────────────────────────────────────────
+
+/** Every improvement we posted, drafts included. */
+export function useOpsImprovements() {
+  return useQuery<OpsImprovement[]>({
+    queryKey: queryKeys.ops.improvements,
+    queryFn: () => opsService.listImprovements(),
+  });
+}
+
+export function useCreateImprovement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: SaveImprovementPayload) => opsService.createImprovement(payload),
+    onSuccess: (improvement) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ops.improvements });
+      toast.success(improvement.publishedAt ? "Mejora publicada" : "Borrador guardado");
+    },
+    onError: (error) => toast.error(errorMessage(error, "No pudimos guardar la mejora.")),
+  });
+}
+
+export function useUpdateImprovement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: SaveImprovementPayload }) =>
+      opsService.updateImprovement(id, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ops.improvements });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ops.improvementSuggestions });
+      toast.success("Mejora actualizada");
+    },
+    onError: (error) => toast.error(errorMessage(error, "No pudimos actualizar la mejora.")),
+  });
+}
+
+export function useDeleteImprovement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => opsService.deleteImprovement(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ops.improvements });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ops.improvementSuggestions });
+      toast.success("Mejora eliminada");
+    },
+    onError: (error) => toast.error(errorMessage(error, "No pudimos eliminar la mejora.")),
+  });
+}
+
+/** The clubs' suggestions, the ones waiting on us first. Polls so a new one shows up on its own. */
+export function useOpsImprovementSuggestions() {
+  return useQuery<OpsImprovementSuggestion[]>({
+    queryKey: queryKeys.ops.improvementSuggestions,
+    queryFn: () => opsService.listImprovementSuggestions(),
+    refetchInterval: 60_000,
+  });
+}
+
+/** Suggestions nobody at Lumarsoft has read yet, for the console's nav. */
+export function useNewImprovementSuggestionsCount(): number {
+  const { data } = useOpsImprovementSuggestions();
+  return (data ?? []).filter((s) => s.status === "NEW").length;
+}
+
+export function useUpdateImprovementSuggestion() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateImprovementSuggestionPayload }) =>
+      opsService.updateImprovementSuggestion(id, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ops.improvementSuggestions });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ops.improvements });
+      toast.success("Propuesta actualizada");
+    },
+    onError: (error) => toast.error(errorMessage(error, "No pudimos actualizar la propuesta.")),
   });
 }

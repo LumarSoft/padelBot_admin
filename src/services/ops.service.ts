@@ -1,6 +1,13 @@
 import { apiClient } from "@/lib/api/client";
 import type { HelpSearchMiss } from "@/types/api/help";
 import type {
+  ImprovementSuggestionStatus,
+  OpsImprovement,
+  OpsImprovementSuggestion,
+  SaveImprovementPayload,
+  UpdateImprovementSuggestionPayload,
+} from "@/types/api/improvements";
+import type {
   BotMetrics,
   BusinessMetrics,
   ProfitabilityReport,
@@ -106,5 +113,37 @@ export const opsService = {
   },
   getHelpSearchMisses(): Promise<HelpSearchMiss[]> {
     return apiClient.get<HelpSearchMiss[]>("/api/ops/help/search-misses");
+  },
+
+  listImprovements(): Promise<OpsImprovement[]> {
+    return apiClient.get<OpsImprovement[]>("/api/ops/improvements");
+  },
+  createImprovement(payload: SaveImprovementPayload): Promise<OpsImprovement> {
+    return apiClient.post<OpsImprovement>("/api/ops/improvements", payload);
+  },
+  updateImprovement(id: string, payload: SaveImprovementPayload): Promise<OpsImprovement> {
+    return apiClient.patch<OpsImprovement>(
+      `/api/ops/improvements/${encodeURIComponent(id)}`,
+      payload,
+    );
+  },
+  deleteImprovement(id: string): Promise<void> {
+    return apiClient.del<void>(`/api/ops/improvements/${encodeURIComponent(id)}`);
+  },
+  listImprovementSuggestions(
+    status?: ImprovementSuggestionStatus,
+  ): Promise<OpsImprovementSuggestion[]> {
+    return apiClient.get<OpsImprovementSuggestion[]>(
+      `/api/ops/improvement-suggestions${status ? `?status=${status}` : ""}`,
+    );
+  },
+  updateImprovementSuggestion(
+    id: string,
+    payload: UpdateImprovementSuggestionPayload,
+  ): Promise<OpsImprovementSuggestion> {
+    return apiClient.patch<OpsImprovementSuggestion>(
+      `/api/ops/improvement-suggestions/${encodeURIComponent(id)}`,
+      payload,
+    );
   },
 };

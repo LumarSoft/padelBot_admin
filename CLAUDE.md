@@ -51,6 +51,8 @@ App Router project. Code is split between routing (`src/app/`) and a feature-fir
 
 **Torneos y peñas:** `/panel/torneos` and `/panel/penas` (+ `/[id]`), one feature (`features/competitions`) over the API's `/competitions`. Both kinds share the detail screen: Inscriptos (pairs, per-player fee paid/method) and Partidos (round robin by wave, zonas with their tables, the bracket). Creating or editing an event blocks its courts in the agenda (the API refuses with a 409 listing any booked turno in the way); the agenda labels those cells «Torneo · …» / «Peña · …» from `Slot.competition`. Every write returns the full event and the SSE `competition.changed` refreshes it on other screens. Torneos are created only here; the staff app creates peñas and runs pairs, payments and results.
 
+**Mejoras:** `/panel/mejoras` (owner and staff, `features/improvements`) lists what Lumarsoft published (`GET /improvements`: planeada / en desarrollo / lanzada) and lets the club propose improvements and read our answer (`/improvements/suggestions`). We answer and post from the ops console's `/ops/mejoras` (the nav badge counts NEW suggestions) or from the API with `npm run improvement:post`. Separate from the "?" help's Novedades (`features/help/content/news.ts`, tied to guides). The staff app has the same screen under Ajustes → Mejoras.
+
 State/data conventions: **TanStack Query** for server state (keys in `src/lib/query-keys.ts`), **sonner** for toasts, real-time panel updates via **SSE** (`src/features/realtime`). Currency is stored in cents; format with `src/lib/format.ts`. Build WhatsApp deep links with `src/lib/whatsapp.ts`.
 
 Path alias: `@/*` maps to `src/` (e.g. `@/features/...`, `@/lib/...`). Static assets go in `public/`.

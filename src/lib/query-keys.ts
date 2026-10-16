@@ -91,6 +91,10 @@ export const queryKeys = {
     houseRules: ["help", "house-rules"] as const,
     newsSeen: ["help", "news", "seen"] as const,
   },
+  improvements: {
+    published: ["improvements", "published"] as const,
+    suggestions: ["improvements", "suggestions"] as const,
+  },
   ops: {
     leads: (status?: string) => ["ops", "leads", status ?? "all"] as const,
     leadsSummary: ["ops", "leads", "summary"] as const,
@@ -104,5 +108,7 @@ export const queryKeys = {
     bot: ["ops", "metrics", "bot"] as const,
     health: ["ops", "health"] as const,
     helpSearchMisses: ["ops", "help", "search-misses"] as const,
+    improvements: ["ops", "improvements"] as const,
+    improvementSuggestions: ["ops", "improvement-suggestions"] as const,
   },
 } as const;
