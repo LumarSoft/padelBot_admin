@@ -8,11 +8,15 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { StatTile } from "@/features/ops/components/stat-tile";
 import { LeadCard } from "@/features/ops/components/lead-card";
-import { answerLabel, LEAD_STATUS_LABELS } from "@/features/ops/lib/labels";
+import { SignupFunnelCard } from "@/features/ops/components/signup-funnel-card";
+import { answerLabel, LEAD_STATUS_LABELS, LOST_REASON_LABELS } from "@/features/ops/lib/labels";
 import { useLeads, useLeadsSummary } from "@/features/ops/hooks/use-ops";
 import type { LeadStatus } from "@/types/api/ops";
 
-const FILTERS: { value: LeadStatus | "ALL"; label: string }[] = [
+type Filter = LeadStatus | "ALL" | "DUE";
+
+const FILTERS: { value: Filter; label: string }[] = [
+  { value: "DUE", label: "Para hoy" },
   { value: "ALL", label: "Todos" },
   { value: "NEW", label: "Nuevos" },
   { value: "CONTACTED", label: "Contactados" },
@@ -21,9 +25,10 @@ const FILTERS: { value: LeadStatus | "ALL"; label: string }[] = [
 ];
 
 export function LeadsScreen() {
-  const [filter, setFilter] = useState<LeadStatus | "ALL">("ALL");
+  const [filter, setFilter] = useState<Filter>("ALL");
   const leads = useLeads(filter === "ALL" ? undefined : filter);
   const summary = useLeadsSummary();
+  const dueToday = summary.data?.dueToday ?? 0;
 
   const pipeline = summary.data?.pipeline;
 
@@ -38,8 +43,12 @@ export function LeadsScreen() {
         <StatTile
           label="Sin contactar"
           value={pipeline?.NEW ?? "—"}
-          hint="Los que están esperando que los llames"
-          tone={pipeline && pipeline.NEW > 0 ? "warning" : "default"}
+          hint={
+            dueToday > 0
+              ? `Y ${dueToday} para volver a llamar hoy`
+              : "Los que están esperando que los llames"
+          }
+          tone={(pipeline && pipeline.NEW > 0) || dueToday > 0 ? "warning" : "default"}
         />
         <StatTile
           label="Tiempo de respuesta"
@@ -112,6 +121,46 @@ export function LeadsScreen() {
         </div>
       )}
 
+      {summary.data &&
+        (summary.data.byCampaign.length > 0 || summary.data.byLostReason.length > 0) && (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {summary.data.byCampaign.length > 0 && (
+              <Card size="sm">
+                <CardContent className="space-y-3">
+                  <p className="text-sm font-medium">Por campaña</p>
+                  <ul className="space-y-1.5">
+                    {summary.data.byCampaign.map((campaign) => (
+                      <li key={campaign.value} className="flex items-center justify-between gap-3 text-sm">
+                        <span className="truncate">{campaign.value}</span>
+                        <span className="text-muted-foreground shrink-0 tabular-nums">
+                          {campaign.converted} de {campaign.leads} cerraron
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+            {summary.data.byLostReason.length > 0 && (
+              <Card size="sm">
+                <CardContent className="space-y-3">
+                  <p className="text-sm font-medium">Por qué los perdimos</p>
+                  <ul className="space-y-1.5">
+                    {summary.data.byLostReason.map((reason) => (
+                      <li key={reason.value} className="flex items-center justify-between text-sm">
+                        <span>{LOST_REASON_LABELS[reason.value]}</span>
+                        <span className="text-muted-foreground tabular-nums">{reason.count}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
+      <SignupFunnelCard />
+
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((option) => (
           <Button
@@ -121,9 +170,11 @@ export function LeadsScreen() {
             onClick={() => setFilter(option.value)}
           >
             {option.label}
-            {option.value !== "ALL" && pipeline
-              ? ` (${pipeline[option.value]})`
-              : ""}
+            {option.value === "DUE"
+              ? ` (${dueToday})`
+              : option.value !== "ALL" && pipeline
+                ? ` (${pipeline[option.value]})`
+                : ""}
           </Button>
         ))}
       </div>
@@ -143,7 +194,9 @@ export function LeadsScreen() {
           description={
             filter === "ALL"
               ? "Cuando alguien complete el formulario de /register, aparece en esta pantalla."
-              : `Ningún lead en estado "${LEAD_STATUS_LABELS[filter as LeadStatus]}".`
+              : filter === "DUE"
+                ? "Nadie para volver a llamar hoy. Poné la fecha en cada solicitud con \"Volver a llamar\"."
+                : `Ningún lead en estado "${LEAD_STATUS_LABELS[filter as LeadStatus]}".`
           }
         />
       )}

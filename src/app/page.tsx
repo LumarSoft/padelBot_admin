@@ -12,6 +12,7 @@ import { Pricing } from "@/features/landing/components/pricing";
 import { Faq } from "@/features/landing/components/faq";
 import { FinalCta } from "@/features/landing/components/final-cta";
 import { LandingFooter } from "@/features/landing/components/landing-footer";
+import { UtmCapture } from "@/features/landing/components/utm-capture";
 import { LANDING_FONT_VARIABLES } from "@/features/landing/lib/fonts";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ export default function LandingPage() {
         "bg-ink text-chalk flex min-h-svh flex-col",
       )}
     >
+      <UtmCapture />
       <LandingHeader />
       <main className="flex-1">
         <Hero />

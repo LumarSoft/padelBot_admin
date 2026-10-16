@@ -86,7 +86,10 @@ export const queryKeys = {
   ops: {
     leads: (status?: string) => ["ops", "leads", status ?? "all"] as const,
     leadsSummary: ["ops", "leads", "summary"] as const,
+    signupFunnel: (days: number) => ["ops", "signup-funnel", days] as const,
     clubs: ["ops", "clubs"] as const,
+    clubDetail: (clubId: string) => ["ops", "clubs", clubId, "detail"] as const,
+    weeklySummary: ["ops", "weekly-summary"] as const,
     clubUsers: (clubId: string) => ["ops", "clubs", clubId, "users"] as const,
     business: ["ops", "metrics", "business"] as const,
     profitability: (month: string) => ["ops", "profitability", month] as const,

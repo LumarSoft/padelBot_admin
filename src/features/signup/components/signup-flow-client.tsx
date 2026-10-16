@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { Logo } from "@/components/ui/logo";
 import type { PlanKey } from "@/lib/plans";
+import type { Utm } from "@/features/signup/lib/utm";
 
 /**
  * The signup is mounted client-only.
@@ -30,7 +31,7 @@ const SignupFlow = dynamic(
   },
 );
 
-/** `plan`: the pricing card the prospect came from, if any. */
-export function SignupFlowClient({ plan }: { plan?: PlanKey }) {
-  return <SignupFlow plan={plan} />;
+/** `plan`: the pricing card the prospect came from; `utm`: the campaign in this page's URL. */
+export function SignupFlowClient({ plan, utm }: { plan?: PlanKey; utm?: Utm }) {
+  return <SignupFlow plan={plan} utm={utm} />;
 }

@@ -22,6 +22,7 @@ import {
 } from "@/features/signup/lib/questions";
 import { CHAPTER_MOODS, CLOSING_CHAPTER } from "@/features/signup/lib/chapters";
 import { clearDraft, loadDraft, saveDraft } from "@/features/signup/lib/draft";
+import { rememberedUtm, type Utm } from "@/features/signup/lib/utm";
 import { DEFAULT_CLOSE, DEFAULT_OPEN } from "@/features/signup/lib/schedule-preview";
 import { QuestionScreen } from "@/features/signup/components/question-screen";
 import { SignupBackdrop } from "@/features/signup/components/signup-backdrop";
@@ -37,7 +38,12 @@ const SENT = QUESTIONS.length + 1;
 /** How long the choice card stays lit before the flow moves on. */
 const AUTO_ADVANCE_MS = 260;
 
-export function SignupFlow({ plan }: { plan?: PlanKey }) {
+/** The screen's name for the funnel: a question id, the review or the confirmation. */
+function funnelStep(index: number): string {
+  return index < SUMMARY ? QUESTIONS[index].id : index === SUMMARY ? "summary" : "sent";
+}
+
+export function SignupFlow({ plan, utm }: { plan?: PlanKey; utm?: Utm }) {
   // Read once, at first render. This component is mounted client-only (see
   // signup-flow-client.tsx), so touching localStorage here can't desync a server-rendered
   // tree — and it means the restored answers are simply the initial state, rather than
@@ -62,6 +68,9 @@ export function SignupFlow({ plan }: { plan?: PlanKey }) {
     ),
     // The pricing card they just clicked beats the plan an older draft remembers.
     ...(plan ? { plan } : {}),
+    // Same for the campaign: this page's link first, then the one the landing kept for the
+    // tab, then whatever the draft remembers.
+    ...(utm ?? rememberedUtm() ?? {}),
   }));
   const [index, setIndex] = useState(
     // Never resume onto the confirmation screen, and never past the review.
@@ -96,6 +105,16 @@ export function SignupFlow({ plan }: { plan?: PlanKey }) {
       },
     });
   }, [restored]);
+
+  // Count each screen once per page load, anonymously, so ops sees where people drop out.
+  const counted = useRef(new Set<string>());
+  useEffect(() => {
+    const step = funnelStep(index);
+    if (counted.current.has(step)) return;
+    counted.current.add(step);
+    // Fire and forget: a lost count never gets in the way of the signup.
+    apiClient.post("/api/onboarding/funnel", { step, index }).catch(() => undefined);
+  }, [index]);
 
   // Keep the draft current. A long flow that a stray reload wipes is a lead thrown away.
   useEffect(() => {

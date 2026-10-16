@@ -13,6 +13,9 @@ export interface OpsAdmin {
 
 export type LeadStatus = "NEW" | "CONTACTED" | "CONVERTED" | "LOST";
 
+/** Why a lead was lost (api `ops/lib/lead-status.ts`). */
+export type LostReason = "PRICE" | "COMPETITOR" | "NOT_NOW" | "NO_ANSWER" | "NOT_A_FIT" | "OTHER";
+
 /** Everything the prospect told us, plus our sales file on them. */
 export interface Lead {
   id: string;
@@ -50,6 +53,13 @@ export interface Lead {
   internalNotes: string | null;
   contactedAt: string | null;
   convertedClubId: string | null;
+  /** When to call them back. */
+  followUpAt: string | null;
+  lostReason: LostReason | null;
+  /** The campaign they arrived by (UTM parameters). */
+  utmSource: string | null;
+  utmMedium: string | null;
+  utmCampaign: string | null;
   createdAt: string;
 }
 
@@ -59,11 +69,24 @@ export interface LeadsSummary {
   medianResponseHours: number | null;
   byChannel: { value: string; leads: number; converted: number }[];
   byPain: { value: string; count: number }[];
+  /** Open leads to call back today or overdue. */
+  dueToday: number;
+  byCampaign: { value: string; leads: number; converted: number }[];
+  byLostReason: { value: LostReason | "UNKNOWN"; count: number }[];
+}
+
+/** Visits per `/register` screen, in flow order, and the signups sent over the same days. */
+export interface SignupFunnel {
+  days: number;
+  steps: { step: string; index: number; visits: number }[];
+  leads: number;
 }
 
 export interface UpdateLeadPayload {
   status?: LeadStatus;
   internalNotes?: string;
+  followUpAt?: string | null;
+  lostReason?: LostReason | null;
 }
 
 export interface ProvisionLeadPayload {
@@ -187,6 +210,21 @@ export interface BusinessMetrics {
   gmvCents: number;
   bookings: { bot: number; panel: number };
   series: { date: string; bot: number; panel: number }[];
+  /** The last 12 months, oldest first. */
+  months: MonthBusiness[];
+}
+
+/** One month of the business (api `ops/ops-month-states.service.ts`). */
+export interface MonthBusiness {
+  month: string;
+  newClubs: number;
+  /** Whether subscriptions were recorded that month; before that the rest is null. */
+  tracked: boolean;
+  mrrCents: number | null;
+  paying: number | null;
+  newPaying: number | null;
+  churned: number | null;
+  churnedClubs: string[];
 }
 
 export interface BotMetrics {
@@ -308,4 +346,34 @@ export interface ProfitabilityReport {
     messages: { total: number; free: number; paid: number };
   };
   clubs: ClubProfitRow[];
+}
+
+// ── Club ficha ───────────────────────────────────────────────────────────────
+
+export interface ClubMonth {
+  month: string;
+  credits: { used: number; included: number | null };
+  bookings: { bot: number; panel: number };
+  revenueCents: number;
+  costCents: number;
+  marginCents: number;
+  marginPercent: number | null;
+}
+
+/** `GET /ops/clubs/:id`: the club's row, our notes, the lead it came from, the last months. */
+export interface OpsClubDetail {
+  club: OpsClub;
+  opsNotes: string | null;
+  lead: {
+    id: string;
+    createdAt: string;
+    contactedAt: string | null;
+    howFound: string | null;
+    campaign: string | null;
+    ownerName: string;
+    phone: string;
+    email: string;
+  } | null;
+  /** Oldest first, the current month last. */
+  months: ClubMonth[];
 }

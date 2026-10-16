@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { SignupFlowClient } from "@/features/signup/components/signup-flow-client";
 import { isPlanKey } from "@/lib/plans";
+import { utmFrom } from "@/features/signup/lib/utm";
 
 export const metadata: Metadata = {
   title: "Pedí tu club · GTP",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string | string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   // Already a customer → they want the panel, not the signup.
   const session = await getSession();
@@ -27,7 +28,11 @@ export default async function RegisterPage({
     redirect("/panel");
   }
 
-  // The landing's pricing cards link here with `?plan=<key>`; anything else is ignored.
-  const { plan } = await searchParams;
-  return <SignupFlowClient plan={isPlanKey(plan) ? plan : undefined} />;
+  // The landing's pricing cards link here with `?plan=<key>`; an ad may link here directly with
+  // its UTM parameters.
+  const params = await searchParams;
+  const plan = Array.isArray(params.plan) ? params.plan[0] : params.plan;
+  return (
+    <SignupFlowClient plan={isPlanKey(plan) ? plan : undefined} utm={utmFrom(params) ?? undefined} />
+  );
 }

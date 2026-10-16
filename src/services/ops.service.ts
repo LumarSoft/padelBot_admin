@@ -10,6 +10,8 @@ import type {
   LeadsSummary,
   OpsAdmin,
   OpsClub,
+  OpsClubDetail,
+  SignupFunnel,
   OpsHealth,
   ProvisionLeadPayload,
   ResetPasswordResult,
@@ -30,9 +32,13 @@ export const opsService = {
     return apiClient.post<void>("/api/ops/auth/logout");
   },
 
-  listLeads(status?: LeadStatus): Promise<Lead[]> {
-    const qs = status ? `?status=${status}` : "";
+  /** `due: "today"`: the open leads to call back today or overdue, instead of a status. */
+  listLeads(status?: LeadStatus, due?: "today"): Promise<Lead[]> {
+    const qs = due ? `?due=${due}` : status ? `?status=${status}` : "";
     return apiClient.get<Lead[]>(`/api/ops/leads${qs}`);
+  },
+  getSignupFunnel(days = 30): Promise<SignupFunnel> {
+    return apiClient.get<SignupFunnel>(`/api/ops/signup-funnel?days=${days}`);
   },
   getLeadsSummary(): Promise<LeadsSummary> {
     return apiClient.get<LeadsSummary>("/api/ops/leads/summary");
@@ -59,6 +65,15 @@ export const opsService = {
       payload,
     );
   },
+  getClubDetail(id: string): Promise<OpsClubDetail> {
+    return apiClient.get<OpsClubDetail>(`/api/ops/clubs/${encodeURIComponent(id)}`);
+  },
+  updateClubNotes(id: string, opsNotes: string | null): Promise<{ opsNotes: string | null }> {
+    return apiClient.patch<{ opsNotes: string | null }>(
+      `/api/ops/clubs/${encodeURIComponent(id)}/notes`,
+      { opsNotes },
+    );
+  },
   listClubUsers(id: string): Promise<ClubUser[]> {
     return apiClient.get<ClubUser[]>(`/api/ops/clubs/${id}/users`);
   },
@@ -79,6 +94,9 @@ export const opsService = {
     return apiClient.get<ProfitabilityReport>(
       `/api/ops/profitability${month ? `?month=${encodeURIComponent(month)}` : ""}`,
     );
+  },
+  getWeeklySummary(): Promise<{ text: string }> {
+    return apiClient.get<{ text: string }>("/api/ops/weekly-summary");
   },
   getBotMetrics(): Promise<BotMetrics> {
     return apiClient.get<BotMetrics>("/api/ops/metrics/bot");

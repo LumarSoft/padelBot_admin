@@ -6,6 +6,7 @@ import { formatPrice } from "@/lib/format";
 import { useBusinessMetrics } from "@/features/ops/hooks/use-ops";
 import { StatTile } from "@/features/ops/components/stat-tile";
 import { BarSeries } from "@/features/ops/components/bar-series";
+import { MonthlyBusiness, WeeklySummaryPreview } from "@/features/ops/components/monthly-business";
 
 export function BusinessScreen() {
   const metrics = useBusinessMetrics();
@@ -15,7 +16,7 @@ export function BusinessScreen() {
   }
   if (!metrics.data) return null;
 
-  const { mrrCents, clubsWithoutPrice, clubs, activation, gmvCents, bookings, series } =
+  const { mrrCents, clubsWithoutPrice, clubs, activation, gmvCents, bookings, series, months } =
     metrics.data;
 
   const activationRate = activation.provisioned
@@ -26,7 +27,7 @@ export function BusinessScreen() {
     <div className="space-y-6">
       <PageHeader
         title="Negocio"
-        description="Lo que entra, lo que se activa y lo que el bot mueve. Últimos 30 días."
+        description="Lo que entra, lo que se activa y lo que el bot mueve, sin el club demo. Últimos 30 días y mes a mes."
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -114,6 +115,10 @@ export function BusinessScreen() {
           </CardContent>
         </Card>
       </div>
+
+      <MonthlyBusiness months={months} />
+
+      <WeeklySummaryPreview />
     </div>
   );
 }

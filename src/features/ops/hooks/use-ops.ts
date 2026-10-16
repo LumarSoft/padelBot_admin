@@ -15,7 +15,9 @@ import type {
   LeadStatus,
   LeadsSummary,
   OpsClub,
+  OpsClubDetail,
   OpsHealth,
+  SignupFunnel,
   ProvisionLeadPayload,
   UpdateLeadPayload,
   UpdateSubscriptionPayload,
@@ -52,10 +54,20 @@ export function useOpsLogout() {
 
 // ── Leads ────────────────────────────────────────────────────────────────────
 
-export function useLeads(status?: LeadStatus) {
+/** A status, or "DUE": the open leads to call back today or overdue. */
+export function useLeads(filter?: LeadStatus | "DUE") {
   return useQuery<Lead[]>({
-    queryKey: queryKeys.ops.leads(status),
-    queryFn: () => opsService.listLeads(status),
+    queryKey: queryKeys.ops.leads(filter),
+    queryFn: () =>
+      filter === "DUE" ? opsService.listLeads(undefined, "today") : opsService.listLeads(filter),
+  });
+}
+
+/** Where prospects drop out of the `/register` signup. */
+export function useSignupFunnel(days = 30) {
+  return useQuery<SignupFunnel>({
+    queryKey: queryKeys.ops.signupFunnel(days),
+    queryFn: () => opsService.getSignupFunnel(days),
   });
 }
 
@@ -127,6 +139,35 @@ export function useOpsClubs() {
   return useQuery<OpsClub[]>({
     queryKey: queryKeys.ops.clubs,
     queryFn: () => opsService.listClubs(),
+  });
+}
+
+/** The club's ficha. */
+export function useClubDetail(clubId: string) {
+  return useQuery<OpsClubDetail>({
+    queryKey: queryKeys.ops.clubDetail(clubId),
+    queryFn: () => opsService.getClubDetail(clubId),
+  });
+}
+
+export function useUpdateClubNotes(clubId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (opsNotes: string | null) => opsService.updateClubNotes(clubId, opsNotes),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ops.clubDetail(clubId) });
+      toast.success("Notas guardadas");
+    },
+    onError: (error) => toast.error(errorMessage(error, "No pudimos guardar las notas.")),
+  });
+}
+
+/** The text the next Monday summary to the ops channel would carry. */
+export function useWeeklySummary(enabled: boolean) {
+  return useQuery<{ text: string }>({
+    queryKey: queryKeys.ops.weeklySummary,
+    queryFn: () => opsService.getWeeklySummary(),
+    enabled,
   });
 }
 

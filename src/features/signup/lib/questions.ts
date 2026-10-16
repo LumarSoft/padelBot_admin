@@ -50,6 +50,11 @@ export interface SignupAnswers {
   /** The pricing card they came from (`/register?plan=…`). Not a question: it rides along
    *  with the answers so a restored draft keeps it, and ops sees it in the alert. */
   plan?: PlanKey;
+
+  /** The campaign they arrived by (UTM parameters, see `lib/utm.ts`). Rides along like `plan`. */
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
 }
 
 export type AnswerKey = keyof SignupAnswers;

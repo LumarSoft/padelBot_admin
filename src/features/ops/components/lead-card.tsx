@@ -9,12 +9,24 @@ import { WhatsAppLink } from "@/components/ui/whatsapp-link";
 import { formatPrice } from "@/lib/format";
 import { waLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
-import { answerLabel, hoursSince, LEAD_STATUS_LABELS, timeAgo } from "@/features/ops/lib/labels";
+import {
+  answerLabel,
+  campaignLabel,
+  hoursSince,
+  LEAD_STATUS_LABELS,
+  LOST_REASON_LABELS,
+  timeAgo,
+} from "@/features/ops/lib/labels";
 import { useDeleteLead, useUpdateLead } from "@/features/ops/hooks/use-ops";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { ProvisionDialog } from "@/features/ops/components/provision-dialog";
 import { LeadNotes } from "@/features/ops/components/lead-notes";
-import type { Lead, LeadStatus } from "@/types/api/ops";
+import { LeadFollowUp } from "@/features/ops/components/lead-follow-up";
+import type { Lead, LeadStatus, LostReason } from "@/types/api/ops";
+
+const LOST_REASONS = Object.keys(LOST_REASON_LABELS).filter(
+  (reason) => reason !== "UNKNOWN",
+) as LostReason[];
 
 const STATUS_VARIANT: Record<LeadStatus, "default" | "secondary" | "outline"> = {
   NEW: "default",
@@ -49,6 +61,8 @@ interface LeadCardProps {
  */
 export function LeadCard({ lead }: LeadCardProps) {
   const [provisionOpen, setProvisionOpen] = useState(false);
+  // Marking a lead lost asks why first: the pattern is what tells us what to fix.
+  const [choosingLostReason, setChoosingLostReason] = useState(false);
   const updateLead = useUpdateLead();
 
   const complex = complexSummary(lead);
@@ -58,10 +72,17 @@ export function LeadCard({ lead }: LeadCardProps) {
   const pain = answerLabel(lead.biggestPain);
   const fixed = answerLabel(lead.fixedSlots);
   const found = answerLabel(lead.howFound);
+  const campaign = campaignLabel(lead);
+  const open = lead.status === "NEW" || lead.status === "CONTACTED";
   const when = lead.contactWindowNote?.trim() || answerLabel(lead.contactWindow);
 
   function setStatus(status: LeadStatus): void {
     updateLead.mutate({ id: lead.id, payload: { status } });
+  }
+
+  function markLost(lostReason: LostReason): void {
+    setChoosingLostReason(false);
+    updateLead.mutate({ id: lead.id, payload: { status: "LOST", lostReason } });
   }
 
   const deleteLead = useDeleteLead();
@@ -105,6 +126,9 @@ export function LeadCard({ lead }: LeadCardProps) {
               )}
               {lead.plan && (
                 <Badge variant="outline">Eligió {planName(lead.plan)}</Badge>
+              )}
+              {lead.status === "LOST" && (
+                <Badge variant="outline">{LOST_REASON_LABELS[lead.lostReason ?? "UNKNOWN"]}</Badge>
               )}
             </div>
             <p className="text-muted-foreground text-sm">
@@ -178,6 +202,7 @@ export function LeadCard({ lead }: LeadCardProps) {
             />
           )}
           {found && <Field label="Nos conoció por" value={found} />}
+          {campaign && <Field label="Campaña" value={campaign} />}
         </div>
 
         {lead.message && (
@@ -186,10 +211,31 @@ export function LeadCard({ lead }: LeadCardProps) {
           </blockquote>
         )}
 
+        {open && <LeadFollowUp lead={lead} />}
+
         <LeadNotes lead={lead} />
 
         {/* Pipeline. CONVERTED isn't here: it's set by provisioning, not by hand. */}
-        {lead.status !== "CONVERTED" && (
+        {lead.status !== "CONVERTED" && choosingLostReason && (
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="text-muted-foreground text-sm">¿Por qué se perdió?</span>
+            {LOST_REASONS.map((reason) => (
+              <Button
+                key={reason}
+                variant="outline"
+                size="sm"
+                onClick={() => markLost(reason)}
+                disabled={updateLead.isPending}
+              >
+                {LOST_REASON_LABELS[reason]}
+              </Button>
+            ))}
+            <Button variant="ghost" size="sm" onClick={() => setChoosingLostReason(false)}>
+              Cancelar
+            </Button>
+          </div>
+        )}
+        {lead.status !== "CONVERTED" && !choosingLostReason && (
           <div className="flex flex-wrap gap-2 pt-1">
             {(["NEW", "CONTACTED", "LOST"] as const)
               .filter((status) => status !== lead.status)
@@ -198,7 +244,9 @@ export function LeadCard({ lead }: LeadCardProps) {
                   key={status}
                   variant="ghost"
                   size="sm"
-                  onClick={() => setStatus(status)}
+                  onClick={() =>
+                    status === "LOST" ? setChoosingLostReason(true) : setStatus(status)
+                  }
                   disabled={updateLead.isPending}
                 >
                   Marcar {LEAD_STATUS_LABELS[status].toLowerCase()}

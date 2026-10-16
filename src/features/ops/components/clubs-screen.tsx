@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { BuildingIcon } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -213,6 +214,12 @@ function ClubRow({
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href={`/ops/clubes/${club.id}`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Ficha
+            </Link>
             <Button variant="outline" size="sm" onClick={onManagePasswords}>
               Contraseñas
             </Button>

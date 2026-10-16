@@ -1,4 +1,5 @@
-import type { ClubHealthStatus, LeadStatus } from "@/types/api/ops";
+import { QUESTIONS } from "@/features/signup/lib/questions";
+import type { ClubHealthStatus, Lead, LeadStatus, LostReason } from "@/types/api/ops";
 
 /**
  * Spanish for the signup's coded answers. The API stores them as constants
@@ -58,6 +59,32 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
   CONVERTED: "Cliente",
   LOST: "Perdido",
 };
+
+/** Why a lead was lost, as the console says it. */
+export const LOST_REASON_LABELS: Record<LostReason | "UNKNOWN", string> = {
+  PRICE: "Precio",
+  COMPETITOR: "Eligió otro sistema",
+  NOT_NOW: "Ahora no",
+  NO_ANSWER: "No contesta",
+  NOT_A_FIT: "No es para ellos",
+  OTHER: "Otro",
+  UNKNOWN: "Sin motivo",
+};
+
+/** A `/register` screen by its short name ("Tus canchas"), as the funnel lists it. */
+export function signupStepLabel(step: string): string {
+  if (step === "summary") return "Revisión";
+  if (step === "sent") return "Enviada";
+  return QUESTIONS.find((question) => question.id === step)?.eyebrow ?? step;
+}
+
+/** "verano (instagram / cpc)": the UTM campaign, else its source (api `campaignLabel`). */
+export function campaignLabel(lead: Pick<Lead, "utmSource" | "utmMedium" | "utmCampaign">): string | null {
+  const name = lead.utmCampaign ?? lead.utmSource;
+  if (!name) return null;
+  const detail = [lead.utmCampaign ? lead.utmSource : null, lead.utmMedium].filter(Boolean).join(" / ");
+  return detail ? `${name} (${detail})` : name;
+}
 
 export const SUBSCRIPTION_LABELS: Record<string, string> = {
   TRIAL: "Prueba",
