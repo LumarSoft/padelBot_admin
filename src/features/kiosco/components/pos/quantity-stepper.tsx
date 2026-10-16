@@ -67,6 +67,7 @@ export function QuantityStepper({
         type="text"
         inputMode="numeric"
         aria-label={`Cantidad de ${label}`}
+        data-pos-quantity
         value={draft ?? String(value)}
         onFocus={(e) => {
           discard.current = false;

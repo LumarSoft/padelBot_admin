@@ -160,6 +160,7 @@ export const HELP_ENTRIES = [
     answer: [
       "La cancha se divide sola entre los cuatro.",
       "En cada consumo, marcá con J1 a J4 quién lo paga.",
+      "Si vas a escanear lo de uno solo, tocá antes su J en «Cargar a».",
     ],
     keywords: ["dividir", "partir", "entre cuatro", "cada uno", "separado", "jugadores", "j1"],
     tour: "consumo",
@@ -170,7 +171,7 @@ export const HELP_ENTRIES = [
     question: "¿Cómo cargo una bebida a un turno?",
     answer: [
       "Tocá el turno y después «Cuenta del turno».",
-      "En «＋ Agregar consumo» elegí la bebida.",
+      "Escaneala con el lector, o elegila en «＋ Agregar consumo del catálogo».",
       "Tocá «Guardar y cerrar».",
     ],
     keywords: [
@@ -186,6 +187,9 @@ export const HELP_ENTRIES = [
       "consumo",
       "buffet",
       "cargar",
+      "lector",
+      "escanear",
+      "codigo de barras",
     ],
     tour: "consumo",
   },
@@ -219,10 +223,33 @@ export const HELP_ENTRIES = [
     question: "¿Cómo uso el lector de código de barras?",
     answer: [
       "Enchufalo a la compu: anda como un teclado, no hay que configurar nada.",
-      "En «Mostrador», cada código que escaneás suma uno a la venta o a la entrada.",
+      "En «Mostrador» o en la «Cuenta del turno», cada código que escaneás suma uno.",
       "Si un código no está cargado, te pregunta qué producto es y lo guarda.",
     ],
     keywords: ["lector", "codigo de barras", "escaner", "scanner", "pistola", "escanear", "barras", "no lo reconoce"],
+  },
+  {
+    id: "atajos-mostrador",
+    audience: "all",
+    question: "¿Hay atajos de teclado para cobrar más rápido?",
+    answer: [
+      "En «Mostrador»: F1 Efectivo, F2 QR, F3 Transferencia y F4 cobra (o «Sumar al stock»).",
+      "F8 pasa a «Cobrar» y F9 a «Cargar stock». Cada botón muestra su tecla.",
+      "En una Mac, apretalas junto con fn.",
+    ],
+    keywords: ["atajos", "teclas", "teclado", "f1", "f4", "rapido", "shortcut", "cobrar", "efectivo", "qr"],
+    tour: "mostrador",
+  },
+  {
+    id: "sonido-lector",
+    audience: "all",
+    question: "¿Qué significan los sonidos al escanear?",
+    answer: [
+      "Bip agudo: lo sumó. Dos pitidos: el código no está cargado. Zumbido grave: no sumó nada.",
+      "Al cobrar o cargar el stock suena un «listo».",
+      "Para silenciarlo, tocá «Sonido» en «Mostrador»: queda así en esa compu.",
+    ],
+    keywords: ["sonido", "ruido", "bip", "pitido", "suena", "silenciar", "silencio", "volumen", "mute"],
   },
   {
     id: "deshacer-cobro",

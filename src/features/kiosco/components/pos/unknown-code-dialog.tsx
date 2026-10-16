@@ -31,6 +31,15 @@ import {
 
 type Choice = "existing" | "new";
 
+/** Where the product goes once its code is saved: the POS's sale or delivery, or a turno's bill. */
+export type UnknownCodeTarget = PosMode | "cuenta";
+
+const CREATE_LABEL: Record<UnknownCodeTarget, string> = {
+  cobrar: "Crear y sumar a la venta",
+  cargar: "Crear y sumar a la entrada",
+  cuenta: "Crear y sumar a la cuenta",
+};
+
 function useSaveCode() {
   const queryClient = useQueryClient();
   return useMutation<
@@ -65,7 +74,7 @@ function UnknownCodeForm({
   onCancel,
 }: {
   code: string;
-  mode: PosMode;
+  mode: UnknownCodeTarget;
   products: Product[];
   onResolved: (product: Product) => void;
   onCancel: () => void;
@@ -257,10 +266,8 @@ function UnknownCodeForm({
                   <Loader2 className="animate-spin" />
                   Guardando…
                 </>
-              ) : mode === "cobrar" ? (
-                "Crear y sumar a la venta"
               ) : (
-                "Crear y sumar a la entrada"
+                CREATE_LABEL[mode]
               )}
             </Button>
           </DialogFooter>
@@ -284,7 +291,7 @@ export function UnknownCodeDialog({
 }: {
   /** The unknown code; null = closed. */
   code: string | null;
-  mode: PosMode;
+  mode: UnknownCodeTarget;
   products: Product[];
   onResolved: (product: Product) => void;
   onClose: () => void;

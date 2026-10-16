@@ -84,7 +84,7 @@ export const TOURS = {
       { target: "turno-cuenta", text: "Tocá «Cuenta del turno».", waitFor: "turno-cuenta" },
       {
         target: "cuenta-consumo",
-        text: "Elegí lo que tomó y tocá «Guardar y cerrar».",
+        text: "Escaneá lo que tomó (o elegilo de la lista) y tocá «Guardar y cerrar».",
         waitFor: "cuenta-guardar",
       },
     ],

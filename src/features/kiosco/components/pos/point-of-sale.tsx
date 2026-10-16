@@ -10,6 +10,8 @@ import {
   Receipt,
   ScanBarcode,
   ShoppingBag,
+  Volume2,
+  VolumeX,
   XCircle,
   type LucideIcon,
 } from "lucide-react";
@@ -22,7 +24,21 @@ import { useProducts } from "@/features/productos/hooks/use-products";
 import { useFeature } from "@/features/plan/hooks/use-plan";
 import { PlanUpsell } from "@/features/plan/components/plan-upsell";
 import { useTypeToScan } from "@/features/kiosco/hooks/use-type-to-scan";
+import { POS_KEYS, useFunctionKeys } from "@/features/kiosco/hooks/use-function-keys";
 import { filterProducts, matchByName, resolveEntry } from "@/features/kiosco/lib/pos";
+import {
+  playPosCue,
+  setPosSoundOn,
+  usePosSoundOn,
+  type PosCue,
+} from "@/features/kiosco/lib/pos-sound";
+import { KeyHint } from "@/features/kiosco/components/pos/key-hint";
+import {
+  pulseToneFor,
+  ScanPulse,
+  shake,
+  type Pulse,
+} from "@/features/kiosco/components/pos/scan-pulse";
 import { ProductGrid } from "@/features/kiosco/components/pos/product-grid";
 import { SaleTicket } from "@/features/kiosco/components/pos/sale-ticket";
 import { DeliveryTicket } from "@/features/kiosco/components/pos/delivery-ticket";
@@ -41,9 +57,22 @@ const MODES: {
   label: string;
   hint: string;
   icon: LucideIcon;
+  shortcut: string;
 }[] = [
-  { value: "cobrar", label: "Cobrar", hint: "Le vendés a un cliente", icon: ShoppingBag },
-  { value: "cargar", label: "Cargar stock", hint: "Entró mercadería", icon: PackagePlus },
+  {
+    value: "cobrar",
+    label: "Cobrar",
+    hint: "Le vendés a un cliente",
+    icon: ShoppingBag,
+    shortcut: POS_KEYS.modeCobrar,
+  },
+  {
+    value: "cargar",
+    label: "Cargar stock",
+    hint: "Entró mercadería",
+    icon: PackagePlus,
+    shortcut: POS_KEYS.modeCargar,
+  },
 ];
 
 /** The two modes wear their own color everywhere, so nobody loads stock while meaning to sell. */
@@ -153,6 +182,11 @@ export function PointOfSale({ active }: { active: boolean }) {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [unknownCode, setUnknownCode] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
+  // The scanner box answers every Enter: a flash when something was added, a shake when not.
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [pulse, setPulse] = useState<Pulse | null>(null);
+  const pulseSeq = useRef(0);
+  const soundOn = usePosSoundOn();
 
   const byId = new Map(products.map((p) => [p.id, p]));
   const activeProducts = products.filter((p) => p.isActive);
@@ -179,6 +213,15 @@ export function PointOfSale({ active }: { active: boolean }) {
     if (active) focusScanner();
   }, [active, mode, focusScanner]);
 
+  /** What a scan did, for the ears and the eyes. */
+  function signal(cue: PosCue) {
+    playPosCue(cue);
+    const tone = pulseToneFor(cue);
+    pulseSeq.current += 1;
+    setPulse({ tone, id: pulseSeq.current });
+    if (tone !== "ok") shake(boxRef.current);
+  }
+
   function resetInput() {
     if (inputRef.current) inputRef.current.value = "";
     setQuery("");
@@ -187,6 +230,7 @@ export function PointOfSale({ active }: { active: boolean }) {
 
   function addProduct(product: Product) {
     if (mode === "cargar" && !canLoad(product)) {
+      signal("error");
       setFeedback({
         tone: "error",
         text: `«${product.name}» no lleva control de stock: tu plan no incluye el stock del kiosco.`,
@@ -197,6 +241,7 @@ export function PointOfSale({ active }: { active: boolean }) {
     const before =
       usePosStore.getState().lines[mode].find((line) => line.productId === product.id)?.quantity ?? 0;
     add(mode, product.id);
+    signal("added");
     const now = Math.min(before + 1, MAX_LINE_QUANTITY[mode]);
     setFeedback({
       tone: "added",
@@ -217,9 +262,11 @@ export function PointOfSale({ active }: { active: boolean }) {
       addProduct(product);
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) {
+        signal("unknown");
         setFeedback({ tone: "unknown", code });
         setUnknownCode(code);
       } else {
+        signal("error");
         setFeedback({
           tone: "error",
           text: "No pudimos buscar el código. Revisá la conexión y escaneá de nuevo.",
@@ -246,6 +293,7 @@ export function PointOfSale({ active }: { active: boolean }) {
         void lookUp(entry.code);
         return;
       case "no-match":
+        signal("error");
         setFeedback({ tone: "error", text: `No hay ningún producto que se llame «${entry.text}».` });
     }
   }
@@ -267,18 +315,25 @@ export function PointOfSale({ active }: { active: boolean }) {
     if (next === mode) return;
     resetInput();
     setFeedback(null);
+    setPulse(null);
     setMode(next);
   }
 
+  useFunctionKeys(active, {
+    [POS_KEYS.modeCobrar]: () => switchMode("cobrar"),
+    [POS_KEYS.modeCargar]: () => switchMode("cargar"),
+  });
+
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-2">
       <div
         role="group"
         aria-label="¿Qué vas a hacer?"
-        className="grid grid-cols-2 gap-2 sm:max-w-xl"
+        className="grid flex-1 grid-cols-2 gap-2 sm:max-w-xl"
         data-help="pos-modo"
       >
-        {MODES.map(({ value, label, hint, icon: Icon }) => {
+        {MODES.map(({ value, label, hint, icon: Icon, shortcut }) => {
           const selected = mode === value;
           const count = lines[value].length;
           return (
@@ -286,6 +341,7 @@ export function PointOfSale({ active }: { active: boolean }) {
               key={value}
               type="button"
               aria-pressed={selected}
+              aria-keyshortcuts={shortcut}
               onClick={() => switchMode(value)}
               data-help={`pos-modo-${value}`}
               className={cn(
@@ -305,6 +361,7 @@ export function PointOfSale({ active }: { active: boolean }) {
                 <span className={cn("font-semibold", selected && "text-foreground")}>{label}</span>
                 <span className="text-muted-foreground hidden truncate text-xs sm:block">{hint}</span>
               </span>
+              <KeyHint shortcut={shortcut} className="ml-auto self-end" />
               {count > 0 && !selected && (
                 <span
                   className={cn(
@@ -320,16 +377,40 @@ export function PointOfSale({ active }: { active: boolean }) {
           );
         })}
       </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-pressed={soundOn}
+          title={soundOn ? "Suena con cada escaneo: tocá para silenciarlo" : "Sin sonido: tocá para activarlo"}
+          className="text-muted-foreground hover:text-foreground shrink-0"
+          onClick={() => {
+            setPosSoundOn(!soundOn);
+            focusScanner();
+          }}
+        >
+          {soundOn ? <Volume2 /> : <VolumeX />}
+          <span className="hidden sm:inline">{soundOn ? "Sonido" : "Sin sonido"}</span>
+        </Button>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(340px,400px)] lg:grid-rows-[auto_1fr]">
         <div className="flex flex-col gap-2 lg:col-start-1 lg:row-start-1">
           <div
+            ref={boxRef}
             className={cn(
               "bg-card/70 relative rounded-xl border-2 transition-all duration-200",
               focused ? accent.ring : "border-input",
             )}
             data-help="pos-lector"
           >
+            <ScanPulse
+              pulse={pulse}
+              okTint={
+                mode === "cobrar"
+                  ? "[--flash:var(--color-emerald-500)]"
+                  : "[--flash:var(--color-sky-500)]"
+              }
+            />
             <ScanBarcode
               className={cn(
                 "pointer-events-none absolute top-1/2 left-4 size-6 -translate-y-1/2 transition-colors",
@@ -412,6 +493,7 @@ export function PointOfSale({ active }: { active: boolean }) {
               onScan={handleEntry}
               onFinished={() => setFeedback(null)}
               focusScanner={focusScanner}
+              shortcuts={active}
             />
           ) : (
             <DeliveryTicket
@@ -420,6 +502,7 @@ export function PointOfSale({ active }: { active: boolean }) {
               onScan={handleEntry}
               onFinished={() => setFeedback(null)}
               focusScanner={focusScanner}
+              shortcuts={active}
             />
           )}
         </aside>

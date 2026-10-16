@@ -78,6 +78,7 @@
   --animate-bar-rise: bar-rise 0.7s var(--ease-fluid) both;
   --animate-grow-x: grow-x 0.9s var(--ease-fluid) both;
   --animate-pos-flash: pos-flash 1.2s var(--ease-fluid) both;
+  --animate-pos-shake: pos-shake 0.32s ease-in-out both;
 }
 
 :root {
@@ -483,6 +484,26 @@
   }
   to {
     scale: 1 1;
+  }
+}
+
+/* The scanner box when a scan added nothing: a short "no" shake. */
+@keyframes pos-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-5px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
   }
 }
 

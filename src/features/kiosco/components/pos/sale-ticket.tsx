@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   AlertTriangle,
   Banknote,
@@ -21,15 +21,23 @@ import {
   useUndoCounterSales,
 } from "@/features/kiosco/hooks/use-stock";
 import { stockWarning } from "@/features/kiosco/lib/stock-warning";
+import { playPosCue } from "@/features/kiosco/lib/pos-sound";
+import { POS_KEYS, useFunctionKeys } from "@/features/kiosco/hooks/use-function-keys";
 import { QuantityStepper } from "@/features/kiosco/components/pos/quantity-stepper";
+import { KeyHint } from "@/features/kiosco/components/pos/key-hint";
 import { MAX_LINE_QUANTITY, usePosStore, type PosLine } from "@/stores/pos-store";
 import type { Product } from "@/types/api/products";
 import type { PlayerPaymentMethod } from "@/types/api/bookings";
 
-const METHODS: { value: PlayerPaymentMethod; label: string; icon: typeof Banknote }[] = [
-  { value: "CASH", label: "Efectivo", icon: Banknote },
-  { value: "QR", label: "QR", icon: QrCode },
-  { value: "TRANSFER", label: "Transferencia", icon: Landmark },
+const METHODS: {
+  value: PlayerPaymentMethod;
+  label: string;
+  icon: typeof Banknote;
+  shortcut: string;
+}[] = [
+  { value: "CASH", label: "Efectivo", icon: Banknote, shortcut: POS_KEYS.cash },
+  { value: "QR", label: "QR", icon: QrCode, shortcut: POS_KEYS.qr },
+  { value: "TRANSFER", label: "Transferencia", icon: Landmark, shortcut: POS_KEYS.transfer },
 ];
 
 const METHOD_WORDS: Record<PlayerPaymentMethod, string> = {
@@ -59,6 +67,7 @@ export function SaleTicket({
   onScan,
   onFinished,
   focusScanner,
+  shortcuts,
 }: {
   lines: PosLine[];
   byId: Map<string, Product>;
@@ -66,6 +75,8 @@ export function SaleTicket({
   /** The ticket was charged or undone: the scanner's last message no longer applies. */
   onFinished: () => void;
   focusScanner: () => void;
+  /** F1–F3 pick how it's paid and F4 charges, while this screen is the one showing. */
+  shortcuts: boolean;
 }) {
   const setQuantity = usePosStore((s) => s.setQuantity);
   const remove = usePosStore((s) => s.remove);
@@ -74,6 +85,9 @@ export function SaleTicket({
   const [method, setMethod] = useState<PlayerPaymentMethod | null>(null);
   const [paysWith, setPaysWith] = useState("");
   const [charged, setCharged] = useState<ChargedSale | null>(null);
+  // F4 without a payment method shakes the three buttons: bumped to replay it.
+  const [nudge, setNudge] = useState(0);
+  const paysWithRef = useRef<HTMLInputElement>(null);
   const createSale = useCreateCounterSale();
   const undoSale = useUndoCounterSales();
 
@@ -87,16 +101,27 @@ export function SaleTicket({
   const changeCents = paysWithCents !== null ? paysWithCents - totalCents : null;
 
   function charge() {
-    if (items.length === 0 || !method || createSale.isPending) return;
+    if (!method || createSale.isPending) return;
+    // The store, not this render: F4 commits a quantity being typed right before charging.
+    const toCharge = usePosStore
+      .getState()
+      .lines.cobrar.filter((line) => byId.has(line.productId));
+    if (toCharge.length === 0) return;
+    const chargedCents = toCharge.reduce(
+      (sum, line) => sum + byId.get(line.productId)!.priceCents * line.quantity,
+      0,
+    );
+    const change = paysWithCents !== null ? paysWithCents - chargedCents : null;
     createSale.mutate(
-      { items: items.map(({ productId, quantity }) => ({ productId, quantity })), method },
+      { items: toCharge.map(({ productId, quantity }) => ({ productId, quantity })), method },
       {
         onSuccess: (sales) => {
+          playPosCue("done");
           setCharged({
             ids: sales.map((sale) => sale.id),
-            totalCents,
+            totalCents: chargedCents,
             method,
-            changeCents: changeCents !== null && changeCents >= 0 ? changeCents : null,
+            changeCents: change !== null && change >= 0 ? change : null,
             at: Date.now(),
           });
           clear("cobrar");
@@ -108,6 +133,28 @@ export function SaleTicket({
       },
     );
   }
+
+  function chooseMethod(value: PlayerPaymentMethod) {
+    setMethod(value);
+    setNudge(0);
+    // Cash shows «Paga con» (it focuses itself when it appears); the others go back to scanning.
+    if (value === "CASH") paysWithRef.current?.focus();
+    else focusScanner();
+  }
+
+  useFunctionKeys(shortcuts && items.length > 0, {
+    [POS_KEYS.cash]: () => chooseMethod("CASH"),
+    [POS_KEYS.qr]: () => chooseMethod("QR"),
+    [POS_KEYS.transfer]: () => chooseMethod("TRANSFER"),
+    [POS_KEYS.confirm]: () => {
+      if (method) {
+        charge();
+      } else {
+        playPosCue("error");
+        setNudge((n) => n + 1);
+      }
+    },
+  });
 
   const showCharged = charged !== null && items.length === 0 && (touched?.at ?? 0) < charged.at;
 
@@ -136,6 +183,7 @@ export function SaleTicket({
           onClick={() =>
             undoSale.mutate(charged.ids, {
               onSuccess: () => {
+                playPosCue("undo");
                 setCharged(null);
                 onFinished();
                 focusScanner();
@@ -254,25 +302,30 @@ export function SaleTicket({
 
         <div className="flex flex-col gap-1.5">
           <p className="text-muted-foreground text-xs font-medium">¿Cómo paga?</p>
-          <div className="grid grid-cols-3 gap-2" data-help="pos-pago">
-            {METHODS.map(({ value, label, icon: Icon }) => (
+          <div
+            key={nudge}
+            className={cn("grid grid-cols-3 gap-2", nudge > 0 && "motion-safe:animate-pos-shake")}
+            data-help="pos-pago"
+          >
+            {METHODS.map(({ value, label, icon: Icon, shortcut }) => (
               <button
                 key={value}
                 type="button"
                 aria-pressed={method === value}
-                onClick={() => {
-                  setMethod(value);
-                  if (value !== "CASH") focusScanner();
-                }}
+                aria-keyshortcuts={shortcut}
+                onClick={() => chooseMethod(value)}
                 className={cn(
-                  "flex h-11 items-center justify-center gap-1.5 rounded-lg border text-sm font-medium transition-colors",
+                  "relative flex h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg border px-1 text-sm font-medium transition-colors",
                   method === value
                     ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "bg-card/60 hover:bg-card text-muted-foreground hover:text-foreground",
+                    : nudge > 0
+                      ? "border-amber-500/60 bg-card/60 text-foreground"
+                      : "bg-card/60 hover:bg-card text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Icon className="size-4" />
-                {label}
+                <Icon className="size-4 shrink-0" />
+                <span className="max-w-full truncate">{label}</span>
+                <KeyHint shortcut={shortcut} className="absolute top-1 right-1" />
               </button>
             ))}
           </div>
@@ -283,6 +336,7 @@ export function SaleTicket({
             <label className="flex flex-1 items-center gap-2 text-sm">
               <span className="text-muted-foreground shrink-0">Paga con $</span>
               <input
+                ref={paysWithRef}
                 type="text"
                 inputMode="numeric"
                 autoFocus
@@ -326,6 +380,7 @@ export function SaleTicket({
           className="h-12 text-base"
           disabled={!method || createSale.isPending}
           onClick={charge}
+          aria-keyshortcuts={POS_KEYS.confirm}
           data-help="pos-cobrar"
         >
           {createSale.isPending ? (
@@ -334,7 +389,10 @@ export function SaleTicket({
               Cobrando…
             </>
           ) : method ? (
-            `Cobrar ${formatPrice(totalCents)}`
+            <>
+              Cobrar {formatPrice(totalCents)}
+              <KeyHint shortcut={POS_KEYS.confirm} />
+            </>
           ) : (
             "Elegí cómo paga"
           )}

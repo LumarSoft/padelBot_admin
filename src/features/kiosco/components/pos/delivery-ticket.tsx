@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useRegisterPurchase } from "@/features/kiosco/hooks/use-stock";
+import { POS_KEYS, useFunctionKeys } from "@/features/kiosco/hooks/use-function-keys";
+import { playPosCue } from "@/features/kiosco/lib/pos-sound";
 import { QuantityStepper } from "@/features/kiosco/components/pos/quantity-stepper";
+import { KeyHint } from "@/features/kiosco/components/pos/key-hint";
 import { MAX_LINE_QUANTITY, usePosStore, type PosLine } from "@/stores/pos-store";
 import type { Product } from "@/types/api/products";
 import type { StockProduct } from "@/types/api/stock";
@@ -30,6 +33,7 @@ export function DeliveryTicket({
   onScan,
   onFinished,
   focusScanner,
+  shortcuts,
 }: {
   lines: PosLine[];
   byId: Map<string, Product>;
@@ -37,6 +41,8 @@ export function DeliveryTicket({
   /** The delivery was added to stock: the scanner's last message no longer applies. */
   onFinished: () => void;
   focusScanner: () => void;
+  /** F4 adds it to stock, while this screen is the one showing. */
+  shortcuts: boolean;
 }) {
   const setQuantity = usePosStore((s) => s.setQuantity);
   const remove = usePosStore((s) => s.remove);
@@ -51,15 +57,22 @@ export function DeliveryTicket({
   const units = items.reduce((sum, line) => sum + line.quantity, 0);
 
   function submit() {
-    if (items.length === 0 || registerPurchase.isPending) return;
+    if (registerPurchase.isPending) return;
+    // The store, not this render: F4 commits a quantity being typed right before loading.
+    const toLoad = usePosStore
+      .getState()
+      .lines.cargar.filter((line) => byId.has(line.productId));
+    if (toLoad.length === 0) return;
+    const loadedUnits = toLoad.reduce((sum, line) => sum + line.quantity, 0);
     registerPurchase.mutate(
       {
-        items: items.map(({ productId, quantity }) => ({ productId, quantity })),
+        items: toLoad.map(({ productId, quantity }) => ({ productId, quantity })),
         note: note.trim() || undefined,
       },
       {
         onSuccess: (products) => {
-          setLoaded({ units, products, at: Date.now() });
+          playPosCue("done");
+          setLoaded({ units: loadedUnits, products, at: Date.now() });
           clear("cargar");
           onFinished();
           focusScanner();
@@ -67,6 +80,8 @@ export function DeliveryTicket({
       },
     );
   }
+
+  useFunctionKeys(shortcuts && items.length > 0, { [POS_KEYS.confirm]: submit });
 
   const showLoaded = loaded !== null && items.length === 0 && (touched?.at ?? 0) < loaded.at;
 
@@ -201,6 +216,7 @@ export function DeliveryTicket({
           className="h-12 from-sky-500 to-sky-600 text-base text-white dark:from-sky-500 dark:to-sky-600"
           disabled={registerPurchase.isPending}
           onClick={submit}
+          aria-keyshortcuts={POS_KEYS.confirm}
           data-help="pos-sumar-stock"
         >
           {registerPurchase.isPending ? (
@@ -209,7 +225,10 @@ export function DeliveryTicket({
               Guardando…
             </>
           ) : (
-            `Sumar ${unitsLabel(units)} al stock`
+            <>
+              Sumar {unitsLabel(units)} al stock
+              <KeyHint shortcut={POS_KEYS.confirm} />
+            </>
           )}
         </Button>
       </div>
