@@ -5,7 +5,7 @@ export type SignupRequestStatus = "PENDING" | "HANDLED" | "DISMISSED";
 export interface CompetitionSignupRequest {
   id: string;
   competitionId: string;
-  /** The player's WhatsApp number: opens their chat in Conversaciones. */
+  /** The player's WhatsApp number: opens their chat in the panel's WhatsApp inbox. */
   waId: string;
   playerName: string | null;
   status: SignupRequestStatus;

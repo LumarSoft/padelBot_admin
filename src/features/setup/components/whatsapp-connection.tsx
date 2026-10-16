@@ -127,8 +127,8 @@ export function WhatsAppConnection() {
                 <p className="text-sm font-medium">Probalo ahora</p>
                 <p className="text-muted-foreground mt-1 text-sm text-pretty">
                   Mandale “hola” desde tu propio teléfono. Te va a contestar en
-                  segundos, y la conversación te aparece en el panel, en
-                  Conversaciones.
+                  segundos, y la conversación te aparece en el panel, en la
+                  sección WhatsApp.
                 </p>
               </div>
               <div>

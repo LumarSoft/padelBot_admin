@@ -160,9 +160,9 @@ export const TOURS = {
     steps: [
       {
         target: "chats-item",
-        text: "Tocá la conversación que dice «Pide asesor».",
+        text: "Tocá el chat que dice «Pide asesor».",
         waitFor: "chats-item",
-        missing: "No hay conversaciones todavía.",
+        missing: "No hay chats todavía.",
       },
       {
         target: "chat-modo",

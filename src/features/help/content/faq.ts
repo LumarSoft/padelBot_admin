@@ -348,7 +348,7 @@ export const HELP_ENTRIES = [
     audience: "all",
     question: "Un jugador pide hablar con una persona",
     answer: [
-      "En Conversaciones, abrí la que dice «Pide asesor».",
+      "En WhatsApp (en el menú), abrí el chat que dice «Pide asesor».",
       "Pasá a «Humano» y escribile: el bot no se mete.",
       "Cuando termines, volvé a «IA».",
     ],

@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   Lightbulb,
   Loader2,
-  MessagesSquare,
   ShoppingBasket,
   Trophy,
   UserRound,
@@ -20,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
+import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useConversations } from "@/features/conversations/hooks/use-conversations";
 import { useBookings } from "@/features/reservas/hooks/use-bookings";
@@ -37,7 +37,9 @@ const MAIN_NAV: NavItem[] = [
   { href: "/panel/jugadores", label: "Jugadores", icon: UserRound },
   { href: "/panel/torneos", label: "Torneos", icon: Trophy },
   { href: "/panel/penas", label: "Peñas", icon: UsersRound },
-  { href: "/panel/conversaciones", label: "Conversaciones", icon: MessagesSquare },
+  // The route keeps its old name so every deep link (Pagos, inscripciones, the credits
+  // banner) still lands here; only the label changed.
+  { href: "/panel/conversaciones", label: "WhatsApp", icon: WhatsAppIcon },
 ];
 
 /** Kiosk stock for the front desk. The owner manages it from Productos (catalog + stock). */

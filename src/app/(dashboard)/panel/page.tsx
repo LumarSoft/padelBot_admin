@@ -2,11 +2,11 @@ import Link from "next/link";
 import {
   CalendarClock,
   CalendarCheck,
-  MessagesSquare,
   Settings,
   ArrowUpRight,
 } from "lucide-react";
 import { getSession } from "@/lib/session";
+import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { SetupChecklist } from "@/features/onboarding/components/setup-checklist";
@@ -28,9 +28,9 @@ const SHORTCUTS = [
   },
   {
     href: "/panel/conversaciones",
-    title: "Conversaciones",
-    description: "Seguí el bot y tomá el control cuando haga falta.",
-    icon: MessagesSquare,
+    title: "WhatsApp",
+    description: "Los chats del bot con los jugadores. Tomá el control cuando haga falta.",
+    icon: WhatsAppIcon,
   },
   {
     href: "/panel/configuracion",

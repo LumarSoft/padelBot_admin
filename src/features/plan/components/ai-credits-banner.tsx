@@ -25,8 +25,8 @@ export function creditsNoticeText(
   const usage = `${formatCount(credits.used)} de ${formatCount(credits.limit ?? 0)}`;
   if (credits.paused) {
     return isOwner
-      ? `El bot está pausado: se terminaron tus créditos de IA de ${month} (${usage}). Cambiá de plan para que vuelva a atender; mientras tanto, respondé a los jugadores desde Conversaciones.`
-      : `El bot está pausado: se terminaron los créditos de IA de ${month}. Respondé a los jugadores desde Conversaciones.`;
+      ? `El bot está pausado: se terminaron tus créditos de IA de ${month} (${usage}). Cambiá de plan para que vuelva a atender; mientras tanto, respondé a los jugadores desde la sección WhatsApp del panel.`
+      : `El bot está pausado: se terminaron los créditos de IA de ${month}. Respondé a los jugadores desde la sección WhatsApp del panel.`;
   }
   if (level === 100) return `Usaste todos tus créditos de IA de ${month} (${usage}).`;
   const left = Math.max(0, 100 - (credits.percent ?? 0));
@@ -84,7 +84,7 @@ export function AiCreditsBanner({ isOwner }: { isOwner: boolean }) {
           href="/panel/conversaciones"
           className={cn(buttonVariants({ size: "sm", variant: "outline" }), "h-7 bg-transparent")}
         >
-          Ir a Conversaciones
+          Ir a WhatsApp
         </Link>
       )}
       {!paused && (
