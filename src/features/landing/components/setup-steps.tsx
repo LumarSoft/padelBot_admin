@@ -55,7 +55,7 @@ export function SetupSteps() {
 
         <div>
           <LandingButton href="/register" variant="ink">
-            Empezar ahora · 1 mes gratis
+            Empezar ahora · 15 días gratis
             <ArrowRight className="size-4.5" />
           </LandingButton>
         </div>

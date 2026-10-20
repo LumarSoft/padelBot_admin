@@ -32,12 +32,12 @@ export function FinalCta() {
           sacar.
         </h2>
         <p className="text-ink/80 max-w-xl text-xl text-pretty">
-          Probá GTP un mes gratis y sin tarjeta. O escribinos y te lo mostramos
+          Probá GTP 15 días gratis y sin tarjeta. O escribinos y te lo mostramos
           funcionando en una demo de 15 minutos.
         </p>
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
           <LandingButton href="/register" variant="ink" className="px-7 py-4 text-base">
-            Probar 1 mes gratis
+            Probar 15 días gratis
             <ArrowRight className="size-4.5" />
           </LandingButton>
           <LandingButton

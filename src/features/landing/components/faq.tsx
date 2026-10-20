@@ -31,7 +31,7 @@ const FAQS = [
     a: "No. Pagás el plan por mes y listo. Las señas van directo a tu MercadoPago: nunca pasan por nosotros.",
   },
   {
-    q: "¿Qué pasa cuando termina el mes gratis?",
+    q: "¿Qué pasa cuando terminan los 15 días gratis?",
     a: "Te avisamos antes de que termine. Si seguís, elegís el plan que te quede mejor; si no, no pagás nada, porque para empezar no te pedimos tarjeta.",
   },
   {

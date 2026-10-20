@@ -415,7 +415,7 @@ export function Pricing() {
             </span>
           </div>
           <DisplayTitle className="text-[clamp(2.5rem,6vw,4.5rem)] leading-[0.88]">
-            Probalo un mes, gratis.
+            Probalo 15 días, gratis.
           </DisplayTitle>
           <ul className="text-fog flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
             {PERKS.map((perk) => (

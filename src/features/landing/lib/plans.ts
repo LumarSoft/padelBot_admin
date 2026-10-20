@@ -5,7 +5,7 @@
  * club pays (`priceCents`) for the ops console MRR from `PLAN_PRICE_<KEY>_CENTS` — keep all
  * three in step when a plan changes.
  *
- * Every plan is paid, and every plan starts with the same free month (`TRIAL_DAYS` in the API).
+ * Every plan is paid, and every plan starts with the same 15-day free trial (`TRIAL_DAYS` in the API).
  * During the launch the cards show the regular price struck through next to the launch price.
  */
 
@@ -33,7 +33,7 @@ export interface Plan {
   highlights: string[];
 }
 
-export const TRIAL_LABEL = "1 mes gratis";
+export const TRIAL_LABEL = "15 días gratis";
 
 export const PLANS: Plan[] = [
   {

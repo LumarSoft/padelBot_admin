@@ -43,7 +43,7 @@ export function SubscriptionDialog({
     club.subscription.subscriptionStatus,
   );
   const [months, setMonths] = useState(1);
-  const [days, setDays] = useState(30);
+  const [days, setDays] = useState(15);
   const [plan, setPlan] = useState<PlanKey | null>(
     isPlanKey(club.subscription.plan) ? club.subscription.plan : null,
   );
