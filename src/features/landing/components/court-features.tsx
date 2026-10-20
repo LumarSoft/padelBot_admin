@@ -22,7 +22,7 @@ const PANEL_FEATURES: Feature[] = [
   { title: "Conversaciones", text: "Cada charla del bot, con el botón para tomar el control." },
   { title: "Turnos fijos", text: "Los habituales de cada semana se generan solos." },
   { title: "Jugadores", text: "Historial de cada uno, y quién no se presentó." },
-  { title: "Kiosco", text: "Cargá bebidas y productos a la cuenta del turno." },
+  { title: "Kiosco", text: "Cobrá con lector de códigos o cargalo a la cuenta del turno." },
   { title: "Reportes y equipo", text: "Lo recaudado por mes, y acceso para tus encargados." },
 ];
 

@@ -7,6 +7,7 @@ import { NightTimeline } from "@/features/landing/components/night-timeline";
 import { Notebook } from "@/features/landing/components/notebook";
 import { PanelShowcase } from "@/features/landing/components/panel-showcase";
 import { CourtFeatures } from "@/features/landing/components/court-features";
+import { ScannerShowcase } from "@/features/landing/components/scanner-showcase";
 import { SetupSteps } from "@/features/landing/components/setup-steps";
 import { Pricing } from "@/features/landing/components/pricing";
 import { Faq } from "@/features/landing/components/faq";
@@ -43,6 +44,9 @@ export default function LandingPage() {
           <PanelShowcase />
         </Reveal>
         <CourtFeatures />
+        <Reveal>
+          <ScannerShowcase />
+        </Reveal>
         <Reveal>
           <SetupSteps />
         </Reveal>
