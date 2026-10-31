@@ -13,6 +13,7 @@ const LINKS = [
   { href: "/ops/clubes", label: "Clubes" },
   { href: "/ops/negocio", label: "Negocio" },
   { href: "/ops/rentabilidad", label: "Rentabilidad" },
+  { href: "/ops/plan", label: "Plan financiero" },
   { href: "/ops/bot", label: "Bot / IA" },
   { href: "/ops/salud", label: "Salud" },
   { href: "/ops/mejoras", label: "Mejoras" },
